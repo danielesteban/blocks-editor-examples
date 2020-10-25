@@ -1,0 +1,15 @@
+{
+  "name": "mega-example",
+  "description": "A combined example for the blocks-editor",
+  "author": "Daniel Esteban Nombela",
+  "version": "1.0.0",
+  "license": "MIT",
+  "private": true,
+  "scripts": {
+    "cert": "openssl req -x509 -newkey rsa:2048 -nodes -sha256 -subj /CN=localhost -keyout localhost-key.pem -out localhost-cert.pem",
+    "start": "sirv --dev --host 0.0.0.0 --cert localhost-cert.pem --key localhost-key.pem --http2 ."
+  },
+  "devDependencies": {
+    "sirv-cli": "^1.0.8"
+  }
+}

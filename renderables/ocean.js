@@ -1,0 +1,130 @@
+import {
+  BufferAttribute,
+  BufferGeometry,
+  DynamicDrawUsage,
+  Group,
+  InstancedMesh,
+  Matrix4,
+  MeshBasicMaterial,
+  VertexColors,
+} from '../core/three.js';
+
+class Ocean extends InstancedMesh {
+  static setupGeometry() {
+    Ocean.geometry = new BufferGeometry();
+    const position = new Float32Array(Ocean.size * Ocean.size * 9 * 2);
+    const color = new Float32Array(Ocean.size * Ocean.size * 9 * 2);
+    const light = new Float32Array(Ocean.size * Ocean.size * 2);
+    let stride = 0;
+    for (let z = 0; z < Ocean.size; z += 1) {
+      for (let x = 0; x < Ocean.size; x += 1) {
+        for (let i = 0; i < 2; i += 1) {
+          light[stride] = 1 + (Math.random() * 2);
+          stride += 1;
+        }
+      }
+    }
+    const makeDynamic = (attribute) => {
+      attribute.setUsage(DynamicDrawUsage);
+      return attribute;
+    };
+    Ocean.geometry.setAttribute('position', makeDynamic(new BufferAttribute(position, 3)));
+    Ocean.geometry.setAttribute('color', makeDynamic(new BufferAttribute(color, 3)));
+    Ocean.light = light;
+  }
+
+  static setupMaterial() {
+    Ocean.material = new MeshBasicMaterial({
+      transparent: true,
+      opacity: 0.6,
+      vertexColors: VertexColors,
+    });
+    Ocean.material.color.setHSL(0.55, 0.4, 0.3);
+  }
+
+  constructor() {
+    if (!Ocean.geometry) {
+      Ocean.setupGeometry();
+    }
+    if (!Ocean.material) {
+      Ocean.setupMaterial();
+    }
+    super(
+      Ocean.geometry,
+      Ocean.material,
+      (Ocean.instances * 2 + 1) ** 2
+    );
+    const matrix = new Matrix4();
+    for (let z = -Ocean.instances, i = 0; z <= Ocean.instances; z += 1) {
+      for (let x = -Ocean.instances; x <= Ocean.instances; x += 1, i += 1) {
+        matrix.setPosition(
+          x * Ocean.size,
+          0,
+          z * Ocean.size
+        );
+        this.setMatrixAt(i, matrix);
+      }
+    }
+    this.scale.set(3, 1, 3);
+  }
+
+  static animate({ time }) {
+    const { geometry, light, size } = Ocean;
+    const { attributes: { color, position } } = geometry;
+    let stride = 0;
+    const waveHeight = Math.sin(time * 0.5) * 0.15;
+    for (let z = 0; z < size; z += 1) {
+      for (let x = 0; x < size; x += 1) {
+        const pos = {
+          x: x - (size * 0.5),
+          y: 0,
+          z: z - (size * 0.5),
+        };
+        const elevationA = (
+          (Math.sin(z * Math.PI * 0.5) * waveHeight)
+          + (Math.sin(z * Math.PI * 0.125) * waveHeight)
+        );
+        const elevationB = (
+          (Math.sin((z + 1) * Math.PI * 0.5) * waveHeight)
+          + (Math.sin((z + 1) * Math.PI * 0.125) * waveHeight)
+        );
+        position.array.set([
+          pos.x + 0.5, pos.y + elevationB, pos.z + 1,
+          pos.x + 1, pos.y + elevationA, pos.z,
+          pos.x, pos.y + elevationA, pos.z,
+        ], stride);
+        {
+          const intensity = 0.95 + (Math.sin(time * light[stride / 9]) * 0.05);
+          color.array.set([
+            intensity, intensity, intensity,
+            intensity, intensity, intensity,
+            intensity, intensity, intensity,
+          ], stride);
+        }
+        stride += 9;
+        position.array.set([
+          pos.x + 0.5, pos.y + elevationB, pos.z + 1,
+          pos.x + 1.5, pos.y + elevationB, pos.z + 1,
+          pos.x + 1, pos.y + elevationA, pos.z,
+        ], stride);
+        {
+          const intensity = 0.95 + (Math.sin(time * light[stride / 9]) * 0.05);
+          color.array.set([
+            intensity, intensity, intensity,
+            intensity, intensity, intensity,
+            intensity, intensity, intensity,
+          ], stride);
+        }
+        stride += 9;
+      }
+    }
+    color.needsUpdate = true;
+    position.needsUpdate = true;
+    geometry.computeBoundingSphere();
+  }
+}
+
+Ocean.instances = 2;
+Ocean.size = 16;
+
+export default Ocean;
