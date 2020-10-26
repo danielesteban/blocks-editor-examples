@@ -65,7 +65,7 @@ class Ocean extends InstancedMesh {
         this.setMatrixAt(i, matrix);
       }
     }
-    this.scale.set(3, 1, 3);
+    this.scale.set(2, 1, 2);
   }
 
   static animate({ time }) {
