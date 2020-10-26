@@ -31,7 +31,14 @@ class Artwork extends Mesh {
       Artwork.geometry,
       Artwork.material
     );
-    this.artworks = artworks;
+    this.artworks = [...artworks];
+    const values = window.crypto.getRandomValues(new Uint32Array(this.artworks.length));
+    for (let i = this.artworks.length - 1; i >= 0; i -= 1) {
+      const rand = values[i] % (i + 1);
+      const temp = this.artworks[i];
+      this.artworks[i] = this.artworks[rand];
+      this.artworks[rand] = temp;
+    }
     this.index = 0;
     this.isOpen = false;
     models.load('models/museumDoor.glb')

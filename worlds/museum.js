@@ -139,7 +139,67 @@ Museum.artworks = [
   {
     title: 'Double Diptych Icon Pendant',
     image: '317829/670148'
-  }
+  },
+  {
+    title: 'Icon Triptych: Ewostatewos and Eight of His Disciples',
+    image: '319625/665401',
+  },
+  {
+    title: 'Madonna and Child',
+    image: '438754/794829',
+  },
+  {
+    title: 'Two Men Contemplating the Moon',
+    image: '438417/796421',
+  },
+  {
+    title: 'Beauty of the Kanbun Era',
+    image: '53441/1499290',
+  },
+  {
+    title: 'Portrait of the Artist',
+    image: '12701/38361',
+  },
+  {
+    title: 'The American School',
+    image: '11797/33062',
+  },
+  {
+    title: 'Self-Portrait',
+    image: '437397/1843832',
+  },
+  {
+    title: 'Self-Portrait',
+    image: '488109/1008590',
+  },
+  {
+    title: 'Edgar Degas: Self-Portrait',
+    image: '358786/765984',
+  },
+  {
+    title: 'Portrait of the Painter',
+    image: '11383/34354',
+  },
+  {
+    title: 'Self-Portrait',
+    image: '436158/796156',
+  },
+  {
+    title: 'Self-Portrait with a Harp',
+    image: '436222/797349',
+  },
+  {
+    title: 'Self-Portrait with a Straw Hat',
+    image: '436532/1671316',
+  },
+  {
+    title: 'Figures, flowers, and landscapes',
+    image: '37396/153445',
+  },
+  {
+    title: 'Self-Portrait',
+    image: '334004/747218',
+  },
 ];
 
 Museum.display = 'Museum';
