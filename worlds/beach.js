@@ -12,17 +12,17 @@ class Beach extends ElevatorWorld {
     super({
       scene,
       offset,
-      position: new Vector3(0, 6, -1.75),
+      position: new Vector3(0, 6.5, -1.75),
       rotation: new Euler(0, Math.PI, 0),
     });
 
     const { ambient, models, player, translocables } = scene;
     ambient.set('sounds/sea.ogg');
     scene.background = new Color(0x336688);
-    scene.fog = new FogExp2(scene.background.getHex(), 0.03);
+    scene.fog = new FogExp2(scene.background.getHex(), 0.04);
 
     const ocean = new Ocean();
-    ocean.position.y = 1.75;
+    ocean.position.y = 3.725;
     this.add(ocean);
 
     models.load('models/beach.glb')
@@ -48,6 +48,6 @@ class Beach extends ElevatorWorld {
   }
 }
 
-Beach.display = 'Shell Beach';
+Beach.display = 'Foggy Beach';
 
 export default Beach;
