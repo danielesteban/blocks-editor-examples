@@ -1,6 +1,6 @@
 {
-  "name": "mega-example",
-  "description": "A combined example for the blocks-editor",
+  "name": "blocks-editor-examples",
+  "description": "A combined set of examples for the blocks-editor",
   "author": "Daniel Esteban Nombela",
   "version": "1.0.0",
   "license": "MIT",
