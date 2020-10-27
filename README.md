@@ -3,6 +3,12 @@
 
 [![screenshot](screenshot.jpg)](https://train.gatunes.com/)
 
+> A combined set of examples for the [blocks-editor](https://blocks-editor.gatunes.com/)
+
+#### Live demo
+
+[https://train.gatunes.com/](https://train.gatunes.com/)
+
 #### Local development
 
 ```bash
