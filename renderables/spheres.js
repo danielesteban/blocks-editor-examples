@@ -7,8 +7,6 @@ import {
   SphereBufferGeometry,
 } from '../core/three.js';
 
-// Instanced spheres
-
 class Spheres extends InstancedMesh {
   static setupGeometry() {
     const sphere = new IcosahedronGeometry(0.4, 3);

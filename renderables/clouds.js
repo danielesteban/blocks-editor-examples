@@ -10,8 +10,6 @@ import {
   VertexColors,
 } from '../core/three.js';
 
-// Animated clouds that follow the player around
-
 class Clouds extends Group {
   static setupGeometry() {
     const depth = 3;
