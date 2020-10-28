@@ -50,19 +50,14 @@ class Concert extends ElevatorWorld {
     performance.update(player.head.position);
   }
 
-  onAudioContext() {
-    const { performance } = this;
-    performance.resume();
-  }
-
-  onEnterVR() {
-    const { performance } = this;
-    performance.resume();
-  }
-
   onUnload() {
     const { performance } = this;
     performance.dispose();
+  }
+
+  resumeAudio() {
+    const { performance } = this;
+    performance.resume();
   }
 }
 

@@ -54,14 +54,11 @@ class Renderer {
             xr.setSession(session);
             dom.enterVR.style.display = 'none';
             if (this.scene) {
-              this.scene.onEnterVR();
+              this.scene.resumeAudio();
             }
             session.addEventListener('end', () => {
               xr.setSession(null);
               dom.enterVR.style.display = '';
-              if (this.scene) {
-                this.scene.onExitVR();
-              }
             });
           })
           .catch(() => {});

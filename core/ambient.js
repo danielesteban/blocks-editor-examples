@@ -9,9 +9,11 @@ class Ambient {
   resume() {
     const { sounds } = this;
     this.isRunning = true;
-    sounds.forEach((sound) => (
-      sound.play()
-    ));
+    sounds.forEach((sound) => {
+      if (sound.paused) {
+        sound.play();
+      }
+    });
   }
 
   set(sound, gain = 0.2) {

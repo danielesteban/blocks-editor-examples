@@ -29,14 +29,7 @@ class Scene extends ThreeScene {
 
     const onFirstInteraction = () => {
       document.removeEventListener('mousedown', onFirstInteraction);
-      const { context } = this.player.head;
-      if (context.state === 'suspended') {
-        context.resume();
-        this.ambient.resume();
-        if (this.world && this.world.onAudioContext) {
-          this.world.onAudioContext();
-        }
-      }
+      this.resumeAudio();
     };
     document.addEventListener('mousedown', onFirstInteraction);
   }
@@ -74,8 +67,8 @@ class Scene extends ThreeScene {
       this.remove(this.world);
     }
     this.world = new worlds[world](this, options);
-    if (this.world.onAudioContext && context.state === 'running') {
-      this.world.onAudioContext();
+    if (this.world.resumeAudio && context.state === 'running') {
+      this.world.resumeAudio();
     }
     this.add(this.world);
   }
@@ -171,17 +164,14 @@ class Scene extends ThreeScene {
     }
   }
 
-  onEnterVR() {
-    const { world } = this;
-    if (world && world.onEnterVR) {
-      world.onEnterVR();
+  resumeAudio() {
+    const { ambient, player: { head: { context } }, world } = this;
+    if (context.state === 'suspended') {
+      context.resume();
     }
-  }
-
-  onExitVR() {
-    const { world } = this;
-    if (world && world.onExitVR) {
-      world.onExitVR();
+    ambient.resume();
+    if (world && world.resumeAudio) {
+      world.resumeAudio();
     }
   }
 }
