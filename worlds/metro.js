@@ -163,23 +163,19 @@ class Metro extends Group {
       track,
       train,
     } = this;
-    const isOnElevator = track && elevator.containsPoint(player.head.position);
-    const isOnTrain = track && train.containsPoint(player.head.position);
-    player.controllers.forEach((controller) => {
-      const {
-        buttons: { triggerDown },
-        hand,
-      } = controller;
-      if (!hand || !triggerDown) {
-        return;
-      }
+    if (
+      player.desktopControls.buttons.primaryDown
+      || player.controllers.find(({ hand, buttons: { triggerDown } }) => (hand && triggerDown))
+    ) {
+      const isOnElevator = track && elevator.containsPoint(player.head.position);
+      const isOnTrain = track && train.containsPoint(player.head.position);
       if (isOnElevator && elevator.isOpen) {
         elevator.isOpen = false;
       }
       if (isOnTrain && !track.isRunning) {
         track.run();
       }
-    });
+    }
     elevator.animate(delta);
     train.animate(delta);
     if (track) {

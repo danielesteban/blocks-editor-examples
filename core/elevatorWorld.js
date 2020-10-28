@@ -44,16 +44,15 @@ class ElevatorWorld extends Group {
     elevator.animate(delta);
     this.isOnElevator = elevator.containsPoint(player.head.position);
     if (this.isOnElevator) {
-      player.controllers.forEach((controller) => {
-        const {
-          buttons: { triggerDown },
-          hand,
-        } = controller;
-        if (!hand || !triggerDown || !elevator.isOpen) {
-          return;
-        }
+      if (
+        elevator.isOpen
+        && (
+          player.desktopControls.buttons.primaryDown
+          || player.controllers.find(({ hand, buttons: { triggerDown } }) => (hand && triggerDown))
+        )
+      ) {
         elevator.isOpen = false;
-      });
+      }
     }
   }
 }

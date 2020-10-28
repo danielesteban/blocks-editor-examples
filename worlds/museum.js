@@ -48,18 +48,15 @@ class Museum extends ElevatorWorld {
     super.onAnimationTick(animation);
     const { artwork, isOnElevator, player } = this;
     artwork.animate(animation);
-    if (isOnElevator) {
-      return;
+    if (
+      !isOnElevator
+      && (
+        player.desktopControls.buttons.primaryDown
+        || player.controllers.find(({ hand, buttons: { triggerDown } }) => (hand && triggerDown))
+      )
+    ) {
+      artwork.next();
     }
-    player.controllers.forEach(({
-      buttons,
-      hand,
-      raycaster,
-    }) => {
-      if (hand && buttons.triggerDown) {
-        artwork.next();
-      }
-    });
   }
 }
 

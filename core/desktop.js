@@ -11,6 +11,11 @@ class DesktopControls {
       right: new Vector3(),
       worldUp: new Vector3(0, 1, 0),
     };
+    this.buttons = {
+      primary: false,
+      secondary: false,
+    };
+    this.buttonState = {...this.buttons};
     this.keyboard = new Vector3(0, 0, 0);
     this.pointer = new Vector2(0, 0);
     this.renderer = renderer;
@@ -20,13 +25,17 @@ class DesktopControls {
     this.onKeyUp = this.onKeyUp.bind(this);
     this.onMouseDown = this.onMouseDown.bind(this);
     this.onMouseMove = this.onMouseMove.bind(this);
+    this.onMouseUp = this.onMouseUp.bind(this);
     this.onPointerLock = this.onPointerLock.bind(this);
+    this.requestPointerLock = this.requestPointerLock.bind(this);
     window.addEventListener('blur', this.onBlur);
     document.addEventListener('keydown', this.onKeyDown);
     document.addEventListener('keyup', this.onKeyUp);
-    renderer.addEventListener('mousedown', this.onMouseDown);
+    document.addEventListener('mousedown', this.onMouseDown);
     document.addEventListener('mousemove', this.onMouseMove);
+    document.addEventListener('mouseup', this.onMouseUp);
     document.addEventListener('pointerlockchange', this.onPointerLock);
+    renderer.addEventListener('mousedown', this.requestPointerLock);
   }
 
   dispose() {
@@ -44,6 +53,8 @@ class DesktopControls {
 
   onAnimationTick({ delta, camera, player }) {
     const {
+      buttons,
+      buttonState,
       keyboard,
       isLocked,
       pointer,
@@ -83,10 +94,18 @@ class DesktopControls {
         .normalize();
       player.position.addScaledVector(direction, delta * 6);
     }
+    ['primary', 'secondary'].forEach((button) => {
+      const state = buttonState[button];
+      buttons[`${button}Down`] = state && buttons[button] !== state;
+      buttons[`${button}Up`] = !state && buttons[button] !== state;
+      buttons[button] = state;
+    });
   }
 
   onBlur() {
-    const { keyboard } = this;
+    const { buttonState, keyboard } = this;
+    buttonState.primary = false;
+    buttonState.secondary = false;
     keyboard.set(0, 0, 0);
   }
 
@@ -138,12 +157,19 @@ class DesktopControls {
     }
   }
 
-  onMouseDown() {
-    const { isLocked, xr } = this;
-    if (isLocked || xr.isPresenting) {
+  onMouseDown({ button }) {
+    const { buttonState, isLocked } = this;
+    if (!isLocked) {
       return;
     }
-    document.body.requestPointerLock();
+    switch (button) {
+      case 0:
+        buttonState.primary = true;
+        break;
+      case 2:
+        buttonState.secondary = true;
+        break;
+    }
   }
 
   onMouseMove({ movementX, movementY }) {
@@ -154,9 +180,36 @@ class DesktopControls {
     pointer.set(movementX, movementY);
   }
 
+  onMouseUp({ button }) {
+    const { buttonState, isLocked } = this;
+    if (!isLocked) {
+      return;
+    }
+    switch (button) {
+      case 0:
+        buttonState.primary = false;
+        break;
+      case 2:
+        buttonState.secondary = false;
+        break;
+    }
+  }
+
   onPointerLock() {
     this.isLocked = !!document.pointerLockElement;
+    if (!this.isLocked) {
+      this.onBlur();
+    }
   }
+
+  requestPointerLock() {
+    const { isLocked, xr } = this;
+    if (isLocked || xr.isPresenting) {
+      return;
+    }
+    document.body.requestPointerLock();
+  }
+
 }
 
 export default DesktopControls;
