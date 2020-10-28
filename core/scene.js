@@ -170,6 +170,20 @@ class Scene extends ThreeScene {
       world.onAnimationTick(animation);
     }
   }
+
+  onEnterVR() {
+    const { world } = this;
+    if (world && world.onEnterVR) {
+      world.onEnterVR();
+    }
+  }
+
+  onExitVR() {
+    const { world } = this;
+    if (world && world.onExitVR) {
+      world.onExitVR();
+    }
+  }
 }
 
 Scene.locomotions = {

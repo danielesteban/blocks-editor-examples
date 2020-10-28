@@ -52,7 +52,12 @@ class Concert extends ElevatorWorld {
 
   onAudioContext() {
     const { performance } = this;
-    performance.video.play();
+    performance.resume();
+  }
+
+  onEnterVR() {
+    const { performance } = this;
+    performance.resume();
   }
 
   onUnload() {

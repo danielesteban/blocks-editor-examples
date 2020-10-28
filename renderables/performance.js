@@ -93,6 +93,13 @@ class Performance extends Group {
     video.src = '';
   }
 
+  resume() {
+    const { video } = this;
+    if (video.paused) {
+      video.play();
+    }
+  }
+
   update(target) {
     const { aux, children, texture, video } = this;
     aux.copy(target);
