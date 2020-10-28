@@ -109,7 +109,9 @@ class Performance extends Group {
       aux.y = mesh.position.y;
       mesh.lookAt(target);
     });
-    texture.needsUpdate = true;
+    if (video.readyState >= video.HAVE_CURRENT_DATA) {
+      texture.needsUpdate = true;
+    }
   }
 }
 
