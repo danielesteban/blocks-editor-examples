@@ -63,6 +63,8 @@ class Performance extends Group {
     const stride = 1 / members;
     const width = stride - bias * 2;
     const height = 1 - bias * 2;
+    const slot = 3;
+    const origin = slot * members * -0.5 + slot * 0.5;
     for (let i = 0; i < members; i += 1) {
       const geometry = new PlaneBufferGeometry(4.26, 2.4);
       geometry.translate(0, geometry.parameters.height * 0.5, 0);
@@ -78,7 +80,7 @@ class Performance extends Group {
         );
       }
       const mesh = new Mesh(geometry, material);
-      mesh.position.set(-1.5 + i * 3, 0, 0);
+      mesh.position.set(origin + i * slot, 0, 0);
       this.add(mesh);
     }
   }
