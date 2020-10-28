@@ -23,7 +23,7 @@ class Island extends ElevatorWorld {
     scene.fog = new FogExp2(scene.background.getHex(), 0.04);
 
     const clouds = new Clouds();
-    clouds.position.set(0, 50, 0);
+    clouds.position.set(0, 64, 0);
     clouds.scale.set(10, 1, 10);
     this.add(clouds);
     this.clouds = clouds;
