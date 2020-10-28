@@ -16,7 +16,7 @@ class Island extends ElevatorWorld {
     super({
       scene,
       offset,
-      position: new Vector3(0, 5.5, -1.75),
+      position: new Vector3(0, 5, -1.75),
       rotation: new Euler(0, Math.PI, 0),
     });
 
