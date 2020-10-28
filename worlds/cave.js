@@ -78,29 +78,28 @@ class Cave extends ElevatorWorld {
     if (isOnElevator || !physics || !spheres) {
       return;
     }
-    player.controllers.forEach(({
-      buttons,
-      hand,
-      raycaster,
-    }) => {
-      if (!hand) {
-        return;
-      }
-      if (buttons.triggerDown) {
-        const { sphere, world } = this;
-        this.sphere = (this.sphere + 1) % spheres.count;
-        physics.setMeshPosition(
-          spheres,
-          world.worldToLocal(
-            raycaster.ray.origin
-              .clone()
-              .addScaledVector(raycaster.ray.direction, 0.5)
-          ),
-          sphere
-        );
-        physics.applyImpulse(spheres, raycaster.ray.direction.clone().multiplyScalar(20), sphere);
-      }
-    });
+    const controller = (
+      player.desktopControls.buttons.primaryDown ? (
+        player.desktopControls
+      ) : (
+        player.controllers.find(({ hand, buttons: { triggerDown } }) => (hand && triggerDown))
+      )
+    );
+    if (controller) {
+      const { sphere, world } = this;
+      const { origin, direction } = controller.raycaster.ray;
+      this.sphere = (this.sphere + 1) % spheres.count;
+      physics.setMeshPosition(
+        spheres,
+        world.worldToLocal(
+          origin
+            .clone()
+            .addScaledVector(direction, 0.5)
+        ),
+        sphere
+      );
+      physics.applyImpulse(spheres, direction.clone().multiplyScalar(20), sphere);
+    }
   }
 }
 

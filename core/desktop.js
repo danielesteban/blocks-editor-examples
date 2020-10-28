@@ -1,12 +1,18 @@
-import { Euler, Vector2, Vector3 } from './three.js';
+import {
+  Euler,
+  Raycaster,
+  Vector2,
+  Vector3,
+} from './three.js';
 
 // Player desktop controls
 
 class DesktopControls {
   constructor({ renderer, xr }) {
     this.aux = {
-      euler: new Euler(0, 0, 0, 'YXZ'),
+      center: new Vector2(),
       direction: new Vector3(),
+      euler: new Euler(0, 0, 0, 'YXZ'),
       forward: new Vector3(),
       right: new Vector3(),
       worldUp: new Vector3(0, 1, 0),
@@ -18,6 +24,7 @@ class DesktopControls {
     this.buttonState = {...this.buttons};
     this.keyboard = new Vector3(0, 0, 0);
     this.pointer = new Vector2(0, 0);
+    this.raycaster = new Raycaster();
     this.renderer = renderer;
     this.xr = xr;
     this.onBlur = this.onBlur.bind(this);
@@ -53,11 +60,13 @@ class DesktopControls {
 
   onAnimationTick({ delta, camera, player }) {
     const {
+      aux,
       buttons,
       buttonState,
       keyboard,
       isLocked,
       pointer,
+      raycaster,
       xr,
     } = this;
     if (!isLocked) {
@@ -100,6 +109,7 @@ class DesktopControls {
       buttons[`${button}Up`] = !state && buttons[button] !== state;
       buttons[button] = state;
     });
+    raycaster.setFromCamera(aux.center, camera);
   }
 
   onBlur() {
