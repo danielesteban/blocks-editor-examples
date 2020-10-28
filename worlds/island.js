@@ -5,9 +5,10 @@ import {
   FogExp2,
   Vector3,
 } from '../core/three.js';
+import Clouds from '../renderables/clouds.js';
 import Ocean from '../renderables/ocean.js';
 
-class Beach extends ElevatorWorld {
+class Island extends ElevatorWorld {
   constructor(scene, { offset }) {
     super({
       scene,
@@ -21,11 +22,17 @@ class Beach extends ElevatorWorld {
     scene.background = new Color(0x336688);
     scene.fog = new FogExp2(scene.background.getHex(), 0.04);
 
+    const clouds = new Clouds();
+    clouds.position.set(0, 50, 0);
+    clouds.scale.set(10, 1, 10);
+    this.add(clouds);
+    this.clouds = clouds;
+
     const ocean = new Ocean();
     ocean.position.y = 3.725;
     this.add(ocean);
 
-    models.load('models/beach.glb')
+    models.load('models/island.glb')
       .then((model) => {
         model.scale.setScalar(0.5);
         model.traverse((child) => {
@@ -37,7 +44,7 @@ class Beach extends ElevatorWorld {
 
         this.elevator.isOpen = true;
         this.elevator.onClose = () => (
-          scene.load('Metro', { destination: 'Beach', offset: this.elevator.getOffset(player) })
+          scene.load('Metro', { destination: 'Island', offset: this.elevator.getOffset(player) })
         );
       });
   }
@@ -45,9 +52,11 @@ class Beach extends ElevatorWorld {
   onAnimationTick(animation) {
     Ocean.animate(animation);
     super.onAnimationTick(animation);
+    const { clouds } = this;
+    clouds.animate(animation);
   }
 }
 
-Beach.display = 'Foggy Beach';
+Island.display = 'Foggy Island';
 
-export default Beach;
+export default Island;
