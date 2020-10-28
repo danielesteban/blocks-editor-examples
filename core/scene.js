@@ -55,6 +55,7 @@ class Scene extends ThreeScene {
     } = this;
     this.background = null;
     this.fog = null;
+    this.locomotion = Scene.locomotions.teleport;
     ambient.set(null);
     if (physics) {
       physics.reset();
