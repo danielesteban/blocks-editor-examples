@@ -83,6 +83,8 @@ class Performance extends Group {
       mesh.position.set(origin + i * slot, 0, 0);
       this.add(mesh);
     }
+
+    this.visible = false;
   }
 
   dispose() {
@@ -109,8 +111,9 @@ class Performance extends Group {
       aux.y = mesh.position.y;
       mesh.lookAt(target);
     });
-    if (video.readyState >= video.HAVE_CURRENT_DATA) {
+    if (!video.paused && video.readyState >= video.HAVE_CURRENT_DATA) {
       texture.needsUpdate = true;
+      this.visible = true;
     }
   }
 }
