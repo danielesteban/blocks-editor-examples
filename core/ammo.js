@@ -61,7 +61,7 @@ async function AmmoPhysics() {
 
   const shapes = [];
   const bodies = [];
-  const meshes = [];
+  const dynamic = [];
   const meshMap = new WeakMap();
 
   function addMesh( mesh, mass = 0 ) {
@@ -113,7 +113,7 @@ async function AmmoPhysics() {
   
     if ( mass > 0 ) {
 
-      meshes.push( mesh );
+      dynamic.push( mesh );
 
     }
 
@@ -153,7 +153,7 @@ async function AmmoPhysics() {
     if ( mass > 0 ) {
 
       mesh.instanceMatrix.setUsage( 35048 ); // THREE.DynamicDrawUsage = 35048
-      meshes.push( mesh );
+      dynamic.push( mesh );
   
     }
 
@@ -250,7 +250,7 @@ async function AmmoPhysics() {
     ));
 
     bodies.length = 0;
-    meshes.length = 0;
+    dynamic.length = 0;
     shapes.length = 0;
 
   }
@@ -277,9 +277,9 @@ async function AmmoPhysics() {
 
     //
 
-    for ( let i = 0, l = meshes.length; i < l; i ++ ) {
+    for ( let i = 0, l = dynamic.length; i < l; i ++ ) {
 
-      const mesh = meshes[ i ];
+      const mesh = dynamic[ i ];
 
       if ( mesh.isInstancedMesh ) {
 
