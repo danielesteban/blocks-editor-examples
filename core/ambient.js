@@ -24,6 +24,7 @@ class Ambient {
 
     if (sound) {
       const player = document.createElement('audio');
+      player.crossOrigin = 'anonymous';
       player.fadeIn = true;
       player.loop = true;
       player.src = sound;

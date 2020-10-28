@@ -98,10 +98,7 @@ class Metro extends Group {
           }
         });
 
-        let gap = (
-          !!offset ? (count - 1) : (count * 2 - 1)
-          // count - 1
-        );
+        let gap = !!offset ? (count - 1) : (count * 2 - 1);
         track.isRunning = true;
         track.position.z = 8;
         track.station = destination ? stations.findIndex((name) => name === destination) : 0;

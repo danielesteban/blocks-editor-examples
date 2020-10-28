@@ -33,6 +33,9 @@ class Scene extends ThreeScene {
       if (context.state === 'suspended') {
         context.resume();
         this.ambient.resume();
+        if (this.world && this.world.onAudioContext) {
+          this.world.onAudioContext();
+        }
       }
     };
     document.addEventListener('mousedown', onFirstInteraction);
@@ -53,6 +56,7 @@ class Scene extends ThreeScene {
     const {
       ambient,
       physics,
+      player: { head: { context } },
       translocables,
       worlds,
     } = this;
@@ -64,9 +68,15 @@ class Scene extends ThreeScene {
     }
     translocables.length = 0;
     if (this.world) {
+      if (this.world.onUnload) {
+        this.world.onUnload();
+      }
       this.remove(this.world);
     }
     this.world = new worlds[world](this, options);
+    if (this.world.onAudioContext && context.state === 'running') {
+      this.world.onAudioContext();
+    }
     this.add(this.world);
   }
 
