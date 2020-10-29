@@ -60,8 +60,8 @@ async function AmmoPhysics() {
   }
 
   const shapes = [];
-  const bodies = [];
   const dynamic = [];
+  const meshes = [];
   const meshMap = new WeakMap();
 
   function addMesh( mesh, mass = 0 ) {
@@ -79,14 +79,32 @@ async function AmmoPhysics() {
         handleMesh( mesh, mass, shape );
 
       } else {
+
         Ammo.destroy(shape);
+
       }
 
     }
 
   }
 
-  function handleMesh( mesh, mass, shape ) {
+  function addTrigger( mesh, contactResponse = false ) {
+
+    if ( mesh.isMesh ) {
+
+      const shape = getShape( mesh.geometry );
+
+      if ( shape !== null ) {
+
+        handleMesh( mesh, 0, shape, contactResponse, true );
+
+      }
+
+    }
+
+  }
+
+  function handleMesh( mesh, mass, shape, contactResponse = true, isTrigger = false ) {
 
     const position = mesh.position;
     const quaternion = mesh.quaternion;
@@ -104,10 +122,16 @@ async function AmmoPhysics() {
     const rbInfo = new AmmoLib.btRigidBodyConstructionInfo( mass, motionState, shape, localInertia );
 
     const body = new AmmoLib.btRigidBody( rbInfo );
+    body.mesh = mesh;
+    body.isTrigger = isTrigger;
+    if (!contactResponse) {
+      const CF_NO_CONTACT_RESPONSE = 4;
+      body.setCollisionFlags(body.getCollisionFlags() | CF_NO_CONTACT_RESPONSE);
+    }
     // body.setFriction( 4 );
     world.addRigidBody( body );
 
-    bodies.push(mesh);
+    meshes.push(mesh);
     meshMap.set( mesh, body );
     shapes.push(shape);
   
@@ -140,13 +164,15 @@ async function AmmoPhysics() {
       const rbInfo = new AmmoLib.btRigidBodyConstructionInfo( mass, motionState, shape, localInertia );
 
       const body = new AmmoLib.btRigidBody( rbInfo );
+      body.mesh = mesh;
+      body.index = i;
       world.addRigidBody( body );
 
       instances.push( body );
 
     }
 
-    bodies.push(mesh);
+    meshes.push(mesh);
     meshMap.set( mesh, instances );
     shapes.push(shape);
 
@@ -214,7 +240,7 @@ async function AmmoPhysics() {
   
   function reset() {
 
-    bodies.forEach((mesh) => {
+    meshes.forEach((mesh) => {
 
       if ( mesh.isInstancedMesh ) {
 
@@ -249,7 +275,7 @@ async function AmmoPhysics() {
       Ammo.destroy(shape)
     ));
 
-    bodies.length = 0;
+    meshes.length = 0;
     dynamic.length = 0;
     shapes.length = 0;
 
@@ -318,6 +344,61 @@ async function AmmoPhysics() {
 
     }
 
+    for ( let i = 0, il = dispatcher.getNumManifolds(); i < il; i ++ ) {
+
+      const contactManifold = dispatcher.getManifoldByIndexInternal( i );
+      const bodyA = Ammo.castObject( contactManifold.getBody0(), Ammo.btRigidBody );
+      const bodyB = Ammo.castObject( contactManifold.getBody1(), Ammo.btRigidBody );
+      
+      if (
+        bodyA.isTrigger || bodyB.isTrigger
+      ) {
+
+        let body;
+        let trigger;
+        if (bodyA.isTrigger) {
+
+          body = bodyB;
+          trigger = bodyA.mesh;
+
+        } else if (bodyB.isTrigger) {
+
+          body = bodyA;
+          trigger = bodyB.mesh;
+
+        }
+
+        if (trigger) {
+
+          let contact = false;
+
+          for ( let j = 0, jl = contactManifold.getNumContacts(); j < jl; j ++ ) {
+
+            const contactPoint = contactManifold.getContactPoint( j );
+
+            if ( contactPoint.getDistance() < 0 ) {
+
+              const position = contactPoint.get_m_positionWorldOnA();
+              contact = { x: position.x(), y: position.y(), z: position.z() };
+
+              break;
+            
+            }
+      
+          }
+
+          if (contact) {
+
+            trigger.onContact({ mesh: body.mesh, index: body.index, point: contact });
+
+          }
+
+        }
+
+      }
+
+    }
+
   }
 
   // animate
@@ -326,6 +407,7 @@ async function AmmoPhysics() {
 
   return {
     addMesh: addMesh,
+    addTrigger: addTrigger,
     setMeshPosition: setMeshPosition,
     applyImpulse: applyImpulse,
     reset: reset,

@@ -8,6 +8,8 @@ import {
   Matrix4,
   Vector3,
 } from '../core/three.js';
+import Canvas from '../renderables/canvas.js';
+import Spheres from '../renderables/spheres.js';
 
 class Building extends ElevatorWorld {
   constructor(scene, { offset }) {
@@ -23,9 +25,12 @@ class Building extends ElevatorWorld {
     scene.background = new Color(0x110033);
     scene.fog = new FogExp2(scene.background.getHex(), 0.05);
    
+    this.world = new Group();
+    this.world.scale.setScalar(0.5);
+    this.add(this.world);
+
     models.load('models/building.glb')
       .then((building) => {
-        const buildings = new Group();
         const count = 12;
         const matrix = new Matrix4();
         const dummy = new Group();
@@ -55,17 +60,7 @@ class Building extends ElevatorWorld {
               }
               chunk.setMatrixAt(i, matrix);
             }
-            buildings.add(chunk);
-          }
-        });
-        buildings.scale.setScalar(0.5);
-        this.add(buildings);
-
-        building.scale.copy(buildings.scale);
-        building.updateMatrixWorld();
-        building.traverse((child) => {
-          if (child.isMesh) {
-            translocables.push(child);
+            this.world.add(chunk);
           }
         });
 
@@ -74,9 +69,90 @@ class Building extends ElevatorWorld {
           scene.load('Metro', { destination: 'Building', offset: this.elevator.getOffset(player) })
         );
       });
+    
+    const canvas = new Canvas();
+    const color = new Color();
+    const position = new Vector3();
+    const size = new Vector3(
+      canvas.geometry.parameters.width,
+      canvas.geometry.parameters.height,
+      canvas.geometry.parameters.length
+    );
+    canvas.onContact = ({ mesh, index, point }) => {
+      if (mesh === this.spheres) {
+        color.fromBufferAttribute(this.spheres.instanceColor, index);
+        this.world.localToWorld(position.copy(point));
+        canvas.worldToLocal(position).divide(size);
+        Canvas.draw({ color: `#${color.getHexString()}`, position, size: 20 });
+      }
+    };
+    canvas.position.set(0, 48.5, -7);
+    canvas.rotation.set(Math.PI * -0.2, 0, 0);
+    this.world.add(canvas);
+
+    Promise.all([
+      scene.getPhysics(),
+      models.physics('models/buildingPhysics.json'),
+    ])
+      .then(([physics, boxes]) => {
+        this.physics = physics;
+        this.physics.addTrigger(canvas, true);
+
+        boxes.forEach((box) => {
+          translocables.push(box);
+          this.physics.addMesh(box);
+          this.world.add(box);
+        });
+
+        this.sphere = 0;
+        this.spheres = new Spheres({ count: 50 });
+        const matrix = new Matrix4();
+        for (let i = 0; i < this.spheres.count; i += 1) {
+          matrix.setPosition((Math.random() - 0.5) * 8, 64 + Math.random() * 16, Math.random() * 8);
+          this.spheres.setMatrixAt(i, matrix);
+        }
+        this.physics.addMesh(this.spheres, 1);
+        this.spheres.geometry = Spheres.geometries.model;
+        this.world.add(this.spheres);
+    });
+  }
+
+  onAnimationTick(animation) {
+    super.onAnimationTick(animation);
+    const {
+      isOnElevator,
+      physics,
+      player,
+      spheres,
+    } = this;
+    if (isOnElevator || !physics || !spheres) {
+      return;
+    }
+    const controller = (
+      player.desktopControls.buttons.primaryDown ? (
+        player.desktopControls
+      ) : (
+        player.controllers.find(({ hand, buttons: { triggerDown } }) => (hand && triggerDown))
+      )
+    );
+    if (controller) {
+      const { sphere, world } = this;
+      const { origin, direction } = controller.raycaster.ray;
+      this.sphere = (this.sphere + 1) % spheres.count;
+      physics.setMeshPosition(
+        spheres,
+        world.worldToLocal(
+          origin
+            .clone()
+            .addScaledVector(direction, 0.5)
+        ),
+        sphere
+      );
+      physics.applyImpulse(spheres, direction.clone().multiplyScalar(20), sphere);
+    }
   }
 }
 
-Building.display = 'High Rises';
+Building.display = 'High Altitude Art';
 
 export default Building;
