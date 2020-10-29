@@ -39,7 +39,7 @@ class Canvas extends Mesh {
     if (!Canvas.geometry) {
       Canvas.setupGeometry();
     }
-    if (!Canvas.material) {
+    if (!Canvas.renderer || !Canvas.material) {
       Canvas.setupMaterial();
     }
     super(
@@ -49,6 +49,9 @@ class Canvas extends Mesh {
   }
 
   static draw({ color, position, size }) {
+    if (!Canvas.renderer || !Canvas.material) {
+      Canvas.setupMaterial();
+    }
     const { renderer, material } = Canvas;
     const ctx = renderer.getContext('2d');
     ctx.fillStyle = color;
