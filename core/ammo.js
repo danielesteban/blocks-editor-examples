@@ -1,6 +1,7 @@
 // A copy of https://github.com/mrdoob/three.js/blob/master/examples/jsm/physics/AmmoPhysics.js
-// With an extra applyImpulse(mesh, impulse, index) method
-// And an extra reset() method
+// + an extra addTrigger(mesh, contactResponse) method
+// + an extra applyImpulse(mesh, impulse, index) method
+// + an extra reset() method
 // + a fix that ensures the body gets reactivated in setMeshPosition(mesh, position, index)
 
 async function AmmoPhysics() {
