@@ -10,16 +10,17 @@ import {
 class Spheres extends InstancedMesh {
   static setupGeometry() {
     const sphere = new IcosahedronGeometry(0.2, 3);
-    sphere.faces.forEach((face, i) => {
-      face.color.offsetHSL(0, 0, -(0.2 + Math.random() * 0.1));
-    });
+    sphere.faces.forEach((face) => (
+      face.color.offsetHSL(0, 0, -(0.2 + Math.random() * 0.1))
+    ));
     const geometry = (new BufferGeometry()).fromGeometry(sphere);
+    geometry.physics = {
+      shape: 'sphere',
+      radius: sphere.parameters.radius,
+    };
     delete geometry.attributes.normal;
     delete geometry.attributes.uv;
-    Spheres.geometries = {
-      model: geometry,
-      physics: new SphereBufferGeometry(sphere.parameters.radius),
-    };
+    Spheres.geometry = geometry;
   }
 
   static setupMaterial() {
@@ -29,14 +30,14 @@ class Spheres extends InstancedMesh {
   }
 
   constructor({ count = 100, material }) {
-    if (!Spheres.geometries) {
+    if (!Spheres.geometry) {
       Spheres.setupGeometry();
     }
     if (!Spheres.material) {
       Spheres.setupMaterial();
     }
     super(
-      Spheres.geometries.physics,
+      Spheres.geometry,
       material || Spheres.material,
       count
     );

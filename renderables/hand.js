@@ -15,7 +15,6 @@ import {
   SkinnedMesh,
   Vector3,
   Vector4,
-  VertexColors,
 } from '../core/three.js';
 
 // Skinned mesh for the player/peer hands
@@ -151,7 +150,7 @@ class Hand extends SkinnedMesh {
     Hand.material = new MeshBasicMaterial({
       color: 0x0A0A0A,
       skinning: true,
-      vertexColors: VertexColors,
+      vertexColors: true,
     });
   }
 

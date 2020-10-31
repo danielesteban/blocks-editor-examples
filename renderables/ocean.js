@@ -6,7 +6,6 @@ import {
   InstancedMesh,
   Matrix4,
   MeshBasicMaterial,
-  VertexColors,
 } from '../core/three.js';
 
 class Ocean extends InstancedMesh {
@@ -37,7 +36,7 @@ class Ocean extends InstancedMesh {
     Ocean.material = new MeshBasicMaterial({
       transparent: true,
       opacity: 0.6,
-      vertexColors: VertexColors,
+      vertexColors: true,
     });
     Ocean.material.color.setHSL(0.55, 0.4, 0.3);
   }

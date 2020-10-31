@@ -94,7 +94,7 @@ class Building extends ElevatorWorld {
     ])
       .then(([physics, boxes]) => {
         this.physics = physics;
-        this.physics.addTrigger(canvas, true);
+        this.physics.addMesh(canvas, 0, { isTrigger: true });
 
         boxes.forEach((box) => {
           translocables.push(box);
@@ -103,7 +103,7 @@ class Building extends ElevatorWorld {
         });
 
         player.controllers.forEach(({ physics }) => {
-          this.physics.addKinematic(physics);
+          this.physics.addMesh(physics, 0, { isKinematic: true });
         });
 
         this.sphere = 0;
@@ -114,7 +114,6 @@ class Building extends ElevatorWorld {
           this.spheres.setMatrixAt(i, matrix);
         }
         this.physics.addMesh(this.spheres, 1);
-        this.spheres.geometry = Spheres.geometries.model;
         this.add(this.spheres);
     });
   }

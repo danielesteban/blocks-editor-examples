@@ -49,7 +49,7 @@ class Scene extends ThreeScene {
     const {
       ambient,
       physics,
-      player: { head: { context } },
+      player,
       translocables,
       worlds,
     } = this;
@@ -57,6 +57,7 @@ class Scene extends ThreeScene {
     this.fog = null;
     this.locomotion = Scene.locomotions.teleport;
     ambient.set(null);
+    player.detachAll();
     if (physics) {
       physics.reset();
     }
@@ -68,7 +69,7 @@ class Scene extends ThreeScene {
       this.remove(this.world);
     }
     this.world = new worlds[world](this, options);
-    if (this.world.resumeAudio && context.state === 'running') {
+    if (this.world.resumeAudio && player.head.context.state === 'running') {
       this.world.resumeAudio();
     }
     this.add(this.world);

@@ -1,8 +1,10 @@
 // A copy of https://github.com/mrdoob/three.js/blob/master/examples/jsm/physics/AmmoPhysics.js
-// + an extra addKinematic( mesh ) method
-// + an extra addTrigger(mesh, contactResponse) method
 // + an extra applyImpulse(mesh, impulse, index) method
 // + an extra reset() method
+// + Extra flags on: addMesh( mesh, mass = 0, flags = {} )
+//   - noContactResponse
+//   - isKinematic
+//   - isTrigger
 
 import { DynamicDrawUsage, Quaternion, Vector3 } from './three.js';
 
@@ -36,6 +38,24 @@ async function AmmoPhysics() {
 
     // TODO change type to is*
 
+    if ( geometry.physics && geometry.physics.shape === 'box' ) {
+  
+      const shape = new AmmoLib.btBoxShape( new AmmoLib.btVector3( ...geometry.physics.size ) );
+      shape.setMargin( 0.05 );
+
+      return shape;
+
+    }
+
+    if ( geometry.physics && geometry.physics.shape === 'sphere' ) {
+  
+      const shape = new AmmoLib.btSphereShape( geometry.physics.radius );
+      shape.setMargin( 0.05 );
+
+      return shape;
+
+    }
+
     if ( geometry.type === 'BoxBufferGeometry' ) {
 
       const sx = parameters.width !== undefined ? parameters.width / 2 : 0.5;
@@ -47,7 +67,9 @@ async function AmmoPhysics() {
 
       return shape;
 
-    } else if ( geometry.type === 'SphereBufferGeometry' || geometry.type === 'IcosahedronBufferGeometry' ) {
+    }
+    
+    if ( geometry.type === 'SphereBufferGeometry' || geometry.type === 'IcosahedronBufferGeometry' ) {
 
       const radius = parameters.radius !== undefined ? parameters.radius : 1;
 
@@ -68,7 +90,7 @@ async function AmmoPhysics() {
   const meshes = [];
   const meshMap = new WeakMap();
 
-  function addMesh( mesh, mass = 0 ) {
+  function addMesh( mesh, mass = 0, flags = {} ) {
 
     const shape = getShape( mesh.geometry );
 
@@ -76,11 +98,11 @@ async function AmmoPhysics() {
 
       if ( mesh.isInstancedMesh ) {
 
-        handleInstancedMesh( mesh, mass, shape );
+        handleInstancedMesh( mesh, mass, flags, shape );
 
       } else if ( mesh.isMesh ) {
 
-        handleMesh( mesh, mass, shape );
+        handleMesh( mesh, mass, flags, shape );
 
       } else {
 
@@ -92,39 +114,7 @@ async function AmmoPhysics() {
 
   }
 
-  function addKinematic( mesh ) {
-
-    if ( mesh.isMesh ) {
-
-      const shape = getShape( mesh.geometry );
-
-      if ( shape !== null ) {
-
-        handleMesh( mesh, 0, shape, true, true );
-
-      }
-
-    }
-
-  }
-
-  function addTrigger( mesh, contactResponse = false ) {
-
-    if ( mesh.isMesh ) {
-
-      const shape = getShape( mesh.geometry );
-
-      if ( shape !== null ) {
-
-        handleMesh( mesh, 0, shape, contactResponse, false, true );
-
-      }
-
-    }
-
-  }
-
-  function handleMesh( mesh, mass, shape, contactResponse = true, isKinematic = false, isTrigger = false ) {
+  function handleMesh( mesh, mass, flags, shape ) {
 
     const position = mesh.position;
     const quaternion = mesh.quaternion;
@@ -143,20 +133,19 @@ async function AmmoPhysics() {
 
     const body = new AmmoLib.btRigidBody( rbInfo );
     body.mesh = mesh;
-    body.isTrigger = isTrigger;
+    body.isTrigger = flags.isTrigger;
 
-    if (!contactResponse) {
+    if (flags.noContactResponse) {
     
       const CF_NO_CONTACT_RESPONSE = 4;
       body.setCollisionFlags( body.getCollisionFlags() | CF_NO_CONTACT_RESPONSE );
     
     }
 
-    if (isKinematic) {
+    if (flags.isKinematic) {
 
       const CF_KINEMATIC_OBJECT = 2;
       body.setCollisionFlags( body.getCollisionFlags() | CF_KINEMATIC_OBJECT );
-      kinematic.push( mesh );
 
     }
 
@@ -174,6 +163,12 @@ async function AmmoPhysics() {
     meshMap.set( mesh, body );
     shapes.push(shape);
   
+    if (flags.isKinematic) {
+
+      kinematic.push( mesh );
+
+    }
+
     if ( mass > 0 ) {
 
       dynamic.push( mesh );
@@ -182,7 +177,7 @@ async function AmmoPhysics() {
 
   }
 
-  function handleInstancedMesh( mesh, mass, shape ) {
+  function handleInstancedMesh( mesh, mass, flags, shape ) {
 
     const array = mesh.instanceMatrix.array;
 
@@ -205,6 +200,21 @@ async function AmmoPhysics() {
       const body = new AmmoLib.btRigidBody( rbInfo );
       body.mesh = mesh;
       body.index = i;
+      body.isTrigger = flags.isTrigger;
+
+      if (flags.noContactResponse) {
+      
+        const CF_NO_CONTACT_RESPONSE = 4;
+        body.setCollisionFlags( body.getCollisionFlags() | CF_NO_CONTACT_RESPONSE );
+      
+      }
+  
+      if (flags.isKinematic) {
+  
+        const CF_KINEMATIC_OBJECT = 2;
+        body.setCollisionFlags( body.getCollisionFlags() | CF_KINEMATIC_OBJECT );
+  
+      }
 
       if ( mass > 0 ) {
     
@@ -222,6 +232,12 @@ async function AmmoPhysics() {
     meshes.push(mesh);
     meshMap.set( mesh, instances );
     shapes.push(shape);
+
+    if (flags.isKinematic) {
+
+      kinematic.push( mesh );
+
+    }
 
     if ( mass > 0 ) {
 
@@ -343,7 +359,11 @@ async function AmmoPhysics() {
 
       const mesh = kinematic[ i ];
 
-      if ( mesh.isMesh ) {
+      if ( mesh.isInstancedMesh ) {
+
+        // TODO: Update kinematic instances bodies
+
+      } else if ( mesh.isMesh ) {
 
         const body = meshMap.get( mesh );
 
@@ -427,15 +447,16 @@ async function AmmoPhysics() {
 
         let body;
         let trigger;
+
         if (bodyA.isTrigger) {
 
           body = bodyB;
-          trigger = bodyA.mesh;
+          trigger = bodyA;
 
         } else if (bodyB.isTrigger) {
 
           body = bodyA;
-          trigger = bodyB.mesh;
+          trigger = bodyB;
 
         }
 
@@ -460,7 +481,12 @@ async function AmmoPhysics() {
 
           if (contact) {
 
-            trigger.onContact({ mesh: body.mesh, index: body.index, point: contact });
+            trigger.mesh.onContact({
+              trigger: trigger.index,
+              mesh: body.mesh,
+              index: body.index,
+              point: contact,
+            });
 
           }
 
@@ -478,8 +504,6 @@ async function AmmoPhysics() {
 
   return {
     addMesh: addMesh,
-    addKinematic: addKinematic,
-    addTrigger: addTrigger,
     setMeshPosition: setMeshPosition,
     applyImpulse: applyImpulse,
     reset: reset,

@@ -8,7 +8,6 @@ import {
   MeshBasicMaterial,
   Object3D,
   TorusGeometry,
-  VertexColors,
 } from '../core/three.js';
 
 // A mesh to visualize the translocation destination and the curvecast path
@@ -34,7 +33,7 @@ class Marker extends Object3D {
   static setupMaterial() {
     Marker.material = new MeshBasicMaterial({
       color: 0xffffff,
-      vertexColors: VertexColors,
+      vertexColors: true,
       opacity: 0.5,
       transparent: true,
     });

@@ -8,22 +8,22 @@ import {
   Vector3,
 } from '../core/three.js';
 import Clouds from '../renderables/clouds.js';
-import Ocean from '../renderables/ocean.js';
+import Paddle from '../renderables/paddle.js';
 import Spheres from '../renderables/spheres.js';
 
-class Island extends ElevatorWorld {
+class Court extends ElevatorWorld {
   constructor(scene, { offset }) {
     super({
       scene,
       offset,
-      position: new Vector3(0, 5, -1.75),
+      position: new Vector3(0, 0.5, 11.75),
       rotation: new Euler(0, Math.PI, 0),
     });
 
     const { ambient, models, player, translocables } = scene;
     ambient.set('sounds/sea.ogg');
     scene.background = new Color(0x336688);
-    scene.fog = new FogExp2(scene.background.getHex(), 0.06);
+    scene.fog = new FogExp2(scene.background.getHex(), 0.03);
 
     const clouds = new Clouds();
     clouds.position.set(0, 64, 0);
@@ -31,11 +31,17 @@ class Island extends ElevatorWorld {
     this.add(clouds);
     this.clouds = clouds;
 
-    const ocean = new Ocean();
-    ocean.position.y = 3.725;
-    this.add(ocean);
+    const paddles = ['left', 'right'].map((handedness) => {
+      const joint = new Group();
+      joint.rotation.set(Math.PI * -0.5, 0, 0);
+      const paddle = new Paddle();
+      paddle.position.set(0, 0.625, -0.033);
+      joint.add(paddle);
+      player.attach(joint, handedness);
+      return paddle;
+    });
 
-    models.load('models/island.glb')
+    models.load('models/court.glb')
       .then((model) => {
         model.scale.setScalar(0.5);
         this.add(model);
@@ -48,7 +54,7 @@ class Island extends ElevatorWorld {
 
     Promise.all([
       scene.getPhysics(),
-      models.physics('models/islandPhysics.json', 0.5),
+      models.physics('models/courtPhysics.json', 0.5),
     ])
       .then(([physics, boxes]) => {
         this.physics = physics;
@@ -58,15 +64,16 @@ class Island extends ElevatorWorld {
           this.add(box);
         });
 
-        player.controllers.forEach(({ physics }) => {
-          this.physics.addMesh(physics, 0, { isKinematic: true });
+        paddles.forEach((paddle) => {
+          this.physics.addMesh(paddle, 0, { isKinematic: true });
         });
 
+        this.timer = 0;
         this.sphere = 0;
         this.spheres = new Spheres({ count: 50 });
         const matrix = new Matrix4();
         for (let i = 0; i < this.spheres.count; i += 1) {
-          matrix.setPosition((Math.random() - 0.5) * 16, 8 + Math.random() * 8, (Math.random() - 0.5) * 16);
+          matrix.setPosition((Math.random() - 0.5) * 8, 1, (Math.random() - 0.5) * 8 - 8);
           this.spheres.setMatrixAt(i, matrix);
         }
         this.physics.addMesh(this.spheres, 1);
@@ -78,39 +85,39 @@ class Island extends ElevatorWorld {
     super.onAnimationTick(animation);
     const {
       clouds,
-      isOnElevator,
       physics,
       player,
       spheres,
+      timer,
     } = this;
     clouds.animate(animation);
-    Ocean.animate(animation);
-    if (isOnElevator || !physics || !spheres) {
+    if (
+      !physics
+      || !spheres
+      || timer > animation.time - 2
+    ) {
       return;
     }
-    const controller = (
-      player.desktopControls.buttons.primaryDown ? (
-        player.desktopControls
-      ) : (
-        player.controllers.find(({ hand, buttons: { triggerDown } }) => (hand && triggerDown))
-      )
+    this.timer = animation.time;
+    const { sphere } = this;
+    this.sphere = (this.sphere + 1) % spheres.count;
+    physics.setMeshPosition(
+      spheres,
+      new Vector3(0, 2, -8),
+      sphere
     );
-    if (controller) {
-      const { sphere } = this;
-      const { origin, direction } = controller.raycaster.ray;
-      this.sphere = (this.sphere + 1) % spheres.count;
-      physics.setMeshPosition(
-        spheres,
-        origin
-          .clone()
-          .addScaledVector(direction, 0.5),
-        sphere
-      );
-      physics.applyImpulse(spheres, direction.clone().multiplyScalar(16), sphere);
-    }
+    physics.applyImpulse(
+      spheres,
+      new Vector3(
+        (Math.random() - 0.5) * 2,
+        7 + (Math.random() * 2),
+        10
+      ),
+      sphere
+    );
   }
 }
 
-Island.display = 'Foggy Island';
+Court.display = 'Sports!';
 
-export default Island;
+export default Court;

@@ -27,7 +27,7 @@ class Player extends Group {
     this.auxMatrixB = new Matrix4();
     this.auxVector = new Vector3();
     this.auxDestination = new Vector3();
-    this.attachments = {};
+    this.attachments = { left: [], right: [] };
     this.direction = new Vector3();
     this.head = new AudioListener();
     this.head.rotation.order = 'YXZ';
@@ -92,6 +92,30 @@ class Player extends Group {
     });
     this.desktopControls = new DesktopControls({ renderer: dom.renderer, xr });
     this.xr = xr;
+  }
+
+  attach(attachment, handedness) {
+    const { attachments, controllers } = this;
+    attachments[handedness].push(attachment);
+    controllers.forEach((controller) => {
+      if (controller.hand && controller.hand.handedness === handedness) {
+        controller.add(attachment);
+      }
+    });
+  }
+
+  detachAll() {
+    const { attachments, controllers } = this;
+    controllers.forEach((controller) => {
+      const children = controller.hand && attachments[controller.hand.handedness];
+      if (children) {
+        children.forEach((child) => (
+          controller.remove(child)
+        ));
+      }
+    });
+    attachments.left.length = 0;
+    attachments.right.length = 0;
   }
 
   onAnimationTick({ animation: { delta }, camera }) {

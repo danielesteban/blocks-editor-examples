@@ -45,7 +45,7 @@ class Cave extends ElevatorWorld {
             this.add(box);
           });
           player.controllers.forEach(({ physics }) => {
-            this.physics.addKinematic(physics);
+            this.physics.addMesh(physics, 0, { isKinematic: true });
           });
         }),
       ])
@@ -62,7 +62,6 @@ class Cave extends ElevatorWorld {
             this.spheres.setMatrixAt(i, matrix);
           }
           this.physics.addMesh(this.spheres, 1);
-          this.spheres.geometry = Spheres.geometries.model;
           this.add(this.spheres);
       });
   }

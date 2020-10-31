@@ -7,7 +7,6 @@ import {
   SimplexNoise,
   Vector2,
   Vector3,
-  VertexColors,
 } from '../core/three.js';
 
 class Clouds extends Group {
@@ -127,7 +126,7 @@ class Clouds extends Group {
 
   static setupMaterial() {
     Clouds.material = new MeshBasicMaterial({
-      vertexColors: VertexColors,
+      vertexColors: true,
     });
     Clouds.material.defines = {
       FOG_DENSITY: 0.01,
