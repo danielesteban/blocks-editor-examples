@@ -351,7 +351,7 @@ async function AmmoPhysics() {
 
         worldTransform.setIdentity();
         worldTransform.setOrigin( new AmmoLib.btVector3( worldspace.position.x, worldspace.position.y, worldspace.position.z ) );
-        worldTransform.setRotation( new AmmoLib.btQuaternion( worldspace.quaternion.x, worldspace.quaternion.y, mesh.quaternion.z, worldspace.quaternion.w ) );
+        worldTransform.setRotation( new AmmoLib.btQuaternion( worldspace.quaternion.x, worldspace.quaternion.y, worldspace.quaternion.z, worldspace.quaternion.w ) );
 
         body.setWorldTransform(worldTransform);
       }
