@@ -322,6 +322,7 @@ async function AmmoPhysics() {
 
     meshes.length = 0;
     dynamic.length = 0;
+    kinematic.length = 0;
     shapes.length = 0;
 
   }
