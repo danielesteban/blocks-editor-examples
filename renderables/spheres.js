@@ -9,7 +9,7 @@ import {
 
 class Spheres extends InstancedMesh {
   static setupGeometry() {
-    const sphere = new IcosahedronGeometry(0.4, 3);
+    const sphere = new IcosahedronGeometry(0.2, 3);
     sphere.faces.forEach((face, i) => {
       face.color.offsetHSL(0, 0, -(0.2 + Math.random() * 0.1));
     });

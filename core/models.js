@@ -71,7 +71,7 @@ class Models {
     });
   }
   
-  physics(physics) {
+  physics(physics, scale = 1) {
     if (!Models.physicsMaterial) {
       Models.physicsMaterial = new MeshBasicMaterial({ visible: false });
     }
@@ -90,13 +90,13 @@ class Models {
             cache.loading = false;
             cache.physics = physics.map(([position, size]) => {
               const mesh = new Mesh(
-                new BoxBufferGeometry(size[0], size[1], size[2]),
+                new BoxBufferGeometry(size[0] * scale, size[1] * scale, size[2] * scale),
                 Models.physicsMaterial
               );
               mesh.position.set(
-                position[0] + size[0] * 0.5,
-                position[1] + size[1] * 0.5,
-                position[2] + size[2] * 0.5
+                (position[0] + size[0] * 0.5) * scale,
+                (position[1] + size[1] * 0.5) * scale,
+                (position[2] + size[2] * 0.5) * scale
               );
               return mesh;
             });

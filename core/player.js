@@ -1,7 +1,10 @@
 import {
   AudioListener,
+  BoxBufferGeometry,
+  Group,
   Matrix4,
-  Object3D,
+  Mesh,
+  MeshBasicMaterial,
   Quaternion,
   Raycaster,
   Vector3,
@@ -12,7 +15,7 @@ import Marker from '../renderables/marker.js';
 
 // Player controller
 
-class Player extends Object3D {
+class Player extends Group {
   constructor({
     camera,
     dom,
@@ -28,6 +31,11 @@ class Player extends Object3D {
     this.direction = new Vector3();
     this.head = new AudioListener();
     this.head.rotation.order = 'YXZ';
+    const physics = new Mesh(
+      new BoxBufferGeometry(0.03, 0.1, 0.15),
+      new MeshBasicMaterial({ visible: false }),
+    );
+    physics.position.set(0, -0.03, 0.02);
     this.controllers = [...Array(2)].map((v, i) => {
       const controller = xr.getController(i);
       this.add(controller);
@@ -42,6 +50,8 @@ class Player extends Object3D {
         secondary: false,
       };
       controller.marker = new Marker();
+      controller.physics = physics.clone();
+      controller.add(controller.physics);
       controller.raycaster = new Raycaster();
       controller.raycaster.far = 32;
       controller.worldspace = {

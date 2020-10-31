@@ -1,8 +1,10 @@
 // A copy of https://github.com/mrdoob/three.js/blob/master/examples/jsm/physics/AmmoPhysics.js
+// + an extra addKinematic( mesh ) method
 // + an extra addTrigger(mesh, contactResponse) method
 // + an extra applyImpulse(mesh, impulse, index) method
 // + an extra reset() method
-// + a fix that ensures the body gets reactivated in setMeshPosition(mesh, position, index)
+
+import { DynamicDrawUsage, Quaternion, Vector3 } from './three.js';
 
 async function AmmoPhysics() {
 
@@ -62,6 +64,7 @@ async function AmmoPhysics() {
 
   const shapes = [];
   const dynamic = [];
+  const kinematic = [];
   const meshes = [];
   const meshMap = new WeakMap();
 
@@ -89,6 +92,22 @@ async function AmmoPhysics() {
 
   }
 
+  function addKinematic( mesh ) {
+
+    if ( mesh.isMesh ) {
+
+      const shape = getShape( mesh.geometry );
+
+      if ( shape !== null ) {
+
+        handleMesh( mesh, 0, shape, true, true );
+
+      }
+
+    }
+
+  }
+
   function addTrigger( mesh, contactResponse = false ) {
 
     if ( mesh.isMesh ) {
@@ -97,7 +116,7 @@ async function AmmoPhysics() {
 
       if ( shape !== null ) {
 
-        handleMesh( mesh, 0, shape, contactResponse, true );
+        handleMesh( mesh, 0, shape, contactResponse, false, true );
 
       }
 
@@ -105,7 +124,7 @@ async function AmmoPhysics() {
 
   }
 
-  function handleMesh( mesh, mass, shape, contactResponse = true, isTrigger = false ) {
+  function handleMesh( mesh, mass, shape, contactResponse = true, isKinematic = false, isTrigger = false ) {
 
     const position = mesh.position;
     const quaternion = mesh.quaternion;
@@ -125,10 +144,29 @@ async function AmmoPhysics() {
     const body = new AmmoLib.btRigidBody( rbInfo );
     body.mesh = mesh;
     body.isTrigger = isTrigger;
+
     if (!contactResponse) {
+    
       const CF_NO_CONTACT_RESPONSE = 4;
-      body.setCollisionFlags(body.getCollisionFlags() | CF_NO_CONTACT_RESPONSE);
+      body.setCollisionFlags( body.getCollisionFlags() | CF_NO_CONTACT_RESPONSE );
+    
     }
+
+    if (isKinematic) {
+
+      const CF_KINEMATIC_OBJECT = 2;
+      body.setCollisionFlags( body.getCollisionFlags() | CF_KINEMATIC_OBJECT );
+      kinematic.push( mesh );
+
+    }
+
+    if ( mass > 0 ) {
+    
+      const DISABLE_DEACTIVATION = 4;
+      body.setActivationState( DISABLE_DEACTIVATION );
+  
+    }
+
     // body.setFriction( 4 );
     world.addRigidBody( body );
 
@@ -167,6 +205,14 @@ async function AmmoPhysics() {
       const body = new AmmoLib.btRigidBody( rbInfo );
       body.mesh = mesh;
       body.index = i;
+
+      if ( mass > 0 ) {
+    
+        const DISABLE_DEACTIVATION = 4;
+        body.setActivationState( DISABLE_DEACTIVATION );
+    
+      }
+
       world.addRigidBody( body );
 
       instances.push( body );
@@ -179,7 +225,7 @@ async function AmmoPhysics() {
 
     if ( mass > 0 ) {
 
-      mesh.instanceMatrix.setUsage( 35048 ); // THREE.DynamicDrawUsage = 35048
+      mesh.instanceMatrix.setUsage( DynamicDrawUsage );
       dynamic.push( mesh );
   
     }
@@ -211,8 +257,6 @@ async function AmmoPhysics() {
       worldTransform.setIdentity();
       worldTransform.setOrigin( new AmmoLib.btVector3( position.x, position.y, position.z ) );
       body.setWorldTransform( worldTransform );
-
-      body.activate();
 
     }
   }
@@ -282,11 +326,36 @@ async function AmmoPhysics() {
 
   }
 
+  const worldspace = {
+    position: new Vector3(),
+    quaternion: new Quaternion(),
+    scale: new Vector3(),
+  };
+
   //
 
   let lastTime = 0;
 
   function step() {
+
+    for ( let i = 0, l = kinematic.length; i < l; i ++ ) {
+
+      const mesh = kinematic[ i ];
+
+      if ( mesh.isMesh ) {
+
+        const body = meshMap.get( mesh );
+
+        mesh.matrixWorld.decompose(worldspace.position, worldspace.quaternion, worldspace.scale);
+
+        worldTransform.setIdentity();
+        worldTransform.setOrigin( new AmmoLib.btVector3( worldspace.position.x, worldspace.position.y, worldspace.position.z ) );
+        worldTransform.setRotation( new AmmoLib.btQuaternion( worldspace.quaternion.x, worldspace.quaternion.y, mesh.quaternion.z, worldspace.quaternion.w ) );
+
+        body.setWorldTransform(worldTransform);
+      }
+    
+    }
 
     const time = performance.now();
 
@@ -408,6 +477,7 @@ async function AmmoPhysics() {
 
   return {
     addMesh: addMesh,
+    addKinematic: addKinematic,
     addTrigger: addTrigger,
     setMeshPosition: setMeshPosition,
     applyImpulse: applyImpulse,

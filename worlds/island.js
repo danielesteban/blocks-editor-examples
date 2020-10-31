@@ -35,13 +35,10 @@ class Island extends ElevatorWorld {
     ocean.position.y = 3.725;
     this.add(ocean);
 
-    this.world = new Group();
-    this.world.scale.setScalar(0.5);
-    this.add(this.world);
-
     models.load('models/island.glb')
       .then((model) => {
-        this.world.add(model);
+        model.scale.setScalar(0.5);
+        this.add(model);
   
         this.elevator.isOpen = true;
         this.elevator.onClose = () => (
@@ -49,29 +46,33 @@ class Island extends ElevatorWorld {
         );
       });
 
-      Promise.all([
-        scene.getPhysics(),
-        models.physics('models/islandPhysics.json'),
-      ])
-        .then(([physics, boxes]) => {
-          this.physics = physics;
-          boxes.forEach((box) => {
-            translocables.push(box);
-            this.physics.addMesh(box);
-            this.world.add(box);
-          });
+    Promise.all([
+      scene.getPhysics(),
+      models.physics('models/islandPhysics.json', 0.5),
+    ])
+      .then(([physics, boxes]) => {
+        this.physics = physics;
+        boxes.forEach((box) => {
+          translocables.push(box);
+          this.physics.addMesh(box);
+          this.add(box);
+        });
 
-          this.sphere = 0;
-          this.spheres = new Spheres({ count: 50 });
-          const matrix = new Matrix4();
-          for (let i = 0; i < this.spheres.count; i += 1) {
-            matrix.setPosition((Math.random() - 0.5) * 32, 16 + Math.random() * 16, (Math.random() - 0.5) * 32);
-            this.spheres.setMatrixAt(i, matrix);
-          }
-          this.physics.addMesh(this.spheres, 1);
-          this.spheres.geometry = Spheres.geometries.model;
-          this.world.add(this.spheres);
-      });
+        player.controllers.forEach(({ physics }) => {
+          this.physics.addKinematic(physics);
+        });
+
+        this.sphere = 0;
+        this.spheres = new Spheres({ count: 50 });
+        const matrix = new Matrix4();
+        for (let i = 0; i < this.spheres.count; i += 1) {
+          matrix.setPosition((Math.random() - 0.5) * 16, 8 + Math.random() * 8, (Math.random() - 0.5) * 16);
+          this.spheres.setMatrixAt(i, matrix);
+        }
+        this.physics.addMesh(this.spheres, 1);
+        this.spheres.geometry = Spheres.geometries.model;
+        this.add(this.spheres);
+    });
   }
 
   onAnimationTick(animation) {
@@ -96,19 +97,17 @@ class Island extends ElevatorWorld {
       )
     );
     if (controller) {
-      const { sphere, world } = this;
+      const { sphere } = this;
       const { origin, direction } = controller.raycaster.ray;
       this.sphere = (this.sphere + 1) % spheres.count;
       physics.setMeshPosition(
         spheres,
-        world.worldToLocal(
-          origin
-            .clone()
-            .addScaledVector(direction, 0.5)
-        ),
+        origin
+          .clone()
+          .addScaledVector(direction, 0.5),
         sphere
       );
-      physics.applyImpulse(spheres, direction.clone().multiplyScalar(20), sphere);
+      physics.applyImpulse(spheres, direction.clone().multiplyScalar(16), sphere);
     }
   }
 }

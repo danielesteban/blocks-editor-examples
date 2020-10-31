@@ -20,13 +20,10 @@ class Cave extends ElevatorWorld {
     const { ambient, models, player, translocables } = scene;
     ambient.set('sounds/dark.ogg');
   
-    this.world = new Group();
-    this.world.scale.setScalar(0.5);
-    this.add(this.world);
-
     models.load('models/cave.glb')
       .then((model) => {
-        this.world.add(model);
+        model.scale.setScalar(0.5);
+        this.add(model);
   
         this.elevator.isOpen = true;
         this.elevator.onClose = () => (
@@ -38,32 +35,35 @@ class Cave extends ElevatorWorld {
       models.lightmap('models/caveLightmap.json'),
       Promise.all([
         scene.getPhysics(),
-        models.physics('models/cavePhysics.json'),
+        models.physics('models/cavePhysics.json', 0.5),
       ])
         .then(([physics, boxes]) => {
           this.physics = physics;
           boxes.forEach((box) => {
             translocables.push(box);
             this.physics.addMesh(box);
-            this.world.add(box);
+            this.add(box);
+          });
+          player.controllers.forEach(({ physics }) => {
+            this.physics.addKinematic(physics);
           });
         }),
       ])
         .then(([lightmap]) => {
-          lightmap.material.uniforms.lightmapSize.value.copy(lightmap.size).multiply(this.world.scale);
-          lightmap.material.uniforms.lightmapOrigin.value.copy(lightmap.origin).multiply(this.world.scale).add(this.world.position);
+          lightmap.material.uniforms.lightmapSize.value.copy(lightmap.size).multiplyScalar(0.5);
+          lightmap.material.uniforms.lightmapOrigin.value.copy(lightmap.origin).multiplyScalar(0.5);
           lightmap.material.vertexColors = true;
   
           this.sphere = 0;
           this.spheres = new Spheres({ count: 100, material: lightmap.material });
           const matrix = new Matrix4();
           for (let i = 0; i < this.spheres.count; i += 1) {
-            matrix.setPosition((Math.random() - 0.5) * 16, 16 + (Math.random() - 0.5) * 16, (Math.random() - 0.5) * 16);
+            matrix.setPosition((Math.random() - 0.5) * 8, 8 + (Math.random() - 0.5) * 8, (Math.random() - 0.5) * 8);
             this.spheres.setMatrixAt(i, matrix);
           }
           this.physics.addMesh(this.spheres, 1);
           this.spheres.geometry = Spheres.geometries.model;
-          this.world.add(this.spheres);
+          this.add(this.spheres);
       });
   }
 
@@ -86,19 +86,17 @@ class Cave extends ElevatorWorld {
       )
     );
     if (controller) {
-      const { sphere, world } = this;
+      const { sphere } = this;
       const { origin, direction } = controller.raycaster.ray;
       this.sphere = (this.sphere + 1) % spheres.count;
       physics.setMeshPosition(
         spheres,
-        world.worldToLocal(
-          origin
-            .clone()
-            .addScaledVector(direction, 0.5)
-        ),
+        origin
+          .clone()
+          .addScaledVector(direction, 0.5),
         sphere
       );
-      physics.applyImpulse(spheres, direction.clone().multiplyScalar(20), sphere);
+      physics.applyImpulse(spheres, direction.clone().multiplyScalar(16), sphere);
     }
   }
 }

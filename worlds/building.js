@@ -24,10 +24,6 @@ class Building extends ElevatorWorld {
     ambient.set('sounds/wind.ogg');
     scene.background = new Color(0x110033);
     scene.fog = new FogExp2(scene.background.getHex(), 0.05);
-   
-    this.world = new Group();
-    this.world.scale.setScalar(0.5);
-    this.add(this.world);
 
     models.load('models/building.glb')
       .then((building) => {
@@ -48,6 +44,9 @@ class Building extends ElevatorWorld {
           dummy.updateMatrix();
           return dummy.matrix.clone();
         });
+        const chunks = new Group();
+        chunks.scale.setScalar(0.5);
+        this.add(chunks);
         building.traverse((child) => {
           if (child.isMesh) {
             const chunk = new InstancedMesh(child.geometry, child.material, (count * 2) + 1);
@@ -60,7 +59,7 @@ class Building extends ElevatorWorld {
               }
               chunk.setMatrixAt(i, matrix);
             }
-            this.world.add(chunk);
+            chunks.add(chunk);
           }
         });
 
@@ -81,18 +80,17 @@ class Building extends ElevatorWorld {
     canvas.onContact = ({ mesh, index, point }) => {
       if (mesh === this.spheres) {
         color.fromBufferAttribute(this.spheres.instanceColor, index);
-        this.world.localToWorld(position.copy(point));
-        canvas.worldToLocal(position).divide(size);
+        canvas.worldToLocal(position.copy(point)).divide(size);
         Canvas.draw({ color: `#${color.getHexString()}`, position, size: 20 });
       }
     };
-    canvas.position.set(0, 48.5, -7);
+    canvas.position.set(0, 24.25, -3.475);
     canvas.rotation.set(Math.PI * -0.2, 0, 0);
-    this.world.add(canvas);
+    this.add(canvas);
 
     Promise.all([
       scene.getPhysics(),
-      models.physics('models/buildingPhysics.json'),
+      models.physics('models/buildingPhysics.json', 0.5),
     ])
       .then(([physics, boxes]) => {
         this.physics = physics;
@@ -101,19 +99,23 @@ class Building extends ElevatorWorld {
         boxes.forEach((box) => {
           translocables.push(box);
           this.physics.addMesh(box);
-          this.world.add(box);
+          this.add(box);
+        });
+
+        player.controllers.forEach(({ physics }) => {
+          this.physics.addKinematic(physics);
         });
 
         this.sphere = 0;
         this.spheres = new Spheres({ count: 50 });
         const matrix = new Matrix4();
         for (let i = 0; i < this.spheres.count; i += 1) {
-          matrix.setPosition((Math.random() - 0.5) * 8, 64 + Math.random() * 16, Math.random() * 8);
+          matrix.setPosition((Math.random() - 0.5) * 4, 32 + Math.random() * 8, Math.random() * 4);
           this.spheres.setMatrixAt(i, matrix);
         }
         this.physics.addMesh(this.spheres, 1);
         this.spheres.geometry = Spheres.geometries.model;
-        this.world.add(this.spheres);
+        this.add(this.spheres);
     });
   }
 
@@ -136,19 +138,17 @@ class Building extends ElevatorWorld {
       )
     );
     if (controller) {
-      const { sphere, world } = this;
+      const { sphere } = this;
       const { origin, direction } = controller.raycaster.ray;
       this.sphere = (this.sphere + 1) % spheres.count;
       physics.setMeshPosition(
         spheres,
-        world.worldToLocal(
-          origin
-            .clone()
-            .addScaledVector(direction, 0.5)
-        ),
+        origin
+          .clone()
+          .addScaledVector(direction, 0.5),
         sphere
       );
-      physics.applyImpulse(spheres, direction.clone().multiplyScalar(20), sphere);
+      physics.applyImpulse(spheres, direction.clone().multiplyScalar(16), sphere);
     }
   }
 }

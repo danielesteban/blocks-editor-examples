@@ -9,7 +9,7 @@ import {
 
 class Canvas extends Mesh {
   static setupGeometry() {
-    Canvas.geometry = new BoxBufferGeometry(6, 4, 0.1);
+    Canvas.geometry = new BoxBufferGeometry(3, 2, 0.1);
   }
 
   static setupMaterial() {
