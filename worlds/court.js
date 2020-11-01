@@ -51,19 +51,6 @@ class Court extends ElevatorWorld {
       return explosion;
     });
 
-    const goal = new Trigger(4, 2, 0.25);
-    goal.position.set(0, 2, 8.8625);
-    goal.onContact = ({ mesh, index, point }) => {
-      const { scoreboards, spheres } = this;
-      if (mesh !== spheres) {
-        return;
-      }
-      this.destroySphere({ index, point });
-      scoreboards[0].inc(1);
-    };
-    this.add(goal);
-    this.goal = goal;
-
     this.scoreboards = [...Array(2)].map((v, i) => {
       const scoreboard = new Scoreboard({ name: i === 0 ? 'CPU' : 'P1' });
       scoreboard.position.set(-3 + i * 6, 4.5, -11.49);
@@ -72,18 +59,25 @@ class Court extends ElevatorWorld {
       return scoreboard;
     });
 
-    const onPaddleContact = ({ mesh, index, point }) => {
+    const onContact = (scoreboard) => ({ mesh, index, point }) => {
       const { scoreboards, spheres } = this;
       if (mesh === spheres) {
         this.destroySphere({ index, point });
-        scoreboards[1].inc(1);
+        scoreboards[scoreboard].inc(1);
       }
     };
+
+    const goal = new Trigger(4, 2, 0.25);
+    goal.position.set(0, 2, 8.8625);
+    goal.onContact = onContact(0);
+    this.add(goal);
+    this.goal = goal;
+
     const paddles = ['left', 'right'].map((handedness) => {
       const joint = new Group();
       joint.rotation.set(Math.PI * -0.5, 0, 0);
       const paddle = new Paddle();
-      paddle.onContact = onPaddleContact;
+      paddle.onContact = onContact(1);
       paddle.position.set(0, 0.625, -0.033);
       joint.add(paddle);
       player.attach(joint, handedness);
