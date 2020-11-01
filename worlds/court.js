@@ -67,8 +67,8 @@ class Court extends ElevatorWorld {
       }
     };
 
-    const goal = new Trigger(4, 2, 0.25);
-    goal.position.set(0, 2, 8.8625);
+    const goal = new Trigger(4, 2, 0.125);
+    goal.position.set(0, 2, 8.75);
     goal.onContact = onContact(0);
     this.add(goal);
     this.goal = goal;
