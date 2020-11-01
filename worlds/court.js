@@ -10,6 +10,7 @@ import {
   MeshBasicMaterial,
   Vector3,
 } from '../core/three.js';
+import Cannon from '../renderables/cannon.js';
 import Clouds from '../renderables/clouds.js';
 import Explosion from '../renderables/explosion.js';
 import Paddle from '../renderables/paddle.js';
@@ -33,6 +34,10 @@ class Court extends ElevatorWorld {
 
     this.auxColor = new Color();
     this.auxVector = new Vector3();
+
+    this.cannon = new Cannon();
+    this.cannon.position.set(0, 1, -10);
+    this.add(this.cannon);
 
     const clouds = new Clouds();
     clouds.position.set(0, 64, 0);
@@ -147,7 +152,7 @@ class Court extends ElevatorWorld {
   onAnimationTick(animation) {
     super.onAnimationTick(animation);
     const {
-      auxVector,
+      cannon,
       clouds,
       explosions,
       physics,
@@ -155,6 +160,7 @@ class Court extends ElevatorWorld {
       spheres,
       timer,
     } = this;
+    cannon.animate(animation);
     clouds.animate(animation);
     explosions.forEach((explosion) => explosion.animate(animation));
     if (
@@ -166,18 +172,15 @@ class Court extends ElevatorWorld {
     this.timer = animation.time;
     const { sphere } = this;
     this.sphere = (this.sphere + 1) % spheres.count;
+    const { origin, direction } = cannon.getShot();
     physics.setMeshPosition(
       spheres,
-      auxVector.set(0, 1.5, -8),
+      origin,
       sphere
     );
     physics.applyImpulse(
       spheres,
-      auxVector.set(
-        (Math.random() - 0.5) * 2,
-        7 + (Math.random() * 2),
-        10
-      ),
+      direction.multiplyScalar(14),
       sphere
     );
   }
