@@ -11,17 +11,16 @@ const renderer = new Renderer({
   worlds,
 });
 
-// const loadWorldFromURL = () => {
-//   let world = 'Metro';
-//   if (document.location.hash) {
-//     const requested = document.location.hash.substr(2);
-//     if (worlds[requested]) {
-//       world = requested;
-//     }
-//   }
-//   renderer.scene.load(world);
-// };
+const loadWorldFromURL = () => {
+  let world = 'Metro';
+  if (document.location.hash) {
+    const requested = document.location.hash.substr(2);
+    if (worlds[requested]) {
+      world = requested;
+    }
+  }
+  renderer.scene.load(world);
+};
 
-// window.addEventListener('popstate', loadWorldFromURL);
-// loadWorldFromURL();
-renderer.scene.load('Metro');
+window.addEventListener('popstate', loadWorldFromURL);
+loadWorldFromURL();
