@@ -16,7 +16,7 @@ class Concert extends ElevatorWorld {
     });
 
     const { ambient, models, player, translocables } = scene;
-    scene.background = new Color(0x6699AA);
+    scene.background = new Color(0x336699);
 
     const performance = new Performance({
       members: 2,
