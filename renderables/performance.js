@@ -4,7 +4,6 @@ import {
   Mesh,
   PlaneBufferGeometry,
   ShaderMaterial,
-  Vector3,
   VideoTexture,
 } from '../core/three.js';
 
@@ -42,8 +41,6 @@ class Performance extends Group {
       Performance.setupMaterial();
     }
     super();
-
-    this.aux = new Vector3();
 
     const video = document.createElement('video');
     video.crossOrigin = 'anonymous';
@@ -105,12 +102,10 @@ class Performance extends Group {
   }
 
   update(target) {
-    const { aux, children, texture, video } = this;
-    aux.copy(target);
-    children.forEach((mesh) => {
-      aux.y = mesh.position.y;
-      mesh.lookAt(target);
-    });
+    const { children, texture, video } = this;
+    children.forEach((mesh) => (
+      mesh.lookAt(target)
+    ));
     if (!video.paused && video.readyState >= video.HAVE_CURRENT_DATA) {
       texture.needsUpdate = true;
       this.visible = true;
