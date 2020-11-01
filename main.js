@@ -11,12 +11,16 @@ const renderer = new Renderer({
   worlds,
 });
 
-let initialWorld = 'Metro';
-if (document.location.hash) {
-  const requested = document.location.hash.substr(2);
-  if (worlds[requested]) {
-    initialWorld = requested;
+const loadWorldFromURL = () => {
+  let world = 'Metro';
+  if (document.location.hash) {
+    const requested = document.location.hash.substr(2);
+    if (worlds[requested]) {
+      world = requested;
+    }
   }
-}
+  renderer.scene.load(world);
+};
 
-renderer.scene.load(initialWorld);
+window.addEventListener('popstate', loadWorldFromURL);
+loadWorldFromURL();

@@ -38,10 +38,11 @@ class Metro extends Group {
     if (offset) {
       track.updateMatrixWorld();
       elevator.localToWorld(origin.copy(offset.position));
-    }
-    player.teleport(origin);
-    if (offset) {
+      player.teleport(origin);
       player.rotate(elevator.rotation.y - offset.rotation);
+    } else {
+      player.rotation.y = 0;
+      player.teleport(origin);
     }
 
     const train = new Train({

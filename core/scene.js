@@ -73,6 +73,10 @@ class Scene extends ThreeScene {
       this.world.resumeAudio();
     }
     this.add(this.world);
+    const path = `#/${world}`;
+    if (document.location.hash !== path) {
+      window.history.pushState({}, '', path);
+    }
   }
 
   onBeforeRender({ animation, xr }, scene, camera) {

@@ -30,12 +30,12 @@ class ElevatorWorld extends Group {
     elevator.updateMatrixWorld();
     if (offset) {
       elevator.localToWorld(origin.copy(offset.position));
+      player.teleport(origin);
+      player.rotate(elevator.rotation.y - offset.rotation);
     } else {
       elevator.getWorldPosition(origin).add(new Vector3(0, 0.5, 1.75));
-    }
-    player.teleport(origin);
-    if (offset) {
-      player.rotate(elevator.rotation.y - offset.rotation);
+      player.rotation.y = 0;
+      player.teleport(origin);
     }
   }
 
