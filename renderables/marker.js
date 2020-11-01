@@ -2,17 +2,17 @@ import {
   BufferGeometry,
   BufferGeometryUtils,
   Color,
+  Group,
   Line,
   LineBasicMaterial,
   Mesh,
   MeshBasicMaterial,
-  Object3D,
   TorusGeometry,
 } from '../core/three.js';
 
 // A mesh to visualize the translocation destination and the curvecast path
 
-class Marker extends Object3D {
+class Marker extends Group {
   static setupGeometry() {
     const outer = new TorusGeometry(0.3, 0.025, 16, 32);
     const inner = new TorusGeometry(0.15, 0.0125, 16, 24);
