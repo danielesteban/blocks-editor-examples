@@ -134,7 +134,7 @@ class Metro extends Group {
               chunk.instanceMatrix.needsUpdate = true;
             });
           }
-          track.updateWorldMatrix(false, true);
+          track.updateMatrixWorld();
         };
         track.run = () => {
           ambient.set('sounds/train.ogg');
