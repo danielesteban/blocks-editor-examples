@@ -1,15 +1,21 @@
 import ElevatorWorld from '../core/elevatorWorld.js';
 import {
+  BoxBufferGeometry,
   Color,
   Euler,
   FogExp2,
   Group,
   Matrix4,
+  Mesh,
+  MeshBasicMaterial,
   Vector3,
 } from '../core/three.js';
 import Clouds from '../renderables/clouds.js';
+import Explosion from '../renderables/explosion.js';
 import Paddle from '../renderables/paddle.js';
+import Scoreboard from '../renderables/scoreboard.js';
 import Spheres from '../renderables/spheres.js';
+import Trigger from '../renderables/trigger.js';
 
 class Court extends ElevatorWorld {
   constructor(scene, { offset }) {
@@ -25,16 +31,54 @@ class Court extends ElevatorWorld {
     scene.background = new Color(0x336688);
     scene.fog = new FogExp2(scene.background.getHex(), 0.03);
 
+    this.auxColor = new Color();
+    this.auxVector = new Vector3();
+
     const clouds = new Clouds();
     clouds.position.set(0, 64, 0);
     clouds.scale.set(10, 1, 10);
     this.add(clouds);
     this.clouds = clouds;
 
+    this.explosions = [...Array(5)].map(() => {
+      const explosion = new Explosion();
+      this.add(explosion);
+      return explosion;
+    });
+
+    const goal = new Trigger(4, 2, 0.25);
+    goal.position.set(0, 2, 8.8625);
+    goal.onContact = ({ mesh, index, point }) => {
+      const { scoreboards, spheres } = this;
+      if (mesh !== spheres) {
+        return;
+      }
+      this.destroySphere({ index, point });
+      scoreboards[0].inc(1);
+    };
+    this.add(goal);
+    this.goal = goal;
+
+    this.scoreboards = [...Array(2)].map((v, i) => {
+      const scoreboard = new Scoreboard({ name: i === 0 ? 'CPU' : 'P1' });
+      scoreboard.position.set(-3 + i * 6, 4.5, -11.49);
+      scoreboard.scale.set(3, 3, 1);
+      this.add(scoreboard);
+      return scoreboard;
+    });
+
+    const onPaddleContact = ({ mesh, index, point }) => {
+      const { scoreboards, spheres } = this;
+      if (mesh === spheres) {
+        this.destroySphere({ index, point });
+        scoreboards[1].inc(1);
+      }
+    };
     const paddles = ['left', 'right'].map((handedness) => {
       const joint = new Group();
       joint.rotation.set(Math.PI * -0.5, 0, 0);
       const paddle = new Paddle();
+      paddle.onContact = onPaddleContact;
       paddle.position.set(0, 0.625, -0.033);
       joint.add(paddle);
       player.attach(joint, handedness);
@@ -64,16 +108,17 @@ class Court extends ElevatorWorld {
           this.add(box);
         });
 
+        this.physics.addMesh(goal, 0, { isTrigger: true, noContactResponse: true });
         paddles.forEach((paddle) => {
-          this.physics.addMesh(paddle, 0, { isKinematic: true });
+          this.physics.addMesh(paddle, 0, { isKinematic: true, isTrigger: true, noContactResponse: true });
         });
 
         this.timer = 0;
         this.sphere = 0;
-        this.spheres = new Spheres({ count: 50 });
+        this.spheres = new Spheres({ count: 20 });
         const matrix = new Matrix4();
         for (let i = 0; i < this.spheres.count; i += 1) {
-          matrix.setPosition((Math.random() - 0.5) * 8, 1, (Math.random() - 0.5) * 8 - 8);
+          matrix.setPosition(0, -100 + i, 0);
           this.spheres.setMatrixAt(i, matrix);
         }
         this.physics.addMesh(this.spheres, 1);
@@ -81,19 +126,39 @@ class Court extends ElevatorWorld {
     });
   }
 
+  destroySphere({ index, point }) {
+    const { auxColor, auxVector, explosions, physics, spheres } = this;
+    const explosion = explosions.find(({ visible }) => (!visible));
+    if (explosion) {
+      auxColor.fromBufferAttribute(spheres.instanceColor, index);
+      explosion.detonate({
+        color: auxColor,
+        position: point,
+        scale: 0.1,
+      });
+    }
+    physics.setMeshPosition(
+      spheres,
+      auxVector.set(0, -100, 0),
+      index
+    );
+  }
+
   onAnimationTick(animation) {
     super.onAnimationTick(animation);
     const {
+      auxVector,
       clouds,
+      explosions,
       physics,
       player,
       spheres,
       timer,
     } = this;
     clouds.animate(animation);
+    explosions.forEach((explosion) => explosion.animate(animation));
     if (
-      !physics
-      || !spheres
+      !physics || !spheres
       || timer > animation.time - 2
     ) {
       return;
@@ -103,18 +168,24 @@ class Court extends ElevatorWorld {
     this.sphere = (this.sphere + 1) % spheres.count;
     physics.setMeshPosition(
       spheres,
-      new Vector3(0, 2, -8),
+      auxVector.set(0, 1.5, -8),
       sphere
     );
     physics.applyImpulse(
       spheres,
-      new Vector3(
+      auxVector.set(
         (Math.random() - 0.5) * 2,
         7 + (Math.random() * 2),
         10
       ),
       sphere
     );
+  }
+
+  onUnload() {
+    const { goal, scoreboards } = this;
+    goal.dispose();
+    scoreboards.forEach((scoreboard) => scoreboard.dispose());
   }
 }
 
