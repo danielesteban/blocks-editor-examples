@@ -11,4 +11,12 @@ const renderer = new Renderer({
   worlds,
 });
 
-renderer.scene.load('Metro');
+let initialWorld = 'Metro';
+if (document.location.hash) {
+  const requested = document.location.hash.substr(2);
+  if (worlds[requested]) {
+    initialWorld = requested;
+  }
+}
+
+renderer.scene.load(initialWorld);

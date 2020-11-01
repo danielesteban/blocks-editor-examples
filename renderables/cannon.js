@@ -66,7 +66,7 @@ class Cannon extends Mesh {
   animate({ time }) {
     const { rotation, shaft } = this;
     rotation.y = Math.sin(time) * 0.1;
-    shaft.rotation.x = Math.PI * -0.125 + Math.sin((time - 2) * 1.5) * 0.1;
+    shaft.rotation.x = Math.PI * -0.125 + Math.sin(time * 1.5) * 0.1;
   }
 
   getShot() {
