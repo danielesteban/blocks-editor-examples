@@ -97,7 +97,7 @@ class Court extends ElevatorWorld {
   
         this.elevator.isOpen = true;
         this.elevator.onClose = () => (
-          scene.load('Metro', { destination: 'Island', offset: this.elevator.getOffset(player) })
+          scene.load('Metro', { destination: 'Court', offset: this.elevator.getOffset(player) })
         );
       });
 
