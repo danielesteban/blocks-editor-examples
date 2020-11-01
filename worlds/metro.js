@@ -25,7 +25,7 @@ class Metro extends Group {
     track.scale.setScalar(0.25);
 
     const elevator = new Elevator({
-      isOpen: !offset,
+      isOpen: !destination,
       models,
     });
     elevator.position.set(18, 9, 0);
@@ -45,7 +45,7 @@ class Metro extends Group {
     }
 
     const train = new Train({
-      isOpen: !!offset,
+      isOpen: !!destination,
       models,
     });
     train.scale.setScalar(0.25);
@@ -98,7 +98,7 @@ class Metro extends Group {
           }
         });
 
-        let gap = !!offset ? (count - 1) : (count * 2 - 1);
+        let gap = destination ? (count - 1) : (count * 2 - 1);
         track.isRunning = true;
         track.position.z = 8;
         track.station = destination ? stations.findIndex((name) => name === destination) : 0;
@@ -147,7 +147,7 @@ class Metro extends Group {
         this.add(track);
         this.track = track;
 
-        if (offset) {
+        if (destination) {
           elevator.isOpen = true;
         }
         elevator.onClose = () => (
