@@ -121,8 +121,8 @@ class Hand extends SkinnedMesh {
       geometry.skinWeights.push(new Vector4(1, 0, 0, 0));
     });
     Hand.geometry = (new BufferGeometry()).fromGeometry(geometry);
-    delete Hand.geometry.attributes.normal;
-    delete Hand.geometry.attributes.uv;
+    Hand.geometry.deleteAttribute('normal');
+    Hand.geometry.deleteAttribute('uv');
     Hand.geometry = BufferGeometryUtils.mergeVertices(Hand.geometry);
     // Pre-computed bone origins
     Hand.bones = [new Vector3(0, 0, 0)];

@@ -20,8 +20,8 @@ class Explosion extends Mesh {
     const scale = 1 / Explosion.chunks;
     model.scale(scale, scale, scale);
     const geometry = new InstancedBufferGeometry();
-    geometry.setAttribute('color', model.attributes.color);
-    geometry.setAttribute('position', model.attributes.position);
+    geometry.setAttribute('color', model.getAttribute('color'));
+    geometry.setAttribute('position', model.getAttribute('position'));
     const count = Explosion.chunks ** 3;
     const stride = 1 / Explosion.chunks;
     const offset = new Float32Array(count * 3);
@@ -83,6 +83,7 @@ class Explosion extends Mesh {
       Explosion.material.clone()
     );
     this.frustumCulled = false;
+    this.matrixAutoUpdate = false;
     this.visible = false;
     sfx.load('sounds/blast.ogg')
       .then((sound) => {
@@ -115,6 +116,7 @@ class Explosion extends Mesh {
     material.uniforms.diffuse.value.copy(color);
     this.position.copy(position);
     this.scale.setScalar(scale);
+    this.updateMatrix();
     this.updateMatrixWorld();
     this.visible = true;
     if (sound && sound.context.state === 'running') {

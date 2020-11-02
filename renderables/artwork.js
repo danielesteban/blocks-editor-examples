@@ -8,6 +8,7 @@ import {
 class Artwork extends Mesh {
   static setupGeometry() {
     Artwork.geometry = new PlaneBufferGeometry(6, 6);
+    Artwork.geometry.deleteAttribute('normal');
   }
 
   static setupMaterial() {

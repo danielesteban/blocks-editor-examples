@@ -13,8 +13,11 @@ class Trigger extends Mesh {
     if (!Trigger.material) {
       Trigger.setupMaterial();
     }
+    const geometry = new BoxBufferGeometry(width, height, depth);
+    geometry.deleteAttribute('normal');
+    geometry.deleteAttribute('uv');
     super(
-      new BoxBufferGeometry(width, height, depth),
+      geometry,
       Trigger.material,
     );
     this.renderer = renderer;

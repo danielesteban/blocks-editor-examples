@@ -25,8 +25,8 @@ class Marker extends Group {
     outer.merge(inner);
     outer.rotateX(Math.PI * -0.5);
     const geometry = (new BufferGeometry()).fromGeometry(outer);
-    delete geometry.attributes.normal;
-    delete geometry.attributes.uv;
+    geometry.deleteAttribute('normal');
+    geometry.deleteAttribute('uv');
     Marker.geometry = BufferGeometryUtils.mergeVertices(geometry);
   }
 

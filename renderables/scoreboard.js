@@ -8,6 +8,7 @@ import {
 class Scoreboard extends Mesh {
   static setupGeometry() {
     Scoreboard.geometry = new PlaneBufferGeometry(1, 1);
+    Scoreboard.geometry.deleteAttribute('normal');
   }
 
   constructor({ name }) {

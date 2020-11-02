@@ -64,6 +64,7 @@ class Performance extends Group {
     const origin = slot * members * -0.5 + slot * 0.5;
     for (let i = 0; i < members; i += 1) {
       const geometry = new PlaneBufferGeometry(4.26, 2.4);
+      geometry.deleteAttribute('normal');
       geometry.translate(0, geometry.parameters.height * 0.5, 0);
       const uv = geometry.getAttribute('uv');
       const offset = stride * i + bias;

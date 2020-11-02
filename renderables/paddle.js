@@ -19,7 +19,7 @@ class Paddle extends Mesh {
       }
     });
     const geometry = (new BufferGeometry()).fromGeometry(box);
-    const offset = new Float32Array(geometry.attributes.color.count);
+    const offset = new Float32Array(geometry.getAttribute('color').count);
     for (let i = 0; i < offset.length; i += 6) {
       const o = Math.random();
       for (let j = 0; j < 6; j += 1) {
@@ -31,8 +31,8 @@ class Paddle extends Mesh {
       shape: 'box',
       size: [box.parameters.width * 0.5, box.parameters.height * 0.5, box.parameters.depth * 0.5],
     };
-    delete geometry.attributes.normal;
-    delete geometry.attributes.uv;
+    geometry.deleteAttribute('normal');
+    geometry.deleteAttribute('uv');
     Paddle.geometry = geometry;
   }
 

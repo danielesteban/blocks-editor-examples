@@ -8,6 +8,7 @@ import {
 class Display extends Mesh {
   static setupGeometry() {
     Display.geometry = new PlaneBufferGeometry(7, 1);
+    Display.geometry.deleteAttribute('normal');
   }
 
   static setupTexture() {

@@ -18,8 +18,8 @@ class Spheres extends InstancedMesh {
       shape: 'sphere',
       radius: sphere.parameters.radius,
     };
-    delete geometry.attributes.normal;
-    delete geometry.attributes.uv;
+    geometry.deleteAttribute('normal');
+    geometry.deleteAttribute('uv');
     Spheres.geometry = geometry;
   }
 
