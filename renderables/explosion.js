@@ -98,8 +98,7 @@ class Explosion extends Mesh {
     if (!this.visible) {
       return;
     }
-    step.value = Math.min(step.value + delta * 2, 1);
-    step.value = step.value + delta;
+    step.value = Math.min(step.value + delta * 3, 1);
     if (step.value >= 1) {
       this.visible = false;
     }

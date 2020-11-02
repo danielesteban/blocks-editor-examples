@@ -149,6 +149,7 @@ class Court extends ElevatorWorld {
     cannon.animate(animation);
     clouds.animate(animation);
     explosions.forEach((explosion) => explosion.animate(animation));
+    Paddle.animate(animation);
     if (
       !physics || !spheres
       || timer > animation.time - 2

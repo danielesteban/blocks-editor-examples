@@ -1,8 +1,11 @@
 import {
+  BufferAttribute,
   BoxGeometry,
   BufferGeometry,
   Mesh,
-  MeshBasicMaterial,
+  ShaderLib,
+  ShaderMaterial,
+  UniformsUtils,
 } from '../core/three.js';
 
 class Paddle extends Mesh {
@@ -16,6 +19,14 @@ class Paddle extends Mesh {
       }
     });
     const geometry = (new BufferGeometry()).fromGeometry(box);
+    const offset = new Float32Array(geometry.attributes.color.count);
+    for (let i = 0; i < offset.length; i += 6) {
+      const o = Math.random();
+      for (let j = 0; j < 6; j += 1) {
+        offset[i + j] = o;
+      }
+    }
+    geometry.setAttribute('offset', new BufferAttribute(offset, 1))
     geometry.physics = {
       shape: 'box',
       size: [box.parameters.width * 0.5, box.parameters.height * 0.5, box.parameters.depth * 0.5],
@@ -26,7 +37,30 @@ class Paddle extends Mesh {
   }
 
   static setupMaterial() {
-    Paddle.material = new MeshBasicMaterial({
+    const { uniforms, vertexShader, fragmentShader } = ShaderLib.basic;
+    Paddle.material = new ShaderMaterial({
+      uniforms: {
+        ...UniformsUtils.clone(uniforms),
+        step: { value: 0 },
+      },
+      vertexShader: vertexShader
+        .replace(
+          '#include <clipping_planes_pars_vertex>',
+          [
+            '#include <clipping_planes_pars_vertex>',
+            'attribute float offset;',
+            'uniform float step;',
+          ].join('\n')
+        )
+        .replace(
+          '#include <color_vertex>',
+          [
+            '#include <color_vertex>',
+            'float s = mod(step + offset, 1.0);',
+            'vColor.xyz *= 0.5 + (s > 0.5 ? 1.0 - s : s);',
+          ].join('\n')
+        ),
+      fragmentShader: fragmentShader,
       vertexColors: true,
     });
   }
@@ -42,6 +76,14 @@ class Paddle extends Mesh {
       Paddle.geometry,
       Paddle.material
     );
+  }
+
+  static animate({ delta }) {
+    const { material: { uniforms: { step } } } = Paddle;
+    step.value = (step.value + delta * 0.5) % 1;
+    if (step.value >= 1) {
+      this.visible = false;
+    }
   }
 }
 
