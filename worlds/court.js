@@ -124,7 +124,7 @@ class Court extends ElevatorWorld {
 
         this.timer = 0;
         this.sphere = 0;
-        this.spheres = new Spheres({ count: 20 });
+        this.spheres = new Spheres({ count: 5 });
         const matrix = new Matrix4();
         for (let i = 0; i < this.spheres.count; i += 1) {
           matrix.setPosition(0, -100 + i, 0);
