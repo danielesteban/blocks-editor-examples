@@ -29,9 +29,6 @@ class Court extends ElevatorWorld {
     scene.background = new Color(0x336688);
     scene.fog = new FogExp2(scene.background.getHex(), 0.03);
 
-    this.auxColor = new Color();
-    this.auxVector = new Vector3();
-
     this.cannon = new Cannon({ models });
     this.cannon.position.set(0, 1, -9.5);
     this.add(this.cannon);
@@ -56,8 +53,10 @@ class Court extends ElevatorWorld {
       return scoreboard;
     });
 
+    const auxColor = new Color();
+    const auxVector = new Vector3();
     const onContact = (scoreboard) => ({ mesh, index, point }) => {
-      const { auxColor, auxVector, explosions, physics, scoreboards, spheres } = this;
+      const { explosions, physics, scoreboards, spheres } = this;
       if (mesh === spheres) {
         const explosion = explosions.find(({ sound, visible }) => (!visible && (!sound || !sound.isPlaying)));
         if (explosion) {
