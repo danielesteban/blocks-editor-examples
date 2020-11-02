@@ -1,13 +1,10 @@
 import ElevatorWorld from '../core/elevatorWorld.js';
 import {
-  BoxBufferGeometry,
   Color,
   Euler,
   FogExp2,
   Group,
   Matrix4,
-  Mesh,
-  MeshBasicMaterial,
   Vector3,
 } from '../core/three.js';
 import Cannon from '../renderables/cannon.js';
