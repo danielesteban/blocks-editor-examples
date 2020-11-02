@@ -27,7 +27,7 @@ class Court extends ElevatorWorld {
       rotation: new Euler(0, Math.PI, 0),
     });
 
-    const { ambient, models, player, translocables } = scene;
+    const { ambient, models, player, sfx, translocables } = scene;
     ambient.set('sounds/sea.ogg');
     scene.background = new Color(0x336688);
     scene.fog = new FogExp2(scene.background.getHex(), 0.03);
@@ -46,7 +46,7 @@ class Court extends ElevatorWorld {
     this.clouds = clouds;
 
     this.explosions = [...Array(5)].map(() => {
-      const explosion = new Explosion({ listener: player.head });
+      const explosion = new Explosion({ sfx });
       this.add(explosion);
       return explosion;
     });

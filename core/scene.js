@@ -3,6 +3,7 @@ import { AmmoPhysics } from './ammo.js';
 import CurveCast from './curvecast.js';
 import Models from './models.js';
 import Player from './player.js';
+import SFX from './sfx.js';
 import { Scene as ThreeScene } from './three.js';
 
 // A VR scene base class
@@ -22,6 +23,7 @@ class Scene extends ThreeScene {
     this.add(this.player);
 
     this.ambient = new Ambient(this.player.head.context.state === 'running');
+    this.sfx = new SFX({ listener: this.player.head });
 
     this.translocables = [];
 

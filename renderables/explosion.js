@@ -1,5 +1,4 @@
 import {
-  AudioLoader,
   BufferGeometry,
   IcosahedronGeometry,
   InstancedBufferGeometry,
@@ -72,7 +71,7 @@ class Explosion extends Mesh {
     });
   }
 
-  constructor({ listener }) {
+  constructor({ sfx }) {
     if (!Explosion.geometry) {
       Explosion.setupGeometry();
     }
@@ -85,12 +84,10 @@ class Explosion extends Mesh {
     );
     this.frustumCulled = false;
     this.visible = false;
-    Explosion.loadSound()
-      .then(() => {
-        const sound = new PositionalAudio(listener);
+    sfx.load('sounds/blast.ogg')
+      .then((sound) => {
         sound.filter = sound.context.createBiquadFilter();
         sound.setFilter(sound.filter);
-        sound.setBuffer(Explosion.soundBuffer);
         this.add(sound);
         this.sound = sound;
       });
@@ -126,26 +123,6 @@ class Explosion extends Mesh {
       sound.filter.frequency.value = (Math.random() + 0.5) * 1000;
       sound.play();
     }
-  }
-
-  static loadSound() {
-    return new Promise((resolve) => {
-      if (Explosion.soundBuffer) {
-        resolve();
-        return;
-      }
-      if (Explosion.onLoadSoundPromises) {
-        Explosion.onLoadSoundPromises.push(resolve);
-        return;
-      }
-      Explosion.onLoadSoundPromises = [resolve];
-      const loader = new AudioLoader();
-      loader.load('sounds/blast.ogg', (buffer) => {
-        Explosion.soundBuffer = buffer;
-        Explosion.onLoadSoundPromises.forEach((cb) => cb());
-        delete Explosion.onLoadSoundPromises;
-      });
-    });
   }
 }
 
