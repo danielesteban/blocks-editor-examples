@@ -26,6 +26,7 @@ class Cannon extends Group {
       .then((sound) => {
         sound.filter = sound.context.createBiquadFilter();
         sound.setFilter(sound.filter);
+        sound.setRefDistance(2);
         this.add(sound);
         this.sound = sound;
       });
