@@ -35,8 +35,8 @@ class Court extends ElevatorWorld {
     this.auxColor = new Color();
     this.auxVector = new Vector3();
 
-    this.cannon = new Cannon();
-    this.cannon.position.set(0, 1, -10);
+    this.cannon = new Cannon({ models });
+    this.cannon.position.set(0, 1, -9.5);
     this.add(this.cannon);
 
     const clouds = new Clouds();
