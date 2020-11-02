@@ -108,7 +108,12 @@ class Explosion extends Mesh {
     }
   }
 
-  detonate({ color, position, scale }) {
+  detonate({
+    color,
+    filter,
+    position,
+    scale,
+  }) {
     const { material, sound } = this;
     material.uniforms.step.value = 0;
     material.uniforms.diffuse.value.copy(color);
@@ -117,6 +122,7 @@ class Explosion extends Mesh {
     this.updateMatrixWorld();
     this.visible = true;
     if (sound && sound.context.state === 'running') {
+      sound.filter.type = filter;
       sound.filter.frequency.value = (Math.random() + 0.5) * 1000;
       sound.play();
     }

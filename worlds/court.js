@@ -60,9 +60,23 @@ class Court extends ElevatorWorld {
     });
 
     const onContact = (scoreboard) => ({ mesh, index, point }) => {
-      const { scoreboards, spheres } = this;
+      const { auxColor, auxVector, explosions, physics, scoreboards, spheres } = this;
       if (mesh === spheres) {
-        this.destroySphere({ index, point });
+        const explosion = explosions.find(({ sound, visible }) => (!visible && (!sound || !sound.isPlaying)));
+        if (explosion) {
+          auxColor.fromBufferAttribute(spheres.instanceColor, index);
+          explosion.detonate({
+            color: auxColor,
+            filter: scoreboard === 0 ? 'highpass' : 'lowpass',
+            position: point,
+            scale: 0.1,
+          });
+        }
+        physics.setMeshPosition(
+          spheres,
+          auxVector.set(0, -100, 0),
+          index
+        );
         scoreboards[scoreboard].inc(1);
       }
     };
@@ -123,24 +137,6 @@ class Court extends ElevatorWorld {
         this.physics.addMesh(this.spheres, 1);
         this.add(this.spheres);
     });
-  }
-
-  destroySphere({ index, point }) {
-    const { auxColor, auxVector, explosions, physics, spheres } = this;
-    const explosion = explosions.find(({ sound, visible }) => (!visible && (!sound || !sound.isPlaying)));
-    if (explosion) {
-      auxColor.fromBufferAttribute(spheres.instanceColor, index);
-      explosion.detonate({
-        color: auxColor,
-        position: point,
-        scale: 0.1,
-      });
-    }
-    physics.setMeshPosition(
-      spheres,
-      auxVector.set(0, -100, 0),
-      index
-    );
   }
 
   onAnimationTick(animation) {
