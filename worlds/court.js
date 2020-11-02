@@ -46,7 +46,7 @@ class Court extends ElevatorWorld {
     this.clouds = clouds;
 
     this.explosions = [...Array(5)].map(() => {
-      const explosion = new Explosion();
+      const explosion = new Explosion({ listener: player.head });
       this.add(explosion);
       return explosion;
     });
@@ -127,7 +127,7 @@ class Court extends ElevatorWorld {
 
   destroySphere({ index, point }) {
     const { auxColor, auxVector, explosions, physics, spheres } = this;
-    const explosion = explosions.find(({ visible }) => (!visible));
+    const explosion = explosions.find(({ sound, visible }) => (!visible && (!sound || !sound.isPlaying)));
     if (explosion) {
       auxColor.fromBufferAttribute(spheres.instanceColor, index);
       explosion.detonate({

@@ -1,9 +1,11 @@
 import {
+  AudioLoader,
   BufferGeometry,
   IcosahedronGeometry,
   InstancedBufferGeometry,
   InstancedBufferAttribute,
   Mesh,
+  PositionalAudio,
   ShaderLib,
   ShaderMaterial,
   UniformsUtils,
@@ -70,7 +72,7 @@ class Explosion extends Mesh {
     });
   }
 
-  constructor() {
+  constructor({ listener }) {
     if (!Explosion.geometry) {
       Explosion.setupGeometry();
     }
@@ -83,6 +85,15 @@ class Explosion extends Mesh {
     );
     this.frustumCulled = false;
     this.visible = false;
+    Explosion.loadSound()
+      .then(() => {
+        const sound = new PositionalAudio(listener);
+        sound.filter = sound.context.createBiquadFilter();
+        sound.setFilter(sound.filter);
+        sound.setBuffer(Explosion.soundBuffer);
+        this.add(sound);
+        this.sound = sound;
+      });
   }
 
   animate({ delta }) {
@@ -98,13 +109,37 @@ class Explosion extends Mesh {
   }
 
   detonate({ color, position, scale }) {
-    const { material } = this;
+    const { material, sound } = this;
     material.uniforms.step.value = 0;
     material.uniforms.diffuse.value.copy(color);
     this.position.copy(position);
     this.scale.setScalar(scale);
     this.updateMatrixWorld();
     this.visible = true;
+    if (sound && sound.context.state === 'running') {
+      sound.filter.frequency.value = (Math.random() + 0.5) * 1000;
+      sound.play();
+    }
+  }
+
+  static loadSound() {
+    return new Promise((resolve) => {
+      if (Explosion.soundBuffer) {
+        resolve();
+        return;
+      }
+      if (Explosion.onLoadSoundPromises) {
+        Explosion.onLoadSoundPromises.push(resolve);
+        return;
+      }
+      Explosion.onLoadSoundPromises = [resolve];
+      const loader = new AudioLoader();
+      loader.load('sounds/blast.ogg', (buffer) => {
+        Explosion.soundBuffer = buffer;
+        Explosion.onLoadSoundPromises.forEach((cb) => cb());
+        delete Explosion.onLoadSoundPromises;
+      });
+    });
   }
 }
 
