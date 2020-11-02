@@ -1,7 +1,7 @@
 import { Group, Vector3 } from '../core/three.js';
 
 class Cannon extends Group {
-  constructor({ models }) {
+  constructor({ models, sfx }) {
     super();
     this.shaft = new Group();
     this.shaft.position.set(0, 0.75, -0.125);
@@ -22,6 +22,13 @@ class Cannon extends Group {
         shaft.scale.setScalar(0.125);
         this.shaft.add(shaft);
       });
+    sfx.load('sounds/shot.ogg')
+      .then((sound) => {
+        sound.filter = sound.context.createBiquadFilter();
+        sound.setFilter(sound.filter);
+        this.add(sound);
+        this.sound = sound;
+      });
   }
 
   animate({ time }) {
@@ -31,11 +38,19 @@ class Cannon extends Group {
   }
 
   getShot() {
-    const { shaft, shot } = this;
+    const { shaft, shot, sound } = this;
     shaft.localToWorld(shot.origin.copy(shaft.launchPoint));
     shaft.getWorldPosition(shot.direction);
     shot.direction.subVectors(shot.origin, shot.direction).normalize();
     return shot;
+  }
+
+  playSound() {
+    const { sound } = this;
+    if (sound && !sound.isPlaying && sound.context.state === 'running') {
+      sound.filter.frequency.value = (Math.random() + 0.5) * 1000;
+      sound.play();
+    }
   }
 }
 

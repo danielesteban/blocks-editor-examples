@@ -29,7 +29,7 @@ class Court extends ElevatorWorld {
     scene.background = new Color(0x336688);
     scene.fog = new FogExp2(scene.background.getHex(), 0.03);
 
-    this.cannon = new Cannon({ models });
+    this.cannon = new Cannon({ models, sfx });
     this.cannon.position.set(0, 1, -9.5);
     this.add(this.cannon);
 
@@ -169,6 +169,7 @@ class Court extends ElevatorWorld {
       direction.multiplyScalar(14),
       sphere
     );
+    cannon.playSound();
   }
 
   onUnload() {
