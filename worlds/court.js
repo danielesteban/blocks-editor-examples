@@ -162,6 +162,7 @@ class Court extends ElevatorWorld {
       cannon,
       clouds,
       explosions,
+      isOnElevator,
       physics,
       player,
       spheres,
@@ -174,7 +175,8 @@ class Court extends ElevatorWorld {
     Paddle.animate(animation);
     rain.animateStorm(animation);
     if (
-      !physics || !spheres
+      isOnElevator
+      || !physics || !spheres
       || timer > animation.time - 2
     ) {
       return;
