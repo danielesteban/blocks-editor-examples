@@ -89,7 +89,6 @@ class Rain extends Mesh {
     const { aux, heightmaps } = this;
     const chunk = {
       x: Math.floor(mesh.parent.position.x / chunkSize),
-      y: Math.floor((mesh.parent.position.y + 1) / chunkSize),
       z: Math.floor(mesh.parent.position.z / chunkSize),
     };
     const key = `${chunk.x}:${chunk.z}`;
@@ -102,7 +101,6 @@ class Rain extends Mesh {
     const position = mesh.geometry.getAttribute('position');
     const uv = mesh.geometry.getAttribute('uv');
     const { count } = uv;
-    const offsetY = chunk.y * chunkSize;
     for (let i = 0; i < count; i += 4) {
       // In the blocks-editor chunks,
       // the block facing is encoded on the vertical UV.
@@ -115,11 +113,11 @@ class Rain extends Mesh {
         // by the blocks-editor mesher to avoid anisotropy on the lighting/AO
         for (let j = 0; j < 4; j += 1) {
           aux.x = Math.min(aux.x, position.getX(i + j));
-          aux.y = Math.max(aux.y, offsetY + position.getY(i + j));
+          aux.y = Math.max(aux.y, position.getY(i + j));
           aux.z = Math.min(aux.z, position.getZ(i + j));
         }
         const index = (aux.x * chunkSize) + aux.z;
-        heightmap[index] = Math.max(heightmap[index], aux.y - 1);
+        heightmap[index] = Math.max(heightmap[index], aux.y);
       }
     }
   }

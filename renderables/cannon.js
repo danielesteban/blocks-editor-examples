@@ -14,7 +14,7 @@ class Cannon extends Group {
     models.load('models/cannon.glb')
       .then((model) => {
         const [base, shaft] = model.children;
-        base.position.set(-0.5, -0.125, -0.5);
+        base.position.set(-0.5, 0, -0.5);
         base.scale.setScalar(0.125);
         this.add(base);
         shaft.position.set(-0.25, 0.25, -0.125);
