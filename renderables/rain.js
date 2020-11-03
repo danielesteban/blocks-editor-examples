@@ -79,6 +79,7 @@ class Rain extends Mesh {
     this.targets = new Float32Array(Rain.numDrops);
     this.frustumCulled = false;
     this.matrixAutoUpdate = false;
+    this.visible = false;
   }
 
   addToHeightmap(mesh) {

@@ -52,8 +52,9 @@ class Island extends ElevatorWorld {
             rain.addToHeightmap(child);
           }
         });
+        rain.reset();
+        rain.visible = true;
 
-        rain.reset();  
         this.elevator.isOpen = true;
         this.elevator.onClose = () => (
           scene.load('Metro', { destination: 'Island', offset: this.elevator.getOffset(player) })

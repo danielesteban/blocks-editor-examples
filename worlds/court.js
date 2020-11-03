@@ -11,6 +11,7 @@ import Cannon from '../renderables/cannon.js';
 import Clouds from '../renderables/clouds.js';
 import Explosion from '../renderables/explosion.js';
 import Paddle from '../renderables/paddle.js';
+import Rain from '../renderables/rain.js';
 import Scoreboard from '../renderables/scoreboard.js';
 import Spheres from '../renderables/spheres.js';
 import Trigger from '../renderables/trigger.js';
@@ -38,6 +39,20 @@ class Court extends ElevatorWorld {
     clouds.scale.set(10, 1, 10);
     this.add(clouds);
     this.clouds = clouds;
+
+    const rain = new Rain({ anchor: player, heightmapScale: 0.5 });
+    rain.timer = 30 + Math.random() * 60;
+    rain.animateStorm = (animation) => {
+      rain.animate(animation);
+      rain.timer -= animation.delta;
+      if (rain.timer <= 0) {
+        rain.visible = !rain.visible;
+        ambient.set(rain.visible ? ['sounds/rain.ogg', 'sounds/sea.ogg'] : 'sounds/sea.ogg');
+        rain.timer = 30 + Math.random() * 60;
+      }
+    };
+    this.add(rain);
+    this.rain = rain;
 
     this.explosions = [...Array(5)].map(() => {
       const explosion = new Explosion({ sfx });
@@ -98,7 +113,13 @@ class Court extends ElevatorWorld {
       .then((model) => {
         model.scale.setScalar(0.5);
         this.add(model);
-  
+        model.traverse((child) => {
+          if (child.isMesh) {
+            rain.addToHeightmap(child);
+          }
+        });
+        rain.reset();
+
         this.elevator.isOpen = true;
         this.elevator.onClose = () => (
           scene.load('Metro', { destination: 'Court', offset: this.elevator.getOffset(player) })
@@ -145,11 +166,13 @@ class Court extends ElevatorWorld {
       player,
       spheres,
       timer,
+      rain,
     } = this;
     cannon.animate(animation);
     clouds.animate(animation);
     explosions.forEach((explosion) => explosion.animate(animation));
     Paddle.animate(animation);
+    rain.animateStorm(animation);
     if (
       !physics || !spheres
       || timer > animation.time - 2
