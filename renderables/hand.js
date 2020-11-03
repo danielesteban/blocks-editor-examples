@@ -223,6 +223,11 @@ class Hand extends SkinnedMesh {
   }
 
   setFingers(state) {
+    // The reason this.state is stored as binary masked flags
+    // is to able to transfer the finger state over the network in a single byte.
+    // This feels a bit overengineered for a single player thingy...
+    // But that's why you can also pass an object with the finger names
+    // Or use the setFinger(id, status) method
     const { fingers } = this;
     const { animationSpeed } = Hand;
     if (typeof state === 'object') {
