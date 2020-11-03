@@ -2,6 +2,7 @@ import {
   BufferAttribute,
   BoxGeometry,
   BufferGeometry,
+  BufferGeometryUtils,
   Mesh,
   ShaderLib,
   ShaderMaterial,
@@ -18,11 +19,14 @@ class Paddle extends Mesh {
         face.color.copy(box.faces[i - 1].color);
       }
     });
-    const geometry = (new BufferGeometry()).fromGeometry(box);
+    let geometry = (new BufferGeometry()).fromGeometry(box);
+    geometry.deleteAttribute('normal');
+    geometry.deleteAttribute('uv');
+    geometry = BufferGeometryUtils.mergeVertices(geometry);
     const offset = new Float32Array(geometry.getAttribute('color').count);
-    for (let i = 0; i < offset.length; i += 6) {
+    for (let i = 0; i < offset.length; i += 4) {
       const o = Math.random();
-      for (let j = 0; j < 6; j += 1) {
+      for (let j = 0; j < 4; j += 1) {
         offset[i + j] = o;
       }
     }
@@ -31,8 +35,6 @@ class Paddle extends Mesh {
       shape: 'box',
       size: [box.parameters.width * 0.5, box.parameters.height * 0.5, box.parameters.depth * 0.5],
     };
-    geometry.deleteAttribute('normal');
-    geometry.deleteAttribute('uv');
     Paddle.geometry = geometry;
   }
 
