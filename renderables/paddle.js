@@ -26,9 +26,7 @@ class Paddle extends Mesh {
     const offset = new Float32Array(geometry.getAttribute('color').count);
     for (let i = 0; i < offset.length; i += 4) {
       const o = Math.random();
-      for (let j = 0; j < 4; j += 1) {
-        offset[i + j] = o;
-      }
+      offset.set([o, o, o, o], i);
     }
     geometry.setAttribute('offset', new BufferAttribute(offset, 1))
     geometry.physics = {
