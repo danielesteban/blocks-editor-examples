@@ -197,8 +197,9 @@ class Court extends ElevatorWorld {
   }
 
   onUnload() {
-    const { goal, scoreboards } = this;
+    const { goal, rain, scoreboards } = this;
     goal.dispose();
+    rain.dispose();
     scoreboards.forEach((scoreboard) => scoreboard.dispose());
   }
 }
