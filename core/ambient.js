@@ -16,7 +16,7 @@ class Ambient {
     });
   }
 
-  set(sound, gain = 0.2) {
+  set(ambient) {
     const { isRunning, sounds } = this;
     
     sounds.forEach((sound) => {
@@ -24,19 +24,21 @@ class Ambient {
       sound.fadeOut = true;
     });
 
-    if (sound) {
-      const player = document.createElement('audio');
-      player.crossOrigin = 'anonymous';
-      player.fadeIn = true;
-      player.loop = true;
-      player.src = sound;
-      player.gain = gain;
-      player.power = 0;
-      player.volume = 0;
-      sounds.push(player);
-      if (isRunning) {
-        player.play();
-      }
+    if (ambient) {
+      (Array.isArray(ambient) ? ambient : [ambient]).forEach((sound) => {
+        const player = document.createElement('audio');
+        player.crossOrigin = 'anonymous';
+        player.fadeIn = true;
+        player.loop = true;
+        player.src = sound;
+        player.gain = 0.2;
+        player.power = 0;
+        player.volume = 0;
+        sounds.push(player);
+        if (isRunning) {
+          player.play();
+        }
+      });
     }
   }
 

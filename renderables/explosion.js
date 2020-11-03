@@ -52,9 +52,9 @@ class Explosion extends Mesh {
       },
       vertexShader: vertexShader
         .replace(
-          '#include <clipping_planes_pars_vertex>',
+          '#include <common>',
           [
-            '#include <clipping_planes_pars_vertex>',
+            '#include <common>',
             'attribute vec3 direction;',
             'attribute vec3 offset;',
             'uniform float step;',
@@ -67,6 +67,7 @@ class Explosion extends Mesh {
           ].join('\n')
         ),
       fragmentShader: fragmentShader,
+      fog: true,
       vertexColors: true,
     });
   }

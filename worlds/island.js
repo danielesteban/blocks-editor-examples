@@ -9,6 +9,7 @@ import {
 } from '../core/three.js';
 import Clouds from '../renderables/clouds.js';
 import Ocean from '../renderables/ocean.js';
+import Rain from '../renderables/rain.js';
 import Spheres from '../renderables/spheres.js';
 
 class Island extends ElevatorWorld {
@@ -21,7 +22,10 @@ class Island extends ElevatorWorld {
     });
 
     const { ambient, models, player, translocables } = scene;
-    ambient.set('sounds/sea.ogg');
+    ambient.set([
+      'sounds/rain.ogg',
+      'sounds/sea.ogg',
+    ]);
     scene.background = new Color(0x336688);
     scene.fog = new FogExp2(scene.background.getHex(), 0.06);
 
@@ -35,11 +39,21 @@ class Island extends ElevatorWorld {
     ocean.position.y = 3.725;
     this.add(ocean);
 
+    const rain = new Rain({ anchor: player, heightmapScale: 0.5 });
+    this.add(rain);
+    this.rain = rain;
+
     models.load('models/island.glb')
       .then((model) => {
         model.scale.setScalar(0.5);
         this.add(model);
-  
+        model.traverse((child) => {
+          if (child.isMesh) {
+            rain.addToHeightmap(child);
+          }
+        });
+
+        rain.reset();  
         this.elevator.isOpen = true;
         this.elevator.onClose = () => (
           scene.load('Metro', { destination: 'Island', offset: this.elevator.getOffset(player) })
@@ -81,10 +95,12 @@ class Island extends ElevatorWorld {
       isOnElevator,
       physics,
       player,
+      rain,
       spheres,
     } = this;
     clouds.animate(animation);
     Ocean.animate(animation);
+    rain.animate(animation);
     if (isOnElevator || !physics || !spheres) {
       return;
     }
@@ -108,6 +124,11 @@ class Island extends ElevatorWorld {
       );
       physics.applyImpulse(spheres, direction.clone().multiplyScalar(16), sphere);
     }
+  }
+
+  onUnload() {
+    const { rain } = this;
+    rain.dispose();
   }
 }
 

@@ -23,12 +23,8 @@ class Ocean extends InstancedMesh {
         }
       }
     }
-    const makeDynamic = (attribute) => {
-      attribute.setUsage(DynamicDrawUsage);
-      return attribute;
-    };
-    Ocean.geometry.setAttribute('position', makeDynamic(new BufferAttribute(position, 3)));
-    Ocean.geometry.setAttribute('color', makeDynamic(new BufferAttribute(color, 3)));
+    Ocean.geometry.setAttribute('position', (new BufferAttribute(position, 3)).setUsage(DynamicDrawUsage));
+    Ocean.geometry.setAttribute('color', (new BufferAttribute(color, 3)).setUsage(DynamicDrawUsage));
     Ocean.light = light;
   }
 

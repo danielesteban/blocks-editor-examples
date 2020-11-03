@@ -45,9 +45,9 @@ class Paddle extends Mesh {
       },
       vertexShader: vertexShader
         .replace(
-          '#include <clipping_planes_pars_vertex>',
+          '#include <common>',
           [
-            '#include <clipping_planes_pars_vertex>',
+            '#include <common>',
             'attribute float offset;',
             'uniform float step;',
           ].join('\n')
@@ -61,6 +61,7 @@ class Paddle extends Mesh {
           ].join('\n')
         ),
       fragmentShader: fragmentShader,
+      fog: true,
       vertexColors: true,
     });
   }
