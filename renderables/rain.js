@@ -104,12 +104,19 @@ class Rain extends Mesh {
     const { count } = uv;
     const offsetY = chunk.y * chunkSize;
     for (let i = 0; i < count; i += 4) {
+      // In the blocks-editor chunks,
+      // the block facing is encoded on the vertical UV.
+      // This will filter only the faces looking up (the ground).
       if (Math.floor(uv.getY(i)) === 0) {
         aux.set(0xFF, 0, 0xFF);
+        // Then it searches for the first vertex of that face,
+        // since that's the one that has the x & z of the voxel.
+        // It needs to check all four because the faces can be flipped
+        // by the blocks-editor mesher to avoid anisotropy on the lighting/AO
         for (let j = 0; j < 4; j += 1) {
-          aux.x = Math.min(aux.x, Math.floor(position.getX(i + j)));
-          aux.y = Math.max(aux.y, offsetY + Math.ceil(position.getY(i + j)));
-          aux.z = Math.min(aux.z, Math.floor(position.getZ(i + j)));
+          aux.x = Math.min(aux.x, position.getX(i + j));
+          aux.y = Math.max(aux.y, offsetY + position.getY(i + j));
+          aux.z = Math.min(aux.z, position.getZ(i + j));
         }
         const index = (aux.x * chunkSize) + aux.z;
         heightmap[index] = Math.max(heightmap[index], aux.y - 1);
