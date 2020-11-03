@@ -181,7 +181,7 @@ class Rain extends Mesh {
 }
 
 Rain.chunkSize = 16;
-Rain.numDrops = 10000;
-Rain.radius = 40;
+Rain.numDrops = 5000;
+Rain.radius = 32;
 
 export default Rain;
