@@ -20,7 +20,6 @@ class Trigger extends Mesh {
       geometry,
       Trigger.material,
     );
-    this.renderer = renderer;
   }
 
   dispose() {
