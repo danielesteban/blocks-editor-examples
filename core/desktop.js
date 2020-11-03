@@ -7,6 +7,12 @@ import {
 
 // Player desktop controls
 
+// This were an afterthought and are mostly used just for debugging.
+// If you really want a good desktop experience with some sort of
+// nav meshing or collisions, you will prolly need to reimplement this.
+// And maybe use the opportunity to merge them into the player class with
+// a standarized input model for multiple arbitrary control devices.
+
 class DesktopControls {
   constructor({ renderer, xr }) {
     this.aux = {
