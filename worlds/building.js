@@ -79,7 +79,7 @@ class Building extends ElevatorWorld {
     );
     canvas.onContact = ({ mesh, index, point }) => {
       if (mesh === this.spheres) {
-        color.fromBufferAttribute(this.spheres.instanceColor, index);
+        this.spheres.getColorAt(index, color);
         canvas.worldToLocal(position.copy(point)).divide(size);
         Canvas.draw({ color: `#${color.getHexString()}`, position, size: 20 });
       }
@@ -129,26 +129,24 @@ class Building extends ElevatorWorld {
     if (isOnElevator || !physics || !spheres) {
       return;
     }
-    const controller = (
-      player.desktopControls.buttons.primaryDown ? (
-        player.desktopControls
-      ) : (
-        player.controllers.find(({ hand, buttons: { triggerDown } }) => (hand && triggerDown))
-      )
-    );
-    if (controller) {
-      const { sphere } = this;
-      const { origin, direction } = controller.raycaster.ray;
-      this.sphere = (this.sphere + 1) % spheres.count;
-      physics.setMeshPosition(
-        spheres,
-        origin
-          .clone()
-          .addScaledVector(direction, 0.5),
-        sphere
-      );
-      physics.applyImpulse(spheres, direction.clone().multiplyScalar(16), sphere);
-    }
+    [
+      player.desktopControls,
+      ...player.controllers,
+    ].forEach(({ buttons, hand, isDesktop, raycaster }) => {
+      if ((hand && buttons.triggerDown) || (isDesktop && buttons.primaryDown)) {
+        const { sphere } = this;
+        const { origin, direction } = raycaster.ray;
+        this.sphere = (this.sphere + 1) % spheres.count;
+        physics.setMeshPosition(
+          spheres,
+          origin
+            .clone()
+            .addScaledVector(direction, 0.5),
+          sphere
+        );
+        physics.applyImpulse(spheres, direction.clone().multiplyScalar(16), sphere);
+      }
+    });
   }
 }
 

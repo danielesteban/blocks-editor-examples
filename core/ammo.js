@@ -1,5 +1,5 @@
 // A copy of https://github.com/mrdoob/three.js/blob/master/examples/jsm/physics/AmmoPhysics.js
-// + an extra applyImpulse(mesh, impulse, index) method
+// + an extra applyImpulse(mesh, impulse, index, resetMotion) method
 // + an extra reset() method
 // + Extra flags on: addMesh( mesh, mass = 0, flags = {} )
 //   - noContactResponse
@@ -266,7 +266,7 @@ async function AmmoPhysics() {
     }
     
     if ( body ) {
-    
+
       body.setAngularVelocity( new AmmoLib.btVector3( 0, 0, 0 ) );
       body.setLinearVelocity( new AmmoLib.btVector3( 0, 0, 0 ) );
 
@@ -277,7 +277,7 @@ async function AmmoPhysics() {
     }
   }
 
-  function applyImpulse( mesh, impulse, index = 0 ) {
+  function applyImpulse( mesh, impulse, index = 0, resetMotion = false ) {
 
     let body;
   
@@ -294,11 +294,18 @@ async function AmmoPhysics() {
 
     if ( body ) {
 
+      if ( resetMotion ) {
+
+        body.setAngularVelocity( new AmmoLib.btVector3( 0, 0, 0 ) );
+        body.setLinearVelocity( new AmmoLib.btVector3( 0, 0, 0 ) );
+
+      }
+
       body.applyImpulse( new AmmoLib.btVector3( impulse.x, impulse.y, impulse.z ), new AmmoLib.btVector3( 0, 0, 0 ) );
 
     }
   }
-  
+
   function reset() {
 
     meshes.forEach((mesh) => {
@@ -503,10 +510,10 @@ async function AmmoPhysics() {
   setInterval( step, 1000 / frameRate );
 
   return {
-    addMesh: addMesh,
-    setMeshPosition: setMeshPosition,
-    applyImpulse: applyImpulse,
-    reset: reset,
+    addMesh,
+    setMeshPosition,
+    applyImpulse,
+    reset,
   };
 
 }

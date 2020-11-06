@@ -1,11 +1,6 @@
 import ElevatorWorld from '../core/elevatorWorld.js';
 import Lightmap from '../core/lightmap.js';
-import {
-  Euler,
-  Group,
-  Matrix4,
-  Vector3,
-} from '../core/three.js';
+import { Euler, Matrix4, Vector3 } from '../core/three.js';
 import Spheres from '../renderables/spheres.js';
 
 class Cave extends ElevatorWorld {
@@ -77,26 +72,24 @@ class Cave extends ElevatorWorld {
     if (isOnElevator || !physics || !spheres) {
       return;
     }
-    const controller = (
-      player.desktopControls.buttons.primaryDown ? (
-        player.desktopControls
-      ) : (
-        player.controllers.find(({ hand, buttons: { triggerDown } }) => (hand && triggerDown))
-      )
-    );
-    if (controller) {
-      const { sphere } = this;
-      const { origin, direction } = controller.raycaster.ray;
-      this.sphere = (this.sphere + 1) % spheres.count;
-      physics.setMeshPosition(
-        spheres,
-        origin
-          .clone()
-          .addScaledVector(direction, 0.5),
-        sphere
-      );
-      physics.applyImpulse(spheres, direction.clone().multiplyScalar(16), sphere);
-    }
+    [
+      player.desktopControls,
+      ...player.controllers,
+    ].forEach(({ buttons, hand, isDesktop, raycaster }) => {
+      if ((hand && buttons.triggerDown) || (isDesktop && buttons.primaryDown)) {
+        const { sphere } = this;
+        const { origin, direction } = raycaster.ray;
+        this.sphere = (this.sphere + 1) % spheres.count;
+        physics.setMeshPosition(
+          spheres,
+          origin
+            .clone()
+            .addScaledVector(direction, 0.5),
+          sphere
+        );
+        physics.applyImpulse(spheres, direction.clone().multiplyScalar(16), sphere);
+      }
+    });
   }
 }
 

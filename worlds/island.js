@@ -3,14 +3,11 @@ import {
   Color,
   Euler,
   FogExp2,
-  Group,
-  Matrix4,
   Vector3,
 } from '../core/three.js';
 import Clouds from '../renderables/clouds.js';
 import Ocean from '../renderables/ocean.js';
 import Rain from '../renderables/rain.js';
-import Spheres from '../renderables/spheres.js';
 
 class Island extends ElevatorWorld {
   constructor(scene, { offset }) {
@@ -61,70 +58,24 @@ class Island extends ElevatorWorld {
         );
       });
 
-    Promise.all([
-      scene.getPhysics(),
-      models.physics('models/islandPhysics.json', 0.5),
-    ])
-      .then(([physics, boxes]) => {
-        this.physics = physics;
+    // This scene has a lot of vegetation (cross block model).
+    // Here it uses the physics boxes instead of the model chunks as the translocables
+    // because the physics boxes have all the vegetation faces excluded.
+    models.physics('models/islandPhysics.json', 0.5)
+      .then((boxes) => (
         boxes.forEach((box) => {
           translocables.push(box);
-          this.physics.addMesh(box);
           this.add(box);
-        });
-
-        player.controllers.forEach(({ physics }) => {
-          this.physics.addMesh(physics, 0, { isKinematic: true });
-        });
-
-        this.sphere = 0;
-        this.spheres = new Spheres({ count: 50 });
-        const matrix = new Matrix4();
-        for (let i = 0; i < this.spheres.count; i += 1) {
-          matrix.setPosition((Math.random() - 0.5) * 16, 8 + Math.random() * 8, (Math.random() - 0.5) * 16);
-          this.spheres.setMatrixAt(i, matrix);
-        }
-        this.physics.addMesh(this.spheres, 1);
-        this.add(this.spheres);
-    });
+        })
+      ));
   }
 
   onAnimationTick(animation) {
     super.onAnimationTick(animation);
-    const {
-      clouds,
-      isOnElevator,
-      physics,
-      player,
-      rain,
-      spheres,
-    } = this;
+    const { clouds, rain } = this;
     clouds.animate(animation);
     Ocean.animate(animation);
     rain.animate(animation);
-    if (isOnElevator || !physics || !spheres) {
-      return;
-    }
-    const controller = (
-      player.desktopControls.buttons.primaryDown ? (
-        player.desktopControls
-      ) : (
-        player.controllers.find(({ hand, buttons: { triggerDown } }) => (hand && triggerDown))
-      )
-    );
-    if (controller) {
-      const { sphere } = this;
-      const { origin, direction } = controller.raycaster.ray;
-      this.sphere = (this.sphere + 1) % spheres.count;
-      physics.setMeshPosition(
-        spheres,
-        origin
-          .clone()
-          .addScaledVector(direction, 0.5),
-        sphere
-      );
-      physics.applyImpulse(spheres, direction.clone().multiplyScalar(16), sphere);
-    }
   }
 
   onUnload() {

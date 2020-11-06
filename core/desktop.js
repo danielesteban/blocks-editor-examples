@@ -15,6 +15,7 @@ import {
 
 class DesktopControls {
   constructor({ renderer, xr }) {
+    this.isDesktop = true;
     this.aux = {
       center: new Vector2(),
       direction: new Vector3(),

@@ -6,3 +6,4 @@ export { default as Escher } from './escher.js';
 export { default as Island } from './island.js';
 export { default as Metro } from './metro.js';
 export { default as Museum } from './museum.js';
+export { default as Temple } from './temple.js';

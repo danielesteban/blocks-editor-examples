@@ -75,9 +75,8 @@ class Court extends ElevatorWorld {
       if (mesh === spheres) {
         const explosion = explosions.find(({ sound, visible }) => (!visible && (!sound || !sound.isPlaying)));
         if (explosion) {
-          auxColor.fromBufferAttribute(spheres.instanceColor, index);
           explosion.detonate({
-            color: auxColor,
+            color: spheres.getColorAt(index, auxColor),
             filter: scoreboard === 0 ? 'highpass' : 'lowpass',
             position: point,
             scale: 0.1,
