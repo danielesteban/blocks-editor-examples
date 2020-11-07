@@ -30,6 +30,10 @@ async function AmmoPhysics() {
 
   const worldTransform = new AmmoLib.btTransform();
 
+  const auxVector = new AmmoLib.btVector3();
+  const auxQuaternion = new AmmoLib.btQuaternion();
+  const zero = new AmmoLib.btVector3( 0, 0, 0 );
+
   //
 
   function getShape( geometry ) {
@@ -267,17 +271,18 @@ async function AmmoPhysics() {
     
     if ( body ) {
 
-      body.setAngularVelocity( new AmmoLib.btVector3( 0, 0, 0 ) );
-      body.setLinearVelocity( new AmmoLib.btVector3( 0, 0, 0 ) );
+      body.setAngularVelocity( zero );
+      body.setLinearVelocity( zero );
 
       worldTransform.setIdentity();
-      worldTransform.setOrigin( new AmmoLib.btVector3( position.x, position.y, position.z ) );
+      auxVector.setValue( position.x, position.y, position.z );
+      worldTransform.setOrigin( auxVector );
       body.setWorldTransform( worldTransform );
 
     }
   }
 
-  function applyImpulse( mesh, impulse, index = 0, resetMotion = false ) {
+  function applyImpulse( mesh, impulse, index = 0 ) {
 
     let body;
   
@@ -294,14 +299,8 @@ async function AmmoPhysics() {
 
     if ( body ) {
 
-      if ( resetMotion ) {
-
-        body.setAngularVelocity( new AmmoLib.btVector3( 0, 0, 0 ) );
-        body.setLinearVelocity( new AmmoLib.btVector3( 0, 0, 0 ) );
-
-      }
-
-      body.applyImpulse( new AmmoLib.btVector3( impulse.x, impulse.y, impulse.z ), new AmmoLib.btVector3( 0, 0, 0 ) );
+      auxVector.setValue( impulse.x, impulse.y, impulse.z );
+      body.applyImpulse( auxVector, zero );
 
     }
   }
@@ -377,8 +376,10 @@ async function AmmoPhysics() {
         mesh.matrixWorld.decompose(worldspace.position, worldspace.quaternion, worldspace.scale);
 
         worldTransform.setIdentity();
-        worldTransform.setOrigin( new AmmoLib.btVector3( worldspace.position.x, worldspace.position.y, worldspace.position.z ) );
-        worldTransform.setRotation( new AmmoLib.btQuaternion( worldspace.quaternion.x, worldspace.quaternion.y, worldspace.quaternion.z, worldspace.quaternion.w ) );
+        auxVector.setValue( worldspace.position.x, worldspace.position.y, worldspace.position.z );
+        worldTransform.setOrigin( auxVector );
+        auxQuaternion.setValue( worldspace.quaternion.x, worldspace.quaternion.y, worldspace.quaternion.z, worldspace.quaternion.w );
+        worldTransform.setRotation( auxQuaternion );
 
         body.setWorldTransform(worldTransform);
       }

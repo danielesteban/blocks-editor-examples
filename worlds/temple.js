@@ -23,10 +23,9 @@ class Temple extends ElevatorWorld {
     scene.background = new Color(0x224466);
   
     this.aux = {
-      position: new Vector3(),
-      normal: new Vector3(),
-      target: new Vector3(),
       impulse: new Vector3(),
+      position: new Vector3(),
+      velocity: new Vector3(),
     };
 
     models.load('models/temple.glb')
@@ -63,7 +62,6 @@ class Temple extends ElevatorWorld {
           lightmap.material.uniforms.lightmapOrigin.value.copy(lightmap.origin).multiplyScalar(0.5);
           lightmap.material.vertexColors = true;
 
-          this.sphere = 0;
           this.spheres = new Spheres({ count: 100, material: lightmap.material });
           const matrix = new Matrix4();
           for (let i = 0; i < this.spheres.count; i += 1) {
@@ -84,42 +82,23 @@ class Temple extends ElevatorWorld {
       player,
       spheres,
     } = this;
-    if (isOnElevator || !physics || !spheres) {
+    if (isOnElevator || !physics || !spheres || player.destination) {
       return;
     }
-    [
-      player.desktopControls,
-      ...player.controllers,
-    ].forEach(({ buttons, hand, isDesktop, raycaster }) => {
-      const trigger = (hand && buttons.trigger) || (isDesktop && buttons.primary);
-      const grip = (hand && buttons.grip) || (isDesktop && buttons.secondary);
-      if (trigger || grip) {
-        const { origin, direction } = raycaster.ray;
-        const { position, normal, target, impulse } = aux;
-        const resetMotion = (animation.time % 1) < 0.01;
-        for (let i = 0; i < spheres.count; i += 1) {
-          spheres.getPositionAt(i, position);
-          normal.subVectors(position, origin).normalize();
-          const d = position.distanceTo(origin);
-          if (d < 32 && normal.dot(direction) > 0.98) {
-            // This code is still WIP
-            // I need to also integrate the velocity of the hand
-            // (And prolly drop the phantom target idea)
-            // I just want to commit the temple geometry already
-            target.copy(origin).addScaledVector(direction, d);
-            impulse
-              .subVectors(target, position)
-              .multiply(new Vector3(0.5, 1, 0.5))
-              .normalize()
-              .multiplyScalar(0.75);
-            target.copy(normal);
-            if (grip) {
-              target.negate();
-            }
-            impulse.addScaledVector(target, (32 - d) / 32 * 0.25);
-            impulse.multiplyScalar(0.5);
-            physics.applyImpulse(spheres, impulse, i, resetMotion);
-          }
+    player.controllers.forEach(({ buttons, hand, worldspace }) => {
+      if (!hand || !buttons.trigger || worldspace.velocity.length() < 0.1) {
+        return;
+      }
+      const { impulse, position, velocity } = aux;
+      velocity.copy(worldspace.velocity).multiplyScalar(0.5);
+      for (let i = 0; i < spheres.count; i += 1) {
+        spheres.getPositionAt(i, position);
+        if (worldspace.position.distanceTo(position) < 32) {
+          impulse.copy(velocity);
+          impulse.x *= Math.min(Math.random(), 0.5);
+          impulse.y *= Math.min(Math.random(), 0.5);
+          impulse.z *= Math.min(Math.random(), 0.5);
+          physics.applyImpulse(spheres, impulse, i);
         }
       }
     });
