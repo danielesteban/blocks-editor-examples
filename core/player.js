@@ -56,9 +56,9 @@ class Player extends Group {
       controller.raycaster.far = 32;
       controller.worldspace = {
         lastPosition: new Vector3(),
+        movement: new Vector3(),
         position: new Vector3(),
         quaternion: new Quaternion(),
-        velocity: new Vector3(),
       };
       controller.addEventListener('connected', ({ data: { handedness, gamepad } }) => {
         if (controller.hand) {
@@ -169,9 +169,7 @@ class Player extends Group {
       hand.animate({ delta });
       worldspace.lastPosition.copy(worldspace.position);
       matrixWorld.decompose(worldspace.position, worldspace.quaternion, vector);
-      worldspace.velocity
-        .subVectors(worldspace.position, worldspace.lastPosition)
-        .divideScalar(delta);
+      worldspace.movement.subVectors(worldspace.position, worldspace.lastPosition);
       rotation.identity().extractRotation(matrixWorld);
       raycaster.ray.origin
         .addVectors(

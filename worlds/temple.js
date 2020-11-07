@@ -86,11 +86,14 @@ class Temple extends ElevatorWorld {
       return;
     }
     player.controllers.forEach(({ buttons, hand, worldspace }) => {
-      if (!hand || !buttons.trigger || worldspace.velocity.length() < 0.1) {
+      if (!hand || !buttons.trigger) {
         return;
       }
       const { impulse, position, velocity } = aux;
-      velocity.copy(worldspace.velocity).multiplyScalar(0.5);
+      velocity
+        .copy(worldspace.movement)
+        .divideScalar(animation.delta)
+        .multiplyScalar(0.5);
       for (let i = 0; i < spheres.count; i += 1) {
         spheres.getPositionAt(i, position);
         if (worldspace.position.distanceTo(position) < 32) {
