@@ -136,7 +136,8 @@ async function AmmoPhysics() {
     auxQuaternion.setValue( quaternion.x, quaternion.y, quaternion.z, quaternion.w );
     auxTransform.setRotation( auxQuaternion );
 
-    shape.calculateLocalInertia( mass, auxVector );
+    auxVector.setValue(0, 0, 0);
+    if ( mass > 0 ) shape.calculateLocalInertia( mass, auxVector );
     const motionState = new AmmoLib.btDefaultMotionState( auxTransform );
     const rbInfo = new AmmoLib.btRigidBodyConstructionInfo( mass, motionState, shape, auxVector );
     const body = new AmmoLib.btRigidBody( rbInfo );
@@ -199,7 +200,8 @@ async function AmmoPhysics() {
 
       auxTransform.setFromOpenGLMatrix( array.slice( index, index + 16 ) );
 
-      shape.calculateLocalInertia( mass, auxVector );
+      auxVector.setValue(0, 0, 0);
+      if ( mass > 0 ) shape.calculateLocalInertia( mass, auxVector );
       const motionState = new AmmoLib.btDefaultMotionState( auxTransform );
       const rbInfo = new AmmoLib.btRigidBodyConstructionInfo( mass, motionState, shape, auxVector );
       const body = new AmmoLib.btRigidBody( rbInfo );
