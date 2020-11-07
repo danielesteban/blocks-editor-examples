@@ -1,5 +1,5 @@
 // A copy of https://github.com/mrdoob/three.js/blob/master/examples/jsm/physics/AmmoPhysics.js
-// + an extra applyImpulse(mesh, impulse, index, resetMotion) method
+// + an extra applyImpulse(mesh, impulse, index) method
 // + an extra reset() method
 // + Extra flags on: addMesh( mesh, mass = 0, flags = {} )
 //   - noContactResponse
