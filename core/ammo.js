@@ -5,6 +5,7 @@
 //   - noContactResponse
 //   - isKinematic
 //   - isTrigger
+// + Removed a bunch of memory leaks and extra allocations
 
 import { DynamicDrawUsage, Quaternion, Vector3 } from './three.js';
 
@@ -28,11 +29,15 @@ async function AmmoPhysics() {
   const world = new AmmoLib.btDiscreteDynamicsWorld( dispatcher, broadphase, solver, collisionConfiguration );
   world.setGravity( new AmmoLib.btVector3( 0, - 9.8, 0 ) );
 
-  const worldTransform = new AmmoLib.btTransform();
-
+  const auxTransform = new AmmoLib.btTransform();
   const auxVector = new AmmoLib.btVector3();
   const auxQuaternion = new AmmoLib.btQuaternion();
   const zero = new AmmoLib.btVector3( 0, 0, 0 );
+  const worldspace = {
+    position: new Vector3(),
+    quaternion: new Quaternion(),
+    scale: new Vector3(),
+  };
 
   //
 
@@ -44,7 +49,8 @@ async function AmmoPhysics() {
 
     if ( geometry.physics && geometry.physics.shape === 'box' ) {
   
-      const shape = new AmmoLib.btBoxShape( new AmmoLib.btVector3( ...geometry.physics.size ) );
+      auxVector.setValue( ...geometry.physics.size );
+      const shape = new AmmoLib.btBoxShape( auxVector );
       shape.setMargin( 0.05 );
 
       return shape;
@@ -66,7 +72,8 @@ async function AmmoPhysics() {
       const sy = parameters.height !== undefined ? parameters.height / 2 : 0.5;
       const sz = parameters.depth !== undefined ? parameters.depth / 2 : 0.5;
 
-      const shape = new AmmoLib.btBoxShape( new AmmoLib.btVector3( sx, sy, sz ) );
+      auxVector.setValue( sx, sy, sz );
+      const shape = new AmmoLib.btBoxShape( auxVector );
       shape.setMargin( 0.05 );
 
       return shape;
@@ -123,19 +130,18 @@ async function AmmoPhysics() {
     const position = mesh.position;
     const quaternion = mesh.quaternion;
 
-    const transform = new AmmoLib.btTransform();
-    transform.setIdentity();
-    transform.setOrigin( new AmmoLib.btVector3( position.x, position.y, position.z ) );
-    transform.setRotation( new AmmoLib.btQuaternion( quaternion.x, quaternion.y, quaternion.z, quaternion.w ) );
+    auxTransform.setIdentity();
+    auxVector.setValue( position.x, position.y, position.z );
+    auxTransform.setOrigin( auxVector );
+    auxQuaternion.setValue( quaternion.x, quaternion.y, quaternion.z, quaternion.w );
+    auxTransform.setRotation( auxQuaternion );
 
-    const motionState = new AmmoLib.btDefaultMotionState( transform );
-
-    const localInertia = new AmmoLib.btVector3( 0, 0, 0 );
-    shape.calculateLocalInertia( mass, localInertia );
-
-    const rbInfo = new AmmoLib.btRigidBodyConstructionInfo( mass, motionState, shape, localInertia );
-
+    shape.calculateLocalInertia( mass, auxVector );
+    const motionState = new AmmoLib.btDefaultMotionState( auxTransform );
+    const rbInfo = new AmmoLib.btRigidBodyConstructionInfo( mass, motionState, shape, auxVector );
     const body = new AmmoLib.btRigidBody( rbInfo );
+    Ammo.destroy(rbInfo);
+
     body.mesh = mesh;
     body.isTrigger = flags.isTrigger;
 
@@ -191,17 +197,14 @@ async function AmmoPhysics() {
 
       const index = i * 16;
 
-      const transform = new AmmoLib.btTransform();
-      transform.setFromOpenGLMatrix( array.slice( index, index + 16 ) );
+      auxTransform.setFromOpenGLMatrix( array.slice( index, index + 16 ) );
 
-      const motionState = new AmmoLib.btDefaultMotionState( transform );
-
-      const localInertia = new AmmoLib.btVector3( 0, 0, 0 );
-      shape.calculateLocalInertia( mass, localInertia );
-
-      const rbInfo = new AmmoLib.btRigidBodyConstructionInfo( mass, motionState, shape, localInertia );
-
+      shape.calculateLocalInertia( mass, auxVector );
+      const motionState = new AmmoLib.btDefaultMotionState( auxTransform );
+      const rbInfo = new AmmoLib.btRigidBodyConstructionInfo( mass, motionState, shape, auxVector );
       const body = new AmmoLib.btRigidBody( rbInfo );
+      Ammo.destroy(rbInfo);
+
       body.mesh = mesh;
       body.index = i;
       body.isTrigger = flags.isTrigger;
@@ -274,10 +277,10 @@ async function AmmoPhysics() {
       body.setAngularVelocity( zero );
       body.setLinearVelocity( zero );
 
-      worldTransform.setIdentity();
+      auxTransform.setIdentity();
       auxVector.setValue( position.x, position.y, position.z );
-      worldTransform.setOrigin( auxVector );
-      body.setWorldTransform( worldTransform );
+      auxTransform.setOrigin( auxVector );
+      body.setWorldTransform( auxTransform );
 
     }
   }
@@ -349,12 +352,6 @@ async function AmmoPhysics() {
 
   }
 
-  const worldspace = {
-    position: new Vector3(),
-    quaternion: new Quaternion(),
-    scale: new Vector3(),
-  };
-
   //
 
   let lastTime = 0;
@@ -375,13 +372,13 @@ async function AmmoPhysics() {
 
         mesh.matrixWorld.decompose(worldspace.position, worldspace.quaternion, worldspace.scale);
 
-        worldTransform.setIdentity();
+        auxTransform.setIdentity();
         auxVector.setValue( worldspace.position.x, worldspace.position.y, worldspace.position.z );
-        worldTransform.setOrigin( auxVector );
+        auxTransform.setOrigin( auxVector );
         auxQuaternion.setValue( worldspace.quaternion.x, worldspace.quaternion.y, worldspace.quaternion.z, worldspace.quaternion.w );
-        worldTransform.setRotation( auxQuaternion );
+        auxTransform.setRotation( auxQuaternion );
 
-        body.setWorldTransform(worldTransform);
+        body.setWorldTransform( auxTransform );
       }
     
     }
@@ -416,10 +413,10 @@ async function AmmoPhysics() {
           const body = bodies[ j ];
 
           const motionState = body.getMotionState();
-          motionState.getWorldTransform( worldTransform );
+          motionState.getWorldTransform( auxTransform );
 
-          const position = worldTransform.getOrigin();
-          const quaternion = worldTransform.getRotation();
+          const position = auxTransform.getOrigin();
+          const quaternion = auxTransform.getRotation();
 
           compose( position, quaternion, array, j * 16 );
 
@@ -432,10 +429,10 @@ async function AmmoPhysics() {
         const body = meshMap.get( mesh );
 
         const motionState = body.getMotionState();
-        motionState.getWorldTransform( worldTransform );
+        motionState.getWorldTransform( auxTransform );
 
-        const position = worldTransform.getOrigin();
-        const quaternion = worldTransform.getRotation();
+        const position = auxTransform.getOrigin();
+        const quaternion = auxTransform.getRotation();
         mesh.position.set( position.x(), position.y(), position.z() );
         mesh.quaternion.set( quaternion.x(), quaternion.y(), quaternion.z(), quaternion.w() );
 
