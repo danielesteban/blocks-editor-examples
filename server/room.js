@@ -138,7 +138,7 @@ class Room {
   }
 }
 
-Room.allowedOrigins = process.env.ALLOWED_ORIGINS ? process.env.ALLOWED_ORIGINS.join(',') : [
+Room.allowedOrigins = process.env.ALLOWED_ORIGINS ? process.env.ALLOWED_ORIGINS.split(',') : [
   'https://localhost:5000',
 ];
 Room.maxClients = process.env.MAX_CLIENTS ? parseInt(process.env.MAX_CLIENTS, 10) : 16;
