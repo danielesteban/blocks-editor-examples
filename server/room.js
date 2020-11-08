@@ -4,7 +4,6 @@ class Room {
   constructor(id) {
     this.id = id;
     this.clients = [];
-    this.maxClients = process.env.MAX_CLIENTS ? parseInt(process.env.MAX_CLIENTS, 10) : 16;
   }
 
   onClose(client) {
@@ -23,8 +22,17 @@ class Room {
     }
   }
 
-  onClient(client) {
-    const { clients, maxClients, pingInterval } = this;
+  onClient(client, req) {
+    const { clients, pingInterval } = this;
+    const { allowedOrigins, maxClients } = Room; 
+    if (allowedOrigins.indexOf(req.headers.origin) === -1) {
+      client.send(JSON.stringify({
+        type: 'ERROR',
+        data: 'Origin not allowed.',
+      }), () => {});
+      client.terminate();
+      return;
+    }
     if (clients.length >= maxClients) {
       client.send(JSON.stringify({
         type: 'ERROR',
@@ -129,5 +137,10 @@ class Room {
     });
   }
 }
+
+Room.allowedOrigins = process.env.ALLOWED_ORIGINS ? process.env.ALLOWED_ORIGINS.join(',') : [
+  'https://localhost:5000',
+];
+Room.maxClients = process.env.MAX_CLIENTS ? parseInt(process.env.MAX_CLIENTS, 10) : 16;
 
 module.exports = Room;
