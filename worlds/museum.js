@@ -63,7 +63,9 @@ class Museum extends ElevatorWorld {
     }
     peers.animate(animation);
     if (
-      !isOnElevator
+      artwork
+      && artwork.isOpen
+      && !isOnElevator
       && (
         player.desktopControls.buttons.primaryDown
         || player.controllers.find(({ hand, buttons: { triggerDown } }) => (hand && triggerDown))
