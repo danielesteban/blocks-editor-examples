@@ -209,6 +209,17 @@ class Player extends Group {
     }
   }
 
+  move(offset) {
+    const { controllers, head, position } = this;
+    position.add(offset);
+    head.position.add(offset);
+    controllers.forEach(({ hand, worldspace }) => {
+      if (hand) {
+        worldspace.position.add(offset);
+      }
+    });
+  }
+
   rotate(radians) {
     const {
       auxMatrixA: transform,

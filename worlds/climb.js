@@ -101,12 +101,9 @@ class Climb extends ElevatorWorld {
       }
     });
     if (climbing) {
-      aux.vector.divideScalar(climbing).negate();
-      player.controllers.forEach(({ worldspace }) => worldspace.position.add(aux.vector));
-      aux.vector.x += player.head.position.x;
-      aux.vector.y += player.position.y;
-      aux.vector.z += player.head.position.z;
-      player.teleport(aux.vector);
+      player.move(
+        aux.vector.divideScalar(climbing).negate()
+      );
     }
   }
 }
