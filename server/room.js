@@ -1,4 +1,3 @@
-const e = require('express');
 const { v4: uuid } = require('uuid');
 
 class Room {
