@@ -26,7 +26,7 @@ class Ambient {
 
     if (ambient) {
       (Array.isArray(ambient) ? ambient : [ambient]).forEach((sound) => {
-        const player = document.createElement('audio');
+        const player = new Audio();
         player.crossOrigin = 'anonymous';
         player.fadeIn = true;
         player.loop = true;

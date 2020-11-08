@@ -1,4 +1,5 @@
 import ElevatorWorld from '../core/elevatorWorld.js';
+import Peers from '../core/peers.js';
 import {
   Color,
   Euler,
@@ -36,6 +37,13 @@ class Island extends ElevatorWorld {
     ocean.position.y = 3.725;
     this.add(ocean);
 
+    const peers = new Peers({
+      player,
+      room: 'wss://train.gatunes.com/rooms/Island',
+    });
+    this.add(peers);
+    this.peers = peers;
+
     const rain = new Rain({ anchor: player, heightmapScale: 0.5 });
     this.add(rain);
     this.rain = rain;
@@ -72,14 +80,16 @@ class Island extends ElevatorWorld {
 
   onAnimationTick(animation) {
     super.onAnimationTick(animation);
-    const { clouds, rain } = this;
+    const { clouds, peers, rain } = this;
     clouds.animate(animation);
     Ocean.animate(animation);
+    peers.animate(animation);
     rain.animate(animation);
   }
 
   onUnload() {
-    const { rain } = this;
+    const { peers, rain } = this;
+    peers.disconnect();
     rain.dispose();
   }
 }

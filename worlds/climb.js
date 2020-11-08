@@ -1,5 +1,5 @@
 import ElevatorWorld from '../core/elevatorWorld.js';
-import Lightmap from '../core/lightmap.js';
+import Peers from '../core/peers.js';
 import {
   Box3,
   Color,
@@ -34,6 +34,13 @@ class Climb extends ElevatorWorld {
     const ocean = new Ocean();
     ocean.position.y = 0.125;
     this.add(ocean);
+
+    const peers = new Peers({
+      player,
+      room: 'wss://train.gatunes.com/rooms/Climb',
+    });
+    this.add(peers);
+    this.peers = peers;
 
     models.load('models/climb.glb')
       .then((model) => {
@@ -71,11 +78,13 @@ class Climb extends ElevatorWorld {
       collision,
       isClimbing,
       isOnElevator,
+      peers,
       player,
       rain,
     } = this;
     clouds.animate(animation);
     Ocean.animate(animation);
+    peers.animate(animation);
     if (isOnElevator || !collision) {
       return;
     }
@@ -105,6 +114,11 @@ class Climb extends ElevatorWorld {
         aux.vector.divideScalar(climbing).negate()
       );
     }
+  }
+
+  onUnload() {
+    const { peers } = this;
+    peers.disconnect();
   }
 }
 

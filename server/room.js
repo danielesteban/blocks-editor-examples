@@ -1,3 +1,4 @@
+const e = require('express');
 const { v4: uuid } = require('uuid');
 
 class Room {
@@ -25,7 +26,7 @@ class Room {
   onClient(client, req) {
     const { clients, pingInterval } = this;
     const { allowedOrigins, maxClients } = Room; 
-    if (allowedOrigins.indexOf(req.headers.origin) === -1) {
+    if (allowedOrigins && allowedOrigins.indexOf(req.headers.origin) === -1) {
       client.send(JSON.stringify({
         type: 'ERROR',
         data: 'Origin not allowed.',
@@ -138,9 +139,7 @@ class Room {
   }
 }
 
-Room.allowedOrigins = process.env.ALLOWED_ORIGINS ? process.env.ALLOWED_ORIGINS.split(',') : [
-  'https://localhost:5000',
-];
+Room.allowedOrigins = process.env.ALLOWED_ORIGINS ? process.env.ALLOWED_ORIGINS.split(',') : false;
 Room.maxClients = process.env.MAX_CLIENTS ? parseInt(process.env.MAX_CLIENTS, 10) : 16;
 
 module.exports = Room;

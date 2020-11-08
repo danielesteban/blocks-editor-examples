@@ -10,6 +10,7 @@ import {
   Vector3,
 } from './three.js';
 import DesktopControls from './desktop.js';
+import Head from '../renderables/head.js';
 import Hand from '../renderables/hand.js';
 import Marker from '../renderables/marker.js';
 
@@ -94,6 +95,15 @@ class Player extends Group {
     });
     this.desktopControls = new DesktopControls({ renderer: dom.renderer, xr });
     this.xr = xr;
+    {
+      const key = 'blocks-editor-examples:skin';
+      let skin = localStorage.getItem(key);
+      if (!skin) {
+        skin = Head.generateTexture().toDataURL();
+        localStorage.setItem(key, skin);
+      }
+      this.skin = skin;
+    }
   }
 
   attach(attachment, handedness) {
