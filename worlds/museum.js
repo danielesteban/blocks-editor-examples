@@ -1,4 +1,5 @@
 import ElevatorWorld from '../core/elevatorWorld.js';
+import Peers from '../core/peers.js';
 import {
   Color,
   Euler,
@@ -25,8 +26,18 @@ class Museum extends ElevatorWorld {
       models,
     });
     artwork.position.set(0, 5.5, -12.75);
-    this.artwork = artwork;
     this.add(artwork);
+
+    const peers = new Peers({
+      onState: (state) => {
+        artwork.load(state);
+        this.artwork = artwork;
+      },
+      player,
+      room: 'wss://train.gatunes.com/rooms/Museum',
+    });
+    this.add(peers);
+    this.peers = peers;
 
     models.load('models/museum.glb')
       .then((model) => {
@@ -46,8 +57,11 @@ class Museum extends ElevatorWorld {
 
   onAnimationTick(animation) {
     super.onAnimationTick(animation);
-    const { artwork, isOnElevator, player } = this;
-    artwork.animate(animation);
+    const { artwork, isOnElevator, peers, player } = this;
+    if (artwork) {
+      artwork.animate(animation);
+    }
+    peers.animate(animation);
     if (
       !isOnElevator
       && (
@@ -55,8 +69,13 @@ class Museum extends ElevatorWorld {
         || player.controllers.find(({ hand, buttons: { triggerDown } }) => (hand && triggerDown))
       )
     ) {
-      artwork.next();
+      peers.updateState();
     }
+  }
+
+  onUnload() {
+    const { peers } = this;
+    peers.disconnect();
   }
 }
 

@@ -5,6 +5,7 @@ class Room {
   constructor(id) {
     this.id = id;
     this.clients = [];
+    this.state = 0;
   }
 
   onClose(client) {
@@ -24,7 +25,7 @@ class Room {
   }
 
   onClient(client, req) {
-    const { clients, pingInterval } = this;
+    const { clients, pingInterval, state } = this;
     const { allowedOrigins, maxClients } = Room; 
     if (allowedOrigins && allowedOrigins.indexOf(req.headers.origin) === -1) {
       client.send(JSON.stringify({
@@ -47,7 +48,7 @@ class Room {
       type: 'INIT',
       data: {
         peers: clients.map(({ id }) => (id)),
-        ...(this.onInit ? this.onInit(client) : {}),
+        state,
       },
     }), () => {});
     this.broadcast({
@@ -100,6 +101,14 @@ class Room {
             });
           }
         }
+        break;
+      }
+      case 'STATE': {
+        this.state += 1;
+        this.broadcast({
+          type: 'STATE',
+          data: this.state,
+        });
         break;
       }
       default:

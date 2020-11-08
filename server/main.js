@@ -6,6 +6,7 @@ const Room = require('./room');
 const rooms = [
   'Climb',
   'Island',
+  'Museum',
 ].map((id) => new Room(id));
 
 const server = express();

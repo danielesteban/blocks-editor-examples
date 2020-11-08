@@ -6,10 +6,12 @@ import Peer from '../renderables/peer.js';
 
 class Peers extends Group {
   constructor({
+    onState,
     player,
     room,
   }) {
     super();
+    this.onState = onState;
     this.peers = [];
     this.player = player;
     this.room = room;
@@ -155,6 +157,9 @@ class Peers extends Group {
         break;
       case 'INIT':
         this.peers = data.peers.map((id) => this.connectToPeer({ id, initiator: true }));
+        if (this.onState) {
+          this.onState(data.state);
+        }
         break;
       case 'JOIN':
         peers.push(this.connectToPeer({ id: data }));
@@ -183,6 +188,11 @@ class Peers extends Group {
         }
         break;
       }
+      case 'STATE':
+        if (this.onState) {
+          this.onState(data);
+        }
+        break;
       default:
         break;
     }
@@ -205,6 +215,15 @@ class Peers extends Group {
       peer.dispose();
     });
     peers.length = 0;
+  }
+
+  updateState() {
+    const { server } = this;
+    if (server) {
+      server.send(JSON.stringify({
+        type: 'STATE',
+      }));
+    }
   }
 }
 
