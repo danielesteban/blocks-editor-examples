@@ -7,9 +7,16 @@
   "private": true,
   "scripts": {
     "cert": "openssl req -x509 -newkey rsa:2048 -nodes -sha256 -subj /CN=localhost -keyout localhost-key.pem -out localhost-cert.pem",
-    "start": "sirv --dev --host 0.0.0.0 --cert localhost-cert.pem --key localhost-key.pem --http2 ."
+    "start": "sirv --dev --host 0.0.0.0 --cert localhost-cert.pem --key localhost-key.pem --http2 .",
+    "server": "node server/main.js"
   },
   "devDependencies": {
     "sirv-cli": "^1.0.8"
+  },
+  "dependencies": {
+    "express": "^4.17.1",
+    "express-ws": "^4.0.0",
+    "helmet": "^4.2.0",
+    "uuid": "^8.3.1"
   }
 }
