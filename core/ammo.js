@@ -32,7 +32,6 @@ async function AmmoPhysics() {
 
   const auxTransform = new AmmoLib.btTransform();
   const auxVector = new AmmoLib.btVector3();
-  const auxVectorB = new AmmoLib.btVector3();
   const auxQuaternion = new AmmoLib.btQuaternion();
   const zero = new AmmoLib.btVector3( 0, 0, 0 );
   const worldspace = {
@@ -62,7 +61,7 @@ async function AmmoPhysics() {
 
     }
 
-    if ( geometry.type === 'BoxBufferGeometry' ) {
+    if ( geometry && geometry.type === 'BoxBufferGeometry' ) {
 
       const { parameters } = geometry;
       const sx = parameters.width !== undefined ? parameters.width / 2 : 0.5;
@@ -76,7 +75,7 @@ async function AmmoPhysics() {
 
     }
     
-    if ( geometry.type === 'SphereBufferGeometry' || geometry.type === 'IcosahedronBufferGeometry' ) {
+    if ( geometry && ( geometry.type === 'SphereBufferGeometry' || geometry.type === 'IcosahedronBufferGeometry' ) ) {
 
       const { parameters } = geometry;
       const radius = parameters.radius !== undefined ? parameters.radius : 1;
