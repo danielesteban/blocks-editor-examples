@@ -35,8 +35,7 @@ class Court extends ElevatorWorld {
     this.add(this.cannon);
 
     const clouds = new Clouds();
-    clouds.position.set(0, 64, 0);
-    clouds.scale.set(10, 1, 10);
+    clouds.position.y = 64;
     this.add(clouds);
     this.clouds = clouds;
 
