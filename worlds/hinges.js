@@ -70,7 +70,7 @@ class Hinges extends ElevatorWorld {
         door.physics = [
           {
             shape: 'box',
-            width: 0.9,
+            width: 0.95,
             height: 2.4,
             depth: 0.125,
           },
@@ -93,7 +93,7 @@ class Hinges extends ElevatorWorld {
         const model = doorModel.children[0];
         model.position.set(-0.5, -1.75, -0.0625);
         model.scale.set(0.5, 0.5, 0.125);
-        // const doorDebug = new Trigger(0.9, 2.4, 0.125);
+        // const doorDebug = new Trigger(0.95, 2.4, 0.125);
         // door.add(doorDebug);
         door.physics.slice(1).forEach(({ width, height, depth, position }) => {
           const handle = new Trigger(width, height, depth);
