@@ -200,9 +200,7 @@ async function AmmoPhysics() {
 
       kinematic.push( mesh );
 
-    }
-
-    if ( mass > 0 ) {
+    } else if ( mass > 0 ) {
 
       dynamic.push( mesh );
 
@@ -265,9 +263,7 @@ async function AmmoPhysics() {
 
       kinematic.push( mesh );
 
-    }
-
-    if ( mass > 0 ) {
+    } else if ( mass > 0 ) {
 
       mesh.instanceMatrix.setUsage( DynamicDrawUsage );
       dynamic.push( mesh );
