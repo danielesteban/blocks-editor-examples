@@ -49,7 +49,7 @@ class Hinges extends ElevatorWorld {
           scene.load('Metro', { destination: 'Hinges', offset: this.elevator.getOffset(player) })
         );
       });
-
+    
     Promise.all([
       scene.getPhysics(),
       models.physics('models/hingesPhysics.json', 0.5),
@@ -62,8 +62,30 @@ class Hinges extends ElevatorWorld {
           this.physics.addMesh(box);
           this.add(box);
         });
-        player.controllers.forEach(({ physics }) => {
-          this.physics.addMesh(physics, 0, { isKinematic: true });
+        this.isPicking = [false, false];
+        const pivots = { left: new Vector3(0.05, 0, 0), right: new Vector3(-0.05, 0, 0) };
+        player.controllers.forEach((controller, i) => {
+          const matrix = new Matrix4();
+          const inverse = new Matrix4();
+          const vector = new Vector3();
+          controller.physics.isTrigger = true;
+          controller.physics.onContact = ({ mesh, index, point }) => {
+            if (
+              !this.isPicking[i]
+              && controller.hand && controller.buttons.grip && mesh === this.spheres
+            ) {
+              this.spheres.getMatrixAt(index, matrix);
+              inverse.getInverse(matrix);
+              this.isPicking[i] = this.physics.addConstraint(controller.physics, {
+                type: 'p2p',
+                mesh,
+                index,
+                pivotInA: pivots[controller.hand.handedness],
+                pivotInB: vector.copy(point).applyMatrix4(inverse),
+              });
+            }
+          };
+          this.physics.addMesh(controller.physics, 0, { isKinematic: true, isTrigger: true });
         });
 
         const door = new Group();
@@ -117,7 +139,7 @@ class Hinges extends ElevatorWorld {
           trigger.material = trigger.material.clone();
           trigger.material.opacity = 0.75;
           trigger.position.set(-6 + 4 * i, 2.95, -2);
-          trigger.onContact = (({ mesh, index, point }) => {
+          trigger.onContact = ({ mesh, index, point }) => {
             if (mesh === this.spheres) {
               const color = new Color();
               this.spheres.getColorAt(index, color);
@@ -137,7 +159,7 @@ class Hinges extends ElevatorWorld {
                 index
               );
             }
-          });
+          };
           this.add(trigger);
           this.physics.addMesh(trigger, 2, { isTrigger: true });
           this.physics.addConstraint(trigger, {
@@ -165,13 +187,23 @@ class Hinges extends ElevatorWorld {
       clouds,
       explosions,
       isOnElevator,
+      isPicking,
       physics,
       player,
       spheres,
     } = this;
     clouds.animate(animation);
     explosions.forEach((explosion) => explosion.animate(animation));
-    if (isOnElevator || !physics || !spheres) {
+    if (!physics || !spheres) {
+      return;
+    }
+    player.controllers.forEach(({ hand, buttons }, i) => {
+      if (isPicking[i] && hand && buttons.gripUp) {
+        physics.removeConstraint(isPicking[i]);
+        isPicking[i] = false;
+      }
+    });
+    if (isOnElevator) {
       return;
     }
     [

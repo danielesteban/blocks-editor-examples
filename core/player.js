@@ -119,6 +119,7 @@ class Player extends Group {
   detachAll() {
     const { attachments, controllers } = this;
     controllers.forEach((controller) => {
+      delete controller.physics.onContact;
       const children = controller.hand && attachments[controller.hand.handedness];
       if (children) {
         children.forEach((child) => (

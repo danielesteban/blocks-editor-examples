@@ -1,6 +1,7 @@
 // A copy of https://github.com/mrdoob/three.js/blob/master/examples/jsm/physics/AmmoPhysics.js
-// + an extra addConstraint(mesh, options, index) method
 // + an extra applyImpulse(mesh, impulse, index) method
+// + an extra addConstraint(mesh, options, index) method
+// + an extra removeConstraint(constraint) method
 // + an extra reset() method
 // + Extra flags on: addMesh( mesh, mass = 0, flags = {} )
 //   - noContactResponse
@@ -32,6 +33,7 @@ async function AmmoPhysics() {
 
   const auxTransform = new AmmoLib.btTransform();
   const auxVector = new AmmoLib.btVector3();
+  const auxVectorB = new AmmoLib.btVector3();
   const auxQuaternion = new AmmoLib.btQuaternion();
   const zero = new AmmoLib.btVector3( 0, 0, 0 );
   const worldspace = {
@@ -328,6 +330,16 @@ async function AmmoPhysics() {
         }
         constraint = new AmmoLib.btHingeConstraint( getBody( mesh, index ), auxTransform );
         break;
+      case 'p2p':
+        auxVector.setValue( options.pivotInA.x, options.pivotInA.y, options.pivotInA.z );
+        auxVectorB.setValue( options.pivotInB.x, options.pivotInB.y, options.pivotInB.z );
+        constraint = new AmmoLib.btPoint2PointConstraint(
+          getBody( mesh, index ),
+          getBody( options.mesh, options.index ),
+          auxVector,
+          auxVectorB
+        );
+        break;
       default:
         break;
     }
@@ -336,6 +348,18 @@ async function AmmoPhysics() {
 
       world.addConstraint( constraint );
       constraints.push( constraint );
+    }
+
+    return constraint;
+
+  }
+
+  function removeConstraint( constraint ) {
+
+    const index = constraints.indexOf(constraint);
+    if ( index !== -1 ) {
+      constraints.splice( index, 1 );
+      world.removeConstraint( constraint );
     }
 
   }
@@ -562,6 +586,7 @@ async function AmmoPhysics() {
     addMesh,
     setMeshPosition,
     addConstraint,
+    removeConstraint,
     applyImpulse,
     reset,
   };
