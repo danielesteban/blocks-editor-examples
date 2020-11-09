@@ -180,12 +180,7 @@ async function AmmoPhysics() {
 
     if ( flags.isKinematic ) {
 
-      body.setCollisionFlags((body.getCollisionFlags() & ~CF_STATIC_OBJECT) | CF_KINEMATIC_OBJECT );
-
-    }
-
-    if ( flags.isKinematic || mass > 0 ) {
-    
+      body.setCollisionFlags((body.getCollisionFlags() & ~CF_STATIC_OBJECT) | CF_KINEMATIC_OBJECT );    
       body.setActivationState( DISABLE_DEACTIVATION );
   
     }
@@ -240,11 +235,6 @@ async function AmmoPhysics() {
       if ( flags.isKinematic ) {
   
         body.setCollisionFlags((body.getCollisionFlags() & ~CF_STATIC_OBJECT) | CF_KINEMATIC_OBJECT );
-  
-      }
-
-      if ( flags.isKinematic || mass > 0 ) {
-    
         body.setActivationState( DISABLE_DEACTIVATION );
     
       }
@@ -305,6 +295,8 @@ async function AmmoPhysics() {
       auxTransform.setOrigin( auxVector );
       body.setWorldTransform( auxTransform );
 
+      body.activate();
+
     }
   }
 
@@ -343,6 +335,7 @@ async function AmmoPhysics() {
 
       world.addConstraint( constraint );
       constraints.push( constraint );
+
     }
 
     return constraint;
@@ -367,6 +360,7 @@ async function AmmoPhysics() {
 
       auxVector.setValue( impulse.x, impulse.y, impulse.z );
       body.applyImpulse( auxVector, zero );
+      body.activate();
 
     }
   }
