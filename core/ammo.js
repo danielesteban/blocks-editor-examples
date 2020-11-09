@@ -45,7 +45,6 @@ async function AmmoPhysics() {
 
   function getShape( geometry ) {
 
-    const parameters = geometry.parameters;
 
     // TODO change type to is*
 
@@ -53,7 +52,6 @@ async function AmmoPhysics() {
   
       auxVector.setValue( ...geometry.physics.size );
       const shape = new AmmoLib.btBoxShape( auxVector );
-      shape.setMargin( 0.05 );
 
       return shape;
 
@@ -62,7 +60,6 @@ async function AmmoPhysics() {
     if ( geometry.physics && geometry.physics.shape === 'sphere' ) {
   
       const shape = new AmmoLib.btSphereShape( geometry.physics.radius );
-      shape.setMargin( 0.05 );
 
       return shape;
 
@@ -70,13 +67,13 @@ async function AmmoPhysics() {
 
     if ( geometry.type === 'BoxBufferGeometry' ) {
 
+      const { parameters } = geometry;
       const sx = parameters.width !== undefined ? parameters.width / 2 : 0.5;
       const sy = parameters.height !== undefined ? parameters.height / 2 : 0.5;
       const sz = parameters.depth !== undefined ? parameters.depth / 2 : 0.5;
 
       auxVector.setValue( sx, sy, sz );
       const shape = new AmmoLib.btBoxShape( auxVector );
-      shape.setMargin( 0.05 );
 
       return shape;
 
@@ -84,10 +81,10 @@ async function AmmoPhysics() {
     
     if ( geometry.type === 'SphereBufferGeometry' || geometry.type === 'IcosahedronBufferGeometry' ) {
 
+      const { parameters } = geometry;
       const radius = parameters.radius !== undefined ? parameters.radius : 1;
 
       const shape = new AmmoLib.btSphereShape( radius );
-      shape.setMargin( 0.05 );
 
       return shape;
 
@@ -170,7 +167,6 @@ async function AmmoPhysics() {
   
     }
 
-    // body.setFriction( 4 );
     world.addRigidBody( body );
 
     meshes.push(mesh);
@@ -387,8 +383,6 @@ async function AmmoPhysics() {
 
   }
 
-  //
-
   let lastTime = 0;
 
   function step() {
@@ -431,8 +425,6 @@ async function AmmoPhysics() {
     }
 
     lastTime = time;
-
-    //
 
     for ( let i = 0, l = dynamic.length; i < l; i ++ ) {
 
