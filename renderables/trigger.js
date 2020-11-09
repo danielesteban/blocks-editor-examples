@@ -5,20 +5,23 @@ import {
 } from '../core/three.js';
 
 class Trigger extends Mesh {
-  static setupMaterial() {
-    Trigger.material = new MeshBasicMaterial({ opacity: 0.5, transparent: true });
+  static setupMaterials() {
+    Trigger.materials = {
+      visible: new MeshBasicMaterial({ opacity: 0.5, transparent: true }),
+      invisible: new MeshBasicMaterial({ visible: false }),
+    };
   }
 
-  constructor(width, height, depth) {
-    if (!Trigger.material) {
-      Trigger.setupMaterial();
+  constructor(width, height, depth, invisible = false) {
+    if (!Trigger.materials) {
+      Trigger.setupMaterials();
     }
     const geometry = new BoxBufferGeometry(width, height, depth);
     geometry.deleteAttribute('normal');
     geometry.deleteAttribute('uv');
     super(
       geometry,
-      Trigger.material,
+      Trigger.materials[invisible ? 'invisible' : 'visible'],
     );
   }
 

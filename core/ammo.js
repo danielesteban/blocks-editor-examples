@@ -1,4 +1,5 @@
 // A copy of https://github.com/mrdoob/three.js/blob/master/examples/jsm/physics/AmmoPhysics.js
+// + an extra addConstraint(mesh, options, index) method
 // + an extra applyImpulse(mesh, impulse, index) method
 // + an extra reset() method
 // + Extra flags on: addMesh( mesh, mass = 0, flags = {} )
@@ -31,6 +32,7 @@ async function AmmoPhysics() {
 
   const auxTransform = new AmmoLib.btTransform();
   const auxVector = new AmmoLib.btVector3();
+  const auxVectorB = new AmmoLib.btVector3();
   const auxQuaternion = new AmmoLib.btQuaternion();
   const zero = new AmmoLib.btVector3( 0, 0, 0 );
   const worldspace = {
@@ -95,6 +97,7 @@ async function AmmoPhysics() {
 
   }
 
+  const constraints = [];
   const shapes = [];
   const dynamic = [];
   const kinematic = [];
@@ -257,9 +260,7 @@ async function AmmoPhysics() {
 
   }
 
-  //
-
-  function setMeshPosition( mesh, position, index = 0 ) {
+  function getBody( mesh, index = 0 ) {
 
     let body;
 
@@ -273,6 +274,14 @@ async function AmmoPhysics() {
       body = meshMap.get( mesh );
 
     }
+
+    return body;
+
+  }
+
+  function setMeshPosition( mesh, position, index = 0 ) {
+
+    const body = getBody(mesh, index);
     
     if ( body ) {
 
@@ -287,20 +296,38 @@ async function AmmoPhysics() {
     }
   }
 
+  function addConstraint( mesh, options, index = 0 ) {
+
+    let constraint;
+
+    switch (options.type) {
+      case 'hinge':
+        auxTransform.setIdentity();
+        if (options.origin) {
+          auxVector.setValue( options.origin.x, options.origin.y, options.origin.z );
+          auxTransform.setOrigin( auxVector );
+        }
+        if (options.rotation) {
+          auxQuaternion.setValue( options.rotation.x, options.rotation.y, options.rotation.z, options.rotation.w );
+          auxTransform.setRotation( auxQuaternion );
+        }
+        constraint = new AmmoLib.btHingeConstraint( getBody( mesh, index ), auxTransform );
+        break;
+      default:
+        break;
+    }
+
+    if ( constraint ) {
+
+      world.addConstraint( constraint );
+      constraints.push( constraint );
+    }
+
+  }
+
   function applyImpulse( mesh, impulse, index = 0 ) {
 
-    let body;
-  
-    if ( mesh.isInstancedMesh ) {
-
-      const bodies = meshMap.get( mesh );
-      body = bodies[ index ];
-
-    } else if ( mesh.isMesh ) {
-
-      body = meshMap.get( mesh );
-
-    }
+    const body = getBody(mesh, index);
 
     if ( body ) {
 
@@ -311,6 +338,11 @@ async function AmmoPhysics() {
   }
 
   function reset() {
+
+    constraints.forEach((constraint) => {
+      world.removeConstraint(constraint);
+      Ammo.destroy(constraint);
+    });
 
     meshes.forEach((mesh) => {
 
@@ -347,6 +379,7 @@ async function AmmoPhysics() {
       Ammo.destroy(shape)
     ));
 
+    constraints.length = 0;
     meshes.length = 0;
     dynamic.length = 0;
     kinematic.length = 0;
@@ -512,6 +545,7 @@ async function AmmoPhysics() {
   return {
     addMesh,
     setMeshPosition,
+    addConstraint,
     applyImpulse,
     reset,
   };
