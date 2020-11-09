@@ -125,14 +125,11 @@ class Hinges extends ElevatorWorld {
         door.add(model);
         this.add(door);
         this.physics.addMesh(door, 5);
-        for (let i = 0; i < 2; i += 1) {
-          const y = 0.5 * (i === 0 ? -1 : 1);
-          this.physics.addConstraint(door, {
-            type: 'hinge',
-            position: new Vector3(-0.4, y, 0),
-            rotation: (new Quaternion()).setFromAxisAngle(new Vector3(1, 0, 0), Math.PI * 0.5),
-          });
-        }
+        this.physics.addConstraint(door, {
+          type: 'hinge',
+          position: new Vector3(-0.4, 0, 0),
+          rotation: (new Quaternion()).setFromAxisAngle(new Vector3(1, 0, 0), Math.PI * 0.5),
+        });
 
         for (let i = 0; i < 4; i += 1) {
           const trigger = new Trigger(1, 1, 0.1);
