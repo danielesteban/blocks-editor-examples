@@ -226,6 +226,6 @@ class Hinges extends ElevatorWorld {
   }
 }
 
-Hinges.display = 'Hinge Testing';
+Hinges.display = 'Hinges Lab';
 
 export default Hinges;
