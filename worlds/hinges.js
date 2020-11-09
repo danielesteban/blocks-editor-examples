@@ -8,10 +8,10 @@ import {
   Quaternion,
   Vector3,
 } from '../core/three.js';
+import Box from '../renderables/box.js';
 import Clouds from '../renderables/clouds.js';
 import Explosion from '../renderables/explosion.js';
 import Spheres from '../renderables/spheres.js';
-import Trigger from '../renderables/trigger.js';
 
 class Hinges extends ElevatorWorld {
   constructor(scene, { offset }) {
@@ -68,7 +68,6 @@ class Hinges extends ElevatorWorld {
           const matrix = new Matrix4();
           const inverse = new Matrix4();
           const vector = new Vector3();
-          controller.physics.isTrigger = true;
           controller.physics.onContact = ({ mesh, index, point }) => {
             if (
               !this.isPicking[i]
@@ -117,10 +116,10 @@ class Hinges extends ElevatorWorld {
           const model = doorModel.children[0].clone();
           model.position.set(-0.5, -1.75, -0.0625);
           model.scale.set(0.5, 0.5, 0.125);
-          // const doorDebug = new Trigger(0.95, 2.4, 0.125);
+          // const doorDebug = new Box(0.95, 2.4, 0.125);
           // door.add(doorDebug);
           door.physics.slice(1).forEach(({ width, height, depth, position }) => {
-            const handle = new Trigger(width, height, depth);
+            const handle = new Box(width, height, depth);
             handle.position.copy(position);
             door.add(handle);
           });
@@ -135,7 +134,7 @@ class Hinges extends ElevatorWorld {
         }
 
         for (let i = 0; i < 4; i += 1) {
-          const trigger = new Trigger(1, 1, 0.1);
+          const trigger = new Box(1, 1, 0.1);
           trigger.material = trigger.material.clone();
           trigger.material.opacity = 0.75;
           trigger.position.set(-6 + 4 * i, 2.95, -9.5);

@@ -7,6 +7,7 @@ import {
   Matrix4,
   Vector3,
 } from '../core/three.js';
+import Box from '../renderables/box.js';
 import Cannon from '../renderables/cannon.js';
 import Clouds from '../renderables/clouds.js';
 import Explosion from '../renderables/explosion.js';
@@ -14,7 +15,6 @@ import Paddle from '../renderables/paddle.js';
 import Rain from '../renderables/rain.js';
 import Scoreboard from '../renderables/scoreboard.js';
 import Spheres from '../renderables/spheres.js';
-import Trigger from '../renderables/trigger.js';
 
 class Court extends ElevatorWorld {
   constructor(scene, { offset }) {
@@ -90,7 +90,7 @@ class Court extends ElevatorWorld {
       }
     };
 
-    const goal = new Trigger(4, 2, 0.125);
+    const goal = new Box(4, 2, 0.125);
     goal.position.set(0, 2, 8.75);
     goal.onContact = onContact(0);
     this.add(goal);
