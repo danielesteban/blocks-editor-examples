@@ -35,7 +35,6 @@ class Paddle extends Mesh {
       height: box.parameters.height,
       depth: box.parameters.depth,
     };
-    console.log(geometry.physics)
     Paddle.geometry = geometry;
   }
 

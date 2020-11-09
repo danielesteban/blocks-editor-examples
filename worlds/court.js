@@ -26,7 +26,7 @@ class Court extends ElevatorWorld {
     });
 
     const { ambient, models, player, sfx, translocables } = scene;
-    ambient.set('sounds/sea.ogg');
+    ambient.set('sounds/forest.ogg');
     scene.background = new Color(0x336688);
     scene.fog = new FogExp2(scene.background.getHex(), 0.03);
 
