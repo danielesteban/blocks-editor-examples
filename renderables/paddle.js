@@ -31,8 +31,11 @@ class Paddle extends Mesh {
     geometry.setAttribute('offset', new BufferAttribute(offset, 1))
     geometry.physics = {
       shape: 'box',
-      size: [box.parameters.width * 0.5, box.parameters.height * 0.5, box.parameters.depth * 0.5],
+      width: box.parameters.width,
+      height: box.parameters.height,
+      depth: box.parameters.depth,
     };
+    console.log(geometry.physics)
     Paddle.geometry = geometry;
   }
 

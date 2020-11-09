@@ -41,25 +41,22 @@ async function AmmoPhysics() {
     scale: new Vector3(),
   };
 
-  //
+  function getShape( { geometry, physics } ) {
 
-  function getShape( geometry ) {
+    physics = physics || geometry.physics;
 
-
-    // TODO change type to is*
-
-    if ( geometry.physics && geometry.physics.shape === 'box' ) {
+    if ( physics && physics.shape === 'box' ) {
   
-      auxVector.setValue( ...geometry.physics.size );
+      auxVector.setValue( physics.width / 2, physics.height / 2, physics.depth / 2 );
       const shape = new AmmoLib.btBoxShape( auxVector );
 
       return shape;
 
     }
 
-    if ( geometry.physics && geometry.physics.shape === 'sphere' ) {
+    if ( physics && physics.shape === 'sphere' ) {
   
-      const shape = new AmmoLib.btSphereShape( geometry.physics.radius );
+      const shape = new AmmoLib.btSphereShape( physics.radius );
 
       return shape;
 
@@ -103,7 +100,7 @@ async function AmmoPhysics() {
 
   function addMesh( mesh, mass = 0, flags = {} ) {
 
-    const shape = getShape( mesh.geometry );
+    const shape = getShape( mesh );
 
     if ( shape !== null ) {
 
@@ -111,7 +108,7 @@ async function AmmoPhysics() {
 
         handleInstancedMesh( mesh, mass, flags, shape );
 
-      } else if ( mesh.isMesh ) {
+      } else if ( mesh.isGroup || mesh.isMesh ) {
 
         handleMesh( mesh, mass, flags, shape );
 
@@ -265,7 +262,7 @@ async function AmmoPhysics() {
       const bodies = meshMap.get( mesh );
       body = bodies[ index ];
 
-    } else if ( mesh.isMesh ) {
+    } else if ( mesh.isGroup || mesh.isMesh ) {
 
       body = meshMap.get( mesh );
 
@@ -357,7 +354,7 @@ async function AmmoPhysics() {
 
         }
 
-      } else if ( mesh.isMesh ) {
+      } else if ( mesh.isGroup || mesh.isMesh ) {
 
         const body = meshMap.get( mesh );
         const motionState = body.getMotionState();
@@ -395,7 +392,7 @@ async function AmmoPhysics() {
 
         // TODO: Update kinematic instances bodies
 
-      } else if ( mesh.isMesh ) {
+      } else if ( mesh.isGroup || mesh.isMesh ) {
 
         const body = meshMap.get( mesh );
 
@@ -451,7 +448,7 @@ async function AmmoPhysics() {
 
         mesh.instanceMatrix.needsUpdate = true;
 
-      } else if ( mesh.isMesh ) {
+      } else if ( mesh.isGroup || mesh.isMesh ) {
 
         const body = meshMap.get( mesh );
 

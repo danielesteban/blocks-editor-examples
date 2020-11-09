@@ -5,29 +5,33 @@ import {
 } from '../core/three.js';
 
 class Trigger extends Mesh {
-  static setupMaterials() {
-    Trigger.materials = {
-      visible: new MeshBasicMaterial({ opacity: 0.5, transparent: true }),
-      invisible: new MeshBasicMaterial({ visible: false }),
-    };
+  static setupGeometry() {
+    Trigger.geometry = new BoxBufferGeometry(1, 1, 1);
+    Trigger.geometry.deleteAttribute('normal');
+    Trigger.geometry.deleteAttribute('uv');
+  }
+  static setupMaterial() {
+    Trigger.material = new MeshBasicMaterial({ opacity: 0.5, transparent: true });
   }
 
-  constructor(width, height, depth, invisible = false) {
-    if (!Trigger.materials) {
-      Trigger.setupMaterials();
+  constructor(width, height, depth) {
+    if (!Trigger.geometry) {
+      Trigger.setupGeometry();
     }
-    const geometry = new BoxBufferGeometry(width, height, depth);
-    geometry.deleteAttribute('normal');
-    geometry.deleteAttribute('uv');
+    if (!Trigger.material) {
+      Trigger.setupMaterial();
+    }
     super(
-      geometry,
-      Trigger.materials[invisible ? 'invisible' : 'visible'],
+      Trigger.geometry,
+      Trigger.material,
     );
-  }
-
-  dispose() {
-    const { geometry } = this;
-    geometry.dispose();
+    this.scale.set(width, height, depth);
+    this.physics = {
+      shape: 'box',
+      width,
+      height,
+      depth,
+    };
   }
 }
 

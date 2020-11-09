@@ -94,7 +94,6 @@ class Court extends ElevatorWorld {
     goal.position.set(0, 2, 8.75);
     goal.onContact = onContact(0);
     this.add(goal);
-    this.goal = goal;
 
     const paddles = ['left', 'right'].map((handedness) => {
       const joint = new Group();
@@ -197,8 +196,7 @@ class Court extends ElevatorWorld {
   }
 
   onUnload() {
-    const { goal, rain, scoreboards } = this;
-    goal.dispose();
+    const { rain, scoreboards } = this;
     rain.dispose();
     scoreboards.forEach((scoreboard) => scoreboard.dispose());
   }
