@@ -58,7 +58,7 @@ class Cave extends ElevatorWorld {
           }
           this.physics.addMesh(this.spheres, 1);
           this.add(this.spheres);
-      });
+        });
   }
 
   onAnimationTick(animation) {
