@@ -88,54 +88,57 @@ class Hinges extends ElevatorWorld {
           this.physics.addMesh(controller.physics, 0, { isKinematic: true, isTrigger: true });
         });
 
-        const door = new Group();
-        door.physics = [
-          {
-            shape: 'box',
-            width: 0.95,
-            height: 2.4,
-            depth: 0.125,
-          },
-          {
-            shape: 'box',
-            position: new Vector3(0.3, 0, 0.1375),
-            width: 0.03,
-            height: 0.03,
-            depth: 0.15,
-          },
-          {
-            shape: 'box',
-            position: new Vector3(0.185, 0, 0.175),
-            width: 0.2,
-            height: 0.03,
-            depth: 0.03,
-          },
-        ];
-        door.position.set(0, 1.75, -1.25);
-        const model = doorModel.children[0];
-        model.position.set(-0.5, -1.75, -0.0625);
-        model.scale.set(0.5, 0.5, 0.125);
-        // const doorDebug = new Trigger(0.95, 2.4, 0.125);
-        // door.add(doorDebug);
-        door.physics.slice(1).forEach(({ width, height, depth, position }) => {
-          const handle = new Trigger(width, height, depth);
-          handle.position.copy(position);
-          door.add(handle);
-        });
-        door.add(model);
-        this.add(door);
-        this.physics.addMesh(door, 5);
-        this.physics.addConstraint(door, {
-          type: 'hinge',
-          position: new Vector3(-0.4, 0, 0),
-          rotation: (new Quaternion()).setFromAxisAngle(new Vector3(1, 0, 0), Math.PI * 0.5),
-        });
+        for (let i = 0; i < 2; i += 1) {
+          const door = new Group();
+          const orientation = i === 0 ? 1 : -1;
+          door.physics = [
+            {
+              shape: 'box',
+              width: 0.95,
+              height: 2.4,
+              depth: 0.125,
+            },
+            {
+              shape: 'box',
+              position: new Vector3(0.3 * orientation, 0, 0.1375),
+              width: 0.03,
+              height: 0.03,
+              depth: 0.15,
+            },
+            {
+              shape: 'box',
+              position: new Vector3(0.185 * orientation, 0, 0.175),
+              width: 0.2,
+              height: 0.03,
+              depth: 0.03,
+            },
+          ];
+          door.position.set(-0.5 * orientation, 1.75, -4);
+          const model = doorModel.children[0].clone();
+          model.position.set(-0.5, -1.75, -0.0625);
+          model.scale.set(0.5, 0.5, 0.125);
+          // const doorDebug = new Trigger(0.95, 2.4, 0.125);
+          // door.add(doorDebug);
+          door.physics.slice(1).forEach(({ width, height, depth, position }) => {
+            const handle = new Trigger(width, height, depth);
+            handle.position.copy(position);
+            door.add(handle);
+          });
+          door.add(model);
+          this.add(door);
+          this.physics.addMesh(door, 5);
+          this.physics.addConstraint(door, {
+            type: 'hinge',
+            position: new Vector3(-0.4 * orientation, 0, 0),
+            rotation: (new Quaternion()).setFromAxisAngle(new Vector3(1, 0, 0), Math.PI * 0.5),
+          });
+        }
 
         for (let i = 0; i < 4; i += 1) {
           const trigger = new Trigger(1, 1, 0.1);
           trigger.material = trigger.material.clone();
           trigger.material.opacity = 0.75;
-          trigger.position.set(-6 + 4 * i, 2.95, -2);
+          trigger.position.set(-6 + 4 * i, 2.95, -9.5);
           trigger.onContact = ({ mesh, index, point }) => {
             if (mesh === this.spheres) {
               const color = new Color();
