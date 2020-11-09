@@ -9,6 +9,7 @@ import {
   Vector3,
 } from '../core/three.js';
 import Clouds from '../renderables/clouds.js';
+import Explosion from '../renderables/explosion.js';
 import Spheres from '../renderables/spheres.js';
 import Trigger from '../renderables/trigger.js';
 
@@ -21,7 +22,7 @@ class Hinges extends ElevatorWorld {
       rotation: new Euler(0, Math.PI, 0),
     });
 
-    const { ambient, models, player, translocables } = scene;
+    const { ambient, models, player, sfx, translocables } = scene;
     ambient.set('sounds/forest.ogg');
     scene.background = new Color(0x336688);
     scene.fog = new FogExp2(scene.background.getHex(), 0.03);
@@ -30,6 +31,13 @@ class Hinges extends ElevatorWorld {
     clouds.position.y = 64;
     this.add(clouds);
     this.clouds = clouds;
+
+    const explosions = [...Array(5)].map(() => {
+      const explosion = new Explosion({ sfx });
+      this.add(explosion);
+      return explosion;
+    });
+    this.explosions = explosions;
 
     models.load('models/hinges.glb')
       .then((model) => {
@@ -87,11 +95,25 @@ class Hinges extends ElevatorWorld {
           const trigger = new Trigger(1, 1, 0.1);
           trigger.material = trigger.material.clone();
           trigger.position.set(-6 + 4 * i, 2.95, -2);
-          trigger.onContact = (({ mesh, index }) => {
+          trigger.onContact = (({ mesh, index, point }) => {
             if (mesh === this.spheres) {
               const color = new Color();
               this.spheres.getColorAt(index, color);
               trigger.material.color = color;
+              const explosion = explosions.find(({ sound, visible }) => (!visible && (!sound || !sound.isPlaying)));
+              if (explosion) {
+                explosion.detonate({
+                  color,
+                  filter: 'highpass',
+                  position: point,
+                  scale: 0.1,
+                });
+              }
+              physics.setMeshPosition(
+                this.spheres,
+                new Vector3((Math.random() - 0.5) * 12, 1, (Math.random() - 0.5) * 2),
+                index
+              );
             }
           });
           this.add(trigger);
@@ -119,12 +141,14 @@ class Hinges extends ElevatorWorld {
     super.onAnimationTick(animation);
     const {
       clouds,
+      explosions,
       isOnElevator,
       physics,
       player,
       spheres,
     } = this;
     clouds.animate(animation);
+    explosions.forEach((explosion) => explosion.animate(animation));
     if (isOnElevator || !physics || !spheres) {
       return;
     }
