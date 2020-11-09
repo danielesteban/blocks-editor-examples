@@ -94,6 +94,7 @@ class Hinges extends ElevatorWorld {
         for (let i = 0; i < 4; i += 1) {
           const trigger = new Trigger(1, 1, 0.1);
           trigger.material = trigger.material.clone();
+          trigger.material.opacity = 0.75;
           trigger.position.set(-6 + 4 * i, 2.95, -2);
           trigger.onContact = (({ mesh, index, point }) => {
             if (mesh === this.spheres) {
