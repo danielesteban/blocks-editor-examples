@@ -42,6 +42,11 @@ async function AmmoPhysics() {
     scale: new Vector3(),
   };
 
+  const CF_STATIC_OBJECT = 1;
+  const CF_KINEMATIC_OBJECT = 2;
+  const CF_NO_CONTACT_RESPONSE = 4;
+  const DISABLE_DEACTIVATION = 4;
+
   function getShape( { geometry, physics } ) {
 
     physics = physics || geometry.physics;
@@ -167,23 +172,20 @@ async function AmmoPhysics() {
     body.mesh = mesh;
     body.isTrigger = flags.isTrigger;
 
-    if (flags.noContactResponse) {
-    
-      const CF_NO_CONTACT_RESPONSE = 4;
+    if ( flags.noContactResponse ) {
+
       body.setCollisionFlags( body.getCollisionFlags() | CF_NO_CONTACT_RESPONSE );
     
     }
 
-    if (flags.isKinematic) {
+    if ( flags.isKinematic ) {
 
-      const CF_KINEMATIC_OBJECT = 2;
-      body.setCollisionFlags( body.getCollisionFlags() | CF_KINEMATIC_OBJECT );
+      body.setCollisionFlags((body.getCollisionFlags() & ~CF_STATIC_OBJECT) | CF_KINEMATIC_OBJECT );
 
     }
 
-    if ( mass > 0 ) {
+    if ( flags.isKinematic || mass > 0 ) {
     
-      const DISABLE_DEACTIVATION = 4;
       body.setActivationState( DISABLE_DEACTIVATION );
   
     }
@@ -231,23 +233,20 @@ async function AmmoPhysics() {
       body.index = i;
       body.isTrigger = flags.isTrigger;
 
-      if (flags.noContactResponse) {
+      if ( flags.noContactResponse ) {
       
-        const CF_NO_CONTACT_RESPONSE = 4;
         body.setCollisionFlags( body.getCollisionFlags() | CF_NO_CONTACT_RESPONSE );
       
       }
   
-      if (flags.isKinematic) {
+      if ( flags.isKinematic ) {
   
-        const CF_KINEMATIC_OBJECT = 2;
-        body.setCollisionFlags( body.getCollisionFlags() | CF_KINEMATIC_OBJECT );
+        body.setCollisionFlags((body.getCollisionFlags() & ~CF_STATIC_OBJECT) | CF_KINEMATIC_OBJECT );
   
       }
 
-      if ( mass > 0 ) {
+      if ( flags.isKinematic || mass > 0 ) {
     
-        const DISABLE_DEACTIVATION = 4;
         body.setActivationState( DISABLE_DEACTIVATION );
     
       }
@@ -446,6 +445,7 @@ async function AmmoPhysics() {
       } else if ( mesh.isGroup || mesh.isMesh ) {
 
         const body = meshMap.get( mesh );
+        const motionState = body.getMotionState();
 
         mesh.matrixWorld.decompose(worldspace.position, worldspace.quaternion, worldspace.scale);
 
@@ -455,7 +455,7 @@ async function AmmoPhysics() {
         auxQuaternion.setValue( worldspace.quaternion.x, worldspace.quaternion.y, worldspace.quaternion.z, worldspace.quaternion.w );
         auxTransform.setRotation( auxQuaternion );
 
-        body.setWorldTransform( auxTransform );
+        motionState.setWorldTransform( auxTransform );
       }
     
     }
