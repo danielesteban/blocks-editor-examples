@@ -1,8 +1,7 @@
 const { v4: uuid } = require('uuid');
 
 class Room {
-  constructor(id) {
-    this.id = id;
+  constructor() {
     this.clients = [];
     this.state = 0;
   }
@@ -25,15 +24,7 @@ class Room {
 
   onClient(client, req) {
     const { clients, pingInterval, state } = this;
-    const { allowedOrigins, maxClients } = Room; 
-    if (allowedOrigins && allowedOrigins.indexOf(req.headers.origin) === -1) {
-      client.send(JSON.stringify({
-        type: 'ERROR',
-        data: 'Origin not allowed.',
-      }), () => {});
-      client.terminate();
-      return;
-    }
+    const { maxClients } = Room; 
     if (clients.length >= maxClients) {
       client.send(JSON.stringify({
         type: 'ERROR',
@@ -147,7 +138,6 @@ class Room {
   }
 }
 
-Room.allowedOrigins = process.env.ALLOWED_ORIGINS ? process.env.ALLOWED_ORIGINS.split(',') : false;
 Room.maxClients = process.env.MAX_CLIENTS ? parseInt(process.env.MAX_CLIENTS, 10) : 16;
 
 module.exports = Room;
