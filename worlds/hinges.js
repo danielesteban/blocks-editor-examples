@@ -199,7 +199,7 @@ class Hinges extends ElevatorWorld {
     } = this;
     clouds.animate(animation);
     explosions.forEach((explosion) => explosion.animate(animation));
-    if (!physics || !spheres) {
+    if (!physics) {
       return;
     }
     player.controllers.forEach(({ hand, buttons }, i) => {
