@@ -1,4 +1,4 @@
-[blocks-editor-examples](https://train.gatunes.com/)
+[SpaceTrain](https://train.gatunes.com/)
 ==
 
 [![screenshot](screenshot.jpg)](https://train.gatunes.com/)
