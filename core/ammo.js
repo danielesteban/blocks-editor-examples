@@ -44,6 +44,29 @@ async function AmmoPhysics() {
 
     physics = physics || geometry.physics;
 
+    if ( physics && Array.isArray(physics) ) {
+  
+      const compound = new AmmoLib.btCompoundShape();
+      physics.forEach((physics) => {
+        const shape = getShape({ physics });
+        if ( shape !== null ) {
+          auxTransform.setIdentity();
+          if (physics.position) {
+            auxVector.setValue( physics.position.x, physics.position.y, physics.position.z );
+            auxTransform.setOrigin( auxVector );
+          }
+          if (physics.rotation) {
+            auxQuaternion.setValue( physics.rotation.x, physics.rotation.y, physics.rotation.z, physics.rotation.w );
+            auxTransform.setRotation( auxQuaternion );
+          }
+          compound.addChildShape(auxTransform, shape);
+        }
+      });
+
+      return compound;
+
+    }
+
     if ( physics && physics.shape === 'box' ) {
   
       auxVector.setValue( physics.width / 2, physics.height / 2, physics.depth / 2 );
@@ -189,7 +212,7 @@ async function AmmoPhysics() {
 
     const instances = [];
 
-    for ( let i = 0; i < mesh.count; i ++ ) {
+    for ( let i = 0, l = mesh.count; i < l; i ++ ) {
 
       const index = i * 16;
 
@@ -295,8 +318,8 @@ async function AmmoPhysics() {
     switch (options.type) {
       case 'hinge':
         auxTransform.setIdentity();
-        if (options.origin) {
-          auxVector.setValue( options.origin.x, options.origin.y, options.origin.z );
+        if (options.position) {
+          auxVector.setValue( options.position.x, options.position.y, options.position.z );
           auxTransform.setOrigin( auxVector );
         }
         if (options.rotation) {
@@ -343,7 +366,7 @@ async function AmmoPhysics() {
         const array = mesh.instanceMatrix.array;
         const instances = meshMap.get( mesh );
 
-        for ( let j = 0; j < instances.length; j ++ ) {
+        for ( let j = 0, l = instances.length; j < l; j ++ ) {
 
           const body = instances[ j ];
           const motionState = body.getMotionState();
@@ -367,9 +390,14 @@ async function AmmoPhysics() {
 
     });
 
-    shapes.forEach((shape) => (
-      Ammo.destroy(shape)
-    ));
+    shapes.forEach((shape) => {
+      if (shape instanceof AmmoLib.btCompoundShape) {
+        for (let i = 0, l = shape.getNumChildShapes(); i < l; i += 1) {
+          Ammo.destroy(shape.getChildShape(i));
+        }
+      }
+      Ammo.destroy(shape);
+    });
 
     constraints.length = 0;
     meshes.length = 0;
@@ -431,7 +459,7 @@ async function AmmoPhysics() {
         const array = mesh.instanceMatrix.array;
         const bodies = meshMap.get( mesh );
 
-        for ( let j = 0; j < bodies.length; j ++ ) {
+        for ( let j = 0, k = bodies.length; j < k; j ++ ) {
 
           const body = bodies[ j ];
 

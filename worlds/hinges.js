@@ -67,18 +67,39 @@ class Hinges extends ElevatorWorld {
         });
 
         const door = new Group();
-        door.physics = {
-          shape: 'box',
-          width: 0.9,
-          height: 2.4,
-          depth: 0.125,
-        };
+        door.physics = [
+          {
+            shape: 'box',
+            width: 0.9,
+            height: 2.4,
+            depth: 0.125,
+          },
+          {
+            shape: 'box',
+            position: new Vector3(0.3, 0, 0.1375),
+            width: 0.03,
+            height: 0.03,
+            depth: 0.15,
+          },
+          {
+            shape: 'box',
+            position: new Vector3(0.185, 0, 0.175),
+            width: 0.2,
+            height: 0.03,
+            depth: 0.03,
+          },
+        ];
         door.position.set(0, 1.75, -1.25);
         const model = doorModel.children[0];
         model.position.set(-0.5, -1.75, -0.0625);
         model.scale.set(0.5, 0.5, 0.125);
         // const doorDebug = new Trigger(0.9, 2.4, 0.125);
         // door.add(doorDebug);
+        door.physics.slice(1).forEach(({ width, height, depth, position }) => {
+          const handle = new Trigger(width, height, depth);
+          handle.position.copy(position);
+          door.add(handle);
+        });
         door.add(model);
         this.add(door);
         this.physics.addMesh(door, 5);
@@ -86,7 +107,7 @@ class Hinges extends ElevatorWorld {
           const y = 0.5 * (i === 0 ? -1 : 1);
           this.physics.addConstraint(door, {
             type: 'hinge',
-            origin: new Vector3(-0.4, y, 0),
+            position: new Vector3(-0.4, y, 0),
             rotation: (new Quaternion()).setFromAxisAngle(new Vector3(1, 0, 0), Math.PI * 0.5),
           });
         }
@@ -121,7 +142,7 @@ class Hinges extends ElevatorWorld {
           this.physics.addMesh(trigger, 2, { isTrigger: true });
           this.physics.addConstraint(trigger, {
             type: 'hinge',
-            origin: new Vector3(0, 0.5, 0),
+            position: new Vector3(0, 0.5, 0),
             rotation: (new Quaternion()).setFromAxisAngle(new Vector3(0, 1, 0), Math.PI * -0.5)
           });
         }
