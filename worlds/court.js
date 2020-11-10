@@ -118,9 +118,6 @@ class Court extends ElevatorWorld {
         rain.reset();
 
         this.elevator.isOpen = true;
-        this.elevator.onClose = () => (
-          scene.load('Metro', { destination: 'Court', offset: this.elevator.getOffset(player) })
-        );
       });
 
     Promise.all([

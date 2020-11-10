@@ -60,9 +60,6 @@ class Island extends ElevatorWorld {
         rain.visible = true;
 
         this.elevator.isOpen = true;
-        this.elevator.onClose = () => (
-          scene.load('Metro', { destination: 'Island', offset: this.elevator.getOffset(player) })
-        );
       });
 
     // This scene has a lot of vegetation (cross block model).

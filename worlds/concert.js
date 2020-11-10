@@ -38,9 +38,6 @@ class Concert extends ElevatorWorld {
         this.add(model);
 
         this.elevator.isOpen = true;
-        this.elevator.onClose = () => (
-          scene.load('Metro', { destination: 'Concert', offset: this.elevator.getOffset(player) })
-        );
       });
   }
 

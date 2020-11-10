@@ -61,9 +61,6 @@ class Escher extends ElevatorWorld {
         });
   
         this.elevator.isOpen = true;
-        this.elevator.onClose = () => (
-          scene.load('Metro', { destination: 'Escher', offset: this.elevator.getOffset(player) })
-        );
       });
   }
 

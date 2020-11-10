@@ -21,9 +21,6 @@ class Cave extends ElevatorWorld {
         this.add(model);
   
         this.elevator.isOpen = true;
-        this.elevator.onClose = () => (
-          scene.load('Metro', { destination: 'Cave', offset: this.elevator.getOffset(player) })
-        );
       });
 
     Promise.all([

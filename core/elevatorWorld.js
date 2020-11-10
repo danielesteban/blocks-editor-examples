@@ -23,6 +23,11 @@ class ElevatorWorld extends Group {
     elevator.rotation.copy(rotation);
     elevator.scale.setScalar(0.25);
     translocables.push(elevator.translocables);
+    elevator.onOpen = () => {
+      elevator.onClose = () => (
+        scene.load('Metro', { destination: this.constructor.name, offset: elevator.getOffset(player) })
+      );
+    };
     this.add(elevator);
     this.elevator = elevator;
 

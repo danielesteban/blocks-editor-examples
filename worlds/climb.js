@@ -47,9 +47,6 @@ class Climb extends ElevatorWorld {
         this.add(model);
   
         this.elevator.isOpen = true;
-        this.elevator.onClose = () => (
-          scene.load('Metro', { destination: 'Climb', offset: this.elevator.getOffset(player) })
-        );
       });
 
     models.physics('models/climbPhysics.json', 0.5)

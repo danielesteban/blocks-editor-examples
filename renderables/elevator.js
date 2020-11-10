@@ -59,6 +59,10 @@ class Elevator extends Group {
         const { onClose } = this;
         delete this.onClose;
         setTimeout(onClose, 0);
+      } if (this.onOpen && isOpen) {
+        const { onOpen } = this;
+        delete this.onOpen;
+        setTimeout(onOpen, 0);
       }
     });
   }

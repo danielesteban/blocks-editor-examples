@@ -34,9 +34,6 @@ class Temple extends ElevatorWorld {
         this.add(model);
   
         this.elevator.isOpen = true;
-        this.elevator.onClose = () => (
-          scene.load('Metro', { destination: 'Temple', offset: this.elevator.getOffset(player) })
-        );
       });
 
     Promise.all([

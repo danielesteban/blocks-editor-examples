@@ -64,9 +64,6 @@ class Building extends ElevatorWorld {
         });
 
         this.elevator.isOpen = true;
-        this.elevator.onClose = () => (
-          scene.load('Metro', { destination: 'Building', offset: this.elevator.getOffset(player) })
-        );
       });
     
     const canvas = new Canvas();
