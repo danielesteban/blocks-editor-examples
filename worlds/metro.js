@@ -70,8 +70,8 @@ class Metro extends Group {
     const { stations } = Metro;
 
     const updateDisplay = () => {
-      const { display } = worlds[stations[track.station]];
-      train.setDisplay(`${track.isRunning ? 'Next station: ' : ''}${display}`);
+      const { display, name } = worlds[stations[track.station]];
+      train.setDisplay(`${track.isRunning ? 'Next station: ' : ''}${display || name}`);
     };
 
     Promise.all([
