@@ -13,6 +13,7 @@ class Scene extends ThreeScene {
     super();
 
     this.locomotion = Scene.locomotions.teleport;
+    this.locomotions = Scene.locomotions;
   
     this.models = new Models();
 

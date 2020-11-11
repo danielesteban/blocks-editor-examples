@@ -1,5 +1,4 @@
 import ElevatorWorld from '../core/elevatorWorld.js';
-import Scene from '../core/scene.js';
 import {
   Color,
   Euler,
@@ -23,7 +22,7 @@ class Escher extends ElevatorWorld {
     ambient.set('sounds/wind.ogg');
     scene.background = new Color(0x0D001A);
     scene.fog = new FogExp2(scene.background.getHex(), 0.03);
-    scene.locomotion = Scene.locomotions.fly;
+    scene.locomotion = scene.locomotions.fly;
 
     this.world = new Group();
     this.world.position.set(0, -0.5, 0);
