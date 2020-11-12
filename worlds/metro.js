@@ -50,7 +50,7 @@ class Metro extends Group {
       models,
     });
     train.scale.setScalar(0.25);
-    train.position.set(0, -0.5, 4.625);
+    train.position.set(0, -0.25, 4.625);
     translocables.push(train.translocables);
     this.add(train);
     this.train = train;

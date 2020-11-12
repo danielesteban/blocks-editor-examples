@@ -62,7 +62,7 @@ class Train extends Group {
                 models,
                 swapMaterials,
               });
-              display.position.set(0, 13, i === 0 ? -21.65 : 25.65);
+              display.position.set(0, 12, i === 0 ? -21.65 : 25.65);
               if (i === 1) display.rotation.y = Math.PI;
               model.add(display);
             }
