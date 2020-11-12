@@ -15,7 +15,7 @@ class Metro extends Group {
   constructor(scene, { destination, offset }) {
     super();
 
-    const { ambient, models, player, translocables } = scene;
+    const { ambient, models, player, pointables, translocables } = scene;
     ambient.set('sounds/train.ogg');
     scene.fog = new FogExp2(0, 0.015);
     this.player = player;
@@ -51,6 +51,7 @@ class Metro extends Group {
     });
     train.scale.setScalar(0.25);
     train.position.set(0, -0.25, 4.625);
+    pointables.push(train.pointables);
     translocables.push(train.translocables);
     this.add(train);
     this.train = train;
@@ -68,10 +69,12 @@ class Metro extends Group {
       Metro.stations = stations;
     }
     const { stations } = Metro;
+    train.setMapStations(stations.map((id) => worlds[id].display || worlds[id].name));
 
     const updateDisplay = () => {
       const { display, name } = worlds[stations[track.station]];
       train.setDisplay(`${track.isRunning ? 'Next station: ' : ''}${display || name}`);
+      train.setMap(track.station);
     };
 
     Promise.all([
@@ -137,11 +140,13 @@ class Metro extends Group {
           }
           track.updateMatrixWorld();
         };
-        track.run = () => {
-          ambient.set('sounds/train.ogg');
-          track.isRunning = true;
-          train.isOpen = false;
-          track.station = (track.station + 1) % stations.length;
+        track.goTo = (station) => {
+          if (!track.isRunning) {
+            ambient.set('sounds/train.ogg');
+            track.isRunning = true;
+            train.isOpen = false;
+          }
+          track.station = station % stations.length;
           updateDisplay();
         };
 
@@ -164,19 +169,29 @@ class Metro extends Group {
       track,
       train,
     } = this;
-    if (
-      player.desktopControls.buttons.primaryDown
-      || player.controllers.find(({ hand, buttons: { triggerDown } }) => (hand && triggerDown))
-    ) {
-      const isOnElevator = track && elevator.containsPoint(player.head.position);
-      const isOnTrain = track && train.containsPoint(player.head.position);
-      if (isOnElevator && elevator.isOpen) {
-        elevator.isOpen = false;
+    const isOnElevator = track && elevator.containsPoint(player.head.position);
+    const isOnTrain = track && train.containsPoint(player.head.position);
+    [
+      player.desktopControls,
+      ...player.controllers,
+    ].forEach(({ buttons, hand, isDesktop, pointer }) => {
+      if ((hand && buttons.triggerDown) || (isDesktop && buttons.primaryDown)) {
+        if (pointer && pointer.visible && pointer.target.object.isMap) {
+          const station = pointer.target.object.getStationAtPoint(pointer.target.point);
+          if (station) {
+            track.goTo(station.index);
+          }
+          return; 
+        }
+
+        if (isOnElevator && elevator.isOpen) {
+          elevator.isOpen = false;
+        }
+        if (isOnTrain && !track.isRunning) {
+          track.goTo(track.station + 1);
+        }
       }
-      if (isOnTrain && !track.isRunning) {
-        track.run();
-      }
-    }
+    });
     elevator.animate(delta);
     train.animate(delta);
     if (track) {

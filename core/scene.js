@@ -26,6 +26,7 @@ class Scene extends ThreeScene {
     this.ambient = new Ambient(this.player.head.context.state === 'running');
     this.sfx = new SFX({ listener: this.player.head });
 
+    this.pointables = [];
     this.translocables = [];
 
     this.worlds = worlds;
@@ -53,6 +54,7 @@ class Scene extends ThreeScene {
       ambient,
       physics,
       player,
+      pointables,
       translocables,
       worlds,
     } = this;
@@ -64,6 +66,7 @@ class Scene extends ThreeScene {
     if (physics) {
       physics.reset();
     }
+    pointables.length = 0;
     translocables.length = 0;
     if (this.world) {
       if (this.world.onUnload) {
@@ -88,6 +91,7 @@ class Scene extends ThreeScene {
       ambient,
       locomotion,
       player,
+      pointables,
       translocables,
       world,
     } = this;
@@ -107,6 +111,7 @@ class Scene extends ThreeScene {
         },
         hand,
         marker,
+        pointer,
         raycaster,
         worldspace,
       } = controller;
@@ -163,6 +168,16 @@ class Scene extends ThreeScene {
           direction: worldspace.quaternion,
           movement,
         });
+      }
+      if (pointables.length) {
+        const hit = raycaster.intersectObjects(pointables.flat())[0] || false;
+        if (hit) {
+          pointer.update({
+            distance: hit.distance,
+            origin: raycaster.ray.origin,
+            target: hit,
+          });
+        }
       }
       if (secondaryDown) {
         xr.getSession().end();

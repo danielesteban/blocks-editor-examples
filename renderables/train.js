@@ -1,5 +1,6 @@
 import { Box3, Group, Vector3 } from '../core/three.js';
 import Display from './display.js';
+import Map from './map.js';
 
 class Train extends Group {
   constructor({ models, isOpen = false }) {
@@ -7,6 +8,7 @@ class Train extends Group {
     this.aux = new Box3();
     this.bounds = new Box3();
     this.isOpen = isOpen;
+    this.pointables = [];
     this.translocables = [];
     models.lightmap('models/tunnelLightmap.json')
       .then((lightmap) => {
@@ -66,6 +68,14 @@ class Train extends Group {
               if (i === 1) display.rotation.y = Math.PI;
               model.add(display);
             }
+            const map = new Map({
+              material: lightmap.material.clone(),
+              materials: this.lightmap.materials,
+            });
+            map.position.set(7.99, 8, 6);
+            map.rotation.y = Math.PI * -0.5;
+            this.pointables.push(map);
+            model.add(map);
             this.add(model);
           });
 
@@ -126,6 +136,14 @@ class Train extends Group {
 
   setDisplay(text) {
     Display.update(text);
+  }
+
+  setMapStations(stations) {
+    Map.setStations(stations);
+  }
+
+  setMap(station) {
+    Map.update(station);
   }
 }
 

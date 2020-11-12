@@ -13,6 +13,7 @@ import DesktopControls from './desktop.js';
 import Head from '../renderables/head.js';
 import Hand from '../renderables/hand.js';
 import Marker from '../renderables/marker.js';
+import Pointer from '../renderables/pointer.js';
 
 // Player controller
 
@@ -53,6 +54,8 @@ class Player extends Group {
       controller.marker = new Marker();
       controller.physics = physics.clone();
       controller.add(controller.physics);
+      controller.pointer = new Pointer();
+      controller.add(controller.pointer);
       controller.raycaster = new Raycaster();
       controller.raycaster.far = 32;
       controller.worldspace = {
@@ -90,6 +93,7 @@ class Player extends Group {
         delete controller.hand;
         delete controller.gamepad;
         controller.marker.visible = false;
+        controller.pointer.visible = false;
       });
       return controller;
     });
@@ -151,6 +155,7 @@ class Player extends Group {
       gamepad,
       marker,
       matrixWorld,
+      pointer,
       raycaster,
       worldspace,
     }) => {
@@ -158,6 +163,7 @@ class Player extends Group {
         return;
       }
       marker.visible = false;
+      pointer.visible = false;
       [
         ['forwards', gamepad.axes[3] <= -0.5],
         ['backwards', gamepad.axes[3] >= 0.5],
