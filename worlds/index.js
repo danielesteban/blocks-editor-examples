@@ -4,6 +4,7 @@ export { default as Climb } from './climb.js';
 export { default as Concert } from './concert.js';
 export { default as Court } from './court.js';
 export { default as Escher } from './escher.js';
+export { default as Game } from './game.js';
 export { default as Hinges } from './hinges.js';
 export { default as Island } from './island.js';
 export { default as Metro } from './metro.js';

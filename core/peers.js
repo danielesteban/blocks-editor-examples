@@ -7,11 +7,13 @@ import Peer from '../renderables/peer.js';
 class Peers extends Group {
   constructor({
     onState,
+    onUpdate,
     player,
     room,
   }) {
     super();
     this.onState = onState;
+    this.onUpdate = onUpdate;
     this.peers = [];
     this.player = player;
     this.room = room;
@@ -191,6 +193,11 @@ class Peers extends Group {
       case 'STATE':
         if (this.onState) {
           this.onState(data);
+        }
+        break;
+      case 'UPDATE':
+        if (this.onUpdate) {
+          this.onUpdate(data);
         }
         break;
       default:

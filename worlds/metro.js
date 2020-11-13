@@ -42,7 +42,11 @@ class Metro extends Group {
     track.isRunning = true;
     track.segments = 12;
     track.gap = destination ? (track.segments - 1) : (track.segments * 2 - 1);
-    track.station = destination ? stations.findIndex((name) => name === destination) : 0;
+    track.station = destination ? (
+      stations.findIndex((name) => name === destination)
+    ) : (
+      Math.floor(Math.random() * stations.length)
+    );
     this.add(track);
 
     const elevator = new Elevator({
