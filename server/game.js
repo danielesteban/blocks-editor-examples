@@ -191,7 +191,7 @@ class Game extends Room {
           }
           return;
         }
-        let { move, rotate } = request.data;
+        let { move, rotate } = request.data || {};
         move = parseInt(move, 10);
         rotate = parseInt(rotate, 10);
         if (!(
