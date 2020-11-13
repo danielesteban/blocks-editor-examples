@@ -89,6 +89,9 @@ class Metro extends Group {
         .then((res) => res.json())
         .then((rooms) => {
           peers = rooms;
+          if (!track.isRunning) {
+            updateDisplay();
+          }
           updateMap();
         })
     );
@@ -97,11 +100,20 @@ class Metro extends Group {
     updatePeers();
 
     const updateDisplay = () => {
-      const { display, name } = worlds[stations[track.station]];
-      train.setDisplay(`${track.isRunning ? 'Next station: ' : ''}${display || name}`);
+      const id = stations[track.station];
+      const { display, isMultiplayer, name } = worlds[id];
+      if (track.isRunning) {
+        train.setDisplay(`Next station: ${display || name}`);
+      } else {
+        train.setDisplay(`${display || name}${isMultiplayer ? ` - ${peers[id] || 0} Players` : ''}`);
+      }
     };
 
-    train.setMapStations(stations.map((id) => ({ id, name: worlds[id].display || worlds[id].name })));
+    train.setMapStations(stations.map((id) => ({
+      id,
+      isMultiplayer: worlds[id].isMultiplayer,
+      name: worlds[id].display || worlds[id].name,
+    })));
     if (!destination) {
       updateDisplay();
       updateMap();

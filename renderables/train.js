@@ -74,6 +74,7 @@ class Train extends Group {
             });
             map.position.set(7.99, 8, 6);
             map.rotation.y = Math.PI * -0.5;
+            map.renderOrder = -1;
             this.pointables.push(map);
             model.add(map);
             this.add(model);

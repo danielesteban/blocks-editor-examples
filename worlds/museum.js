@@ -218,5 +218,6 @@ Museum.artworks = [
 ];
 
 Museum.display = 'Museum';
+Museum.isMultiplayer = true;
 
 export default Museum;

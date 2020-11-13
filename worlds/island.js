@@ -91,5 +91,6 @@ class Island extends ElevatorWorld {
 }
 
 Island.display = 'Foggy Island';
+Island.isMultiplayer = true;
 
 export default Island;

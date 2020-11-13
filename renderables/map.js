@@ -60,10 +60,11 @@ class Map extends Mesh {
     const { renderer } = Map;
     const dist = renderer.width * 0.36;
     const slice = Math.PI * 2 / stations.length;
-    Map.stations = stations.map(({ id, name }, i) => {
+    Map.stations = stations.map(({ id, isMultiplayer, name }, i) => {
       const angle = slice * i;
       return {
         id,
+        isMultiplayer,
         name,
         index: i,
         x: Math.cos(angle) * dist + renderer.width * 0.5,
@@ -107,16 +108,16 @@ class Map extends Mesh {
       ctx.stroke();
     }
 
-    stations.forEach(({ id, name, x, y }, i) => {
+    stations.forEach(({ id, isMultiplayer, name, x, y }, i) => {
       ctx.save();
       ctx.translate(x, y);
       ctx.fillStyle = i === current ? '#393' : '#333';
       ctx.beginPath();
       ctx.arc(0, -15, 10, 0, Math.PI * 2);
       ctx.fill();
-      if (peers[id]) {
+      if (isMultiplayer || peers[id]) {
         ctx.fillStyle = '#fff';
-        ctx.fillText(peers[id], 0, -15);
+        ctx.fillText(peers[id] || 0, 0, -15);
       }
       ctx.fillStyle = i === current ? '#393' : 'rgba(51, 51, 51, 0.9)';
       ctx.beginPath();

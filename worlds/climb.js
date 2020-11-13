@@ -119,5 +119,6 @@ class Climb extends ElevatorWorld {
 }
 
 Climb.display = 'Climber\'s Delight';
+Climb.isMultiplayer = true;
 
 export default Climb;
