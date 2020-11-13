@@ -105,7 +105,7 @@ class Metro extends Group {
       if (track.isRunning) {
         train.setDisplay(`Next station: ${display || name}`);
       } else {
-        train.setDisplay(`${display || name}${isMultiplayer ? ` - ${peers[id] || 0} Players` : ''}`);
+        train.setDisplay(`${display || name}${(isMultiplayer || peers[id]) ? ` - ${peers[id] || 0} Players` : ''}`);
       }
     };
 
