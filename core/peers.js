@@ -217,11 +217,12 @@ class Peers extends Group {
     peers.length = 0;
   }
 
-  updateState() {
+  updateState(data) {
     const { server } = this;
     if (server) {
       server.send(JSON.stringify({
         type: 'STATE',
+        data,
       }));
     }
   }

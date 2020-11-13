@@ -1,8 +1,9 @@
 const { v4: uuid } = require('uuid');
 
 class Room {
-  constructor() {
+  constructor(id) {
     this.clients = [];
+    this.id = id;
     this.state = 0;
   }
 
@@ -71,7 +72,7 @@ class Room {
     const { clients } = this;
     switch (request.type) {
       case 'SIGNAL': {
-        let { peer, signal } = request.data;
+        let { peer, signal } = request.data || {};
         peer = `${peer}`;
         signal = `${signal}`;
         if (!(
@@ -94,7 +95,12 @@ class Room {
         break;
       }
       case 'STATE': {
-        this.state += 1;
+        let state = parseInt(request.data, 10);
+        if (!Number.isNaN(state)) {
+          this.state = state;
+        } else {
+          this.state += 1;
+        }
         this.broadcast({
           type: 'STATE',
           data: this.state,

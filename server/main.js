@@ -20,7 +20,8 @@ server.ws('/:room', (client, req) => {
     client.terminate();
     return;
   }
-  if (allowedRooms && allowedRooms.indexOf(req.params.room) === -1) {
+  const { room: id } = req.params; 
+  if (allowedRooms && allowedRooms.indexOf(id) === -1) {
     client.send(JSON.stringify({
       type: 'ERROR',
       data: 'Room not allowed.',
@@ -28,12 +29,21 @@ server.ws('/:room', (client, req) => {
     client.terminate();
     return;
   }
-  let room = rooms.get(req.params.room);
+  let room = rooms.get(id);
   if (!room) {
-    room = new Room();
-    rooms.set(req.params.room, room);
+    room = new Room(id);
+    rooms.set(id, room);
   }
   room.onClient(client, req);
+});
+server.get('/peers', (req, res) => {
+  const peers = {};
+  rooms.forEach(({ id, clients }) => {
+    if (clients.length) {
+      peers[id] = clients.length;
+    }
+  });
+  res.json(peers);
 });
 
 server.use((req, res) => res.status(404).end());
