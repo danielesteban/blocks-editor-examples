@@ -114,14 +114,18 @@ class Map extends Mesh {
       ctx.beginPath();
       ctx.arc(0, -15, 10, 0, Math.PI * 2);
       ctx.fill();
-      ctx.fillStyle = i === current ? '#393' : 'rgba(51, 51, 51, 0.9)';
-      ctx.fillRect(-50, -1, 100, 20);
-      ctx.fillStyle = i === current ? '#fff' : '#666';
-      ctx.fillText(name.substr(0, 10).trim().toUpperCase() + (name.length > 10 ? '…' : ''), 0, 10);
       if (peers[id]) {
         ctx.fillStyle = '#fff';
         ctx.fillText(peers[id], 0, -15);
       }
+      ctx.fillStyle = i === current ? '#393' : 'rgba(51, 51, 51, 0.9)';
+      ctx.beginPath();
+      ctx.arc(-40, 9, 10, 0, Math.PI * 2);
+      ctx.rect(-40, -1, 80, 20);
+      ctx.arc(40, 9, 10, 0, Math.PI * 2);
+      ctx.fill();
+      ctx.fillStyle = i === current ? '#fff' : '#666';
+      ctx.fillText(name.substr(0, 10).trim().toUpperCase() + (name.length > 10 ? '…' : ''), 0, 10);
       ctx.restore();
     });
     texture.needsUpdate = true;
