@@ -72,7 +72,7 @@ class Map extends Mesh {
     });
   }
 
-  static update(current, peers) {
+  static update(current, progress, peers) {
     if (!Map.renderer || !Map.texture) {
       Map.setupTexture();
     }
@@ -80,23 +80,30 @@ class Map extends Mesh {
     const ctx = renderer.getContext('2d');
     ctx.fillStyle = '#eee';
     ctx.fillRect(0, 0, renderer.width, renderer.height);
-    ctx.fillStyle = '#222';
+    ctx.lineWidth = 4;
+    ctx.strokeStyle = '#222';
     const b = 4;
-    ctx.fillRect(b, b, renderer.width - (b * 2), renderer.height - (b * 2));
-    ctx.fillStyle = '#eee';
-    ctx.fillRect(b * 2, b * 2, renderer.width - (b * 4), renderer.height - (b * 4));
-    ctx.fillStyle = '#000';
+    ctx.strokeRect(6, 6, renderer.width - 12, renderer.height - 12);
     
     const dist = renderer.width * 0.36;
+    const slice = Math.PI * 2 / stations.length;
 
-    ctx.fillStyle = '#666';
+    ctx.lineWidth = 10;
+    ctx.strokeStyle = '#666';
     ctx.beginPath();
-    ctx.arc(renderer.width * 0.5, renderer.height * 0.5 - 15, dist + 5, 0, Math.PI * 2);
-    ctx.fill();
-    ctx.fillStyle = '#eee';
+    ctx.arc(renderer.width * 0.5, renderer.height * 0.5 - 15, dist, 0, Math.PI * 2);
+    ctx.stroke();
+    
+    ctx.lineCap = 'round';
+    ctx.strokeStyle = '#3a3';
+    const angle = (current === 0 ? stations.length - 1 : current - 1) * slice;
     ctx.beginPath();
-    ctx.arc(renderer.width * 0.5, renderer.height * 0.5 - 15, dist - 5, 0, Math.PI * 2);
-    ctx.fill();
+    ctx.arc(renderer.width * 0.5, renderer.height * 0.5 - 15, dist, angle, angle + slice);
+    ctx.stroke();
+    ctx.strokeStyle = '#fff';
+    ctx.beginPath();
+    ctx.arc(renderer.width * 0.5, renderer.height * 0.5 - 15, dist, angle + slice * progress - 0.02, angle + slice * (progress + 0.02));
+    ctx.stroke();
 
     stations.forEach(({ id, name, x, y }, i) => {
       ctx.save();
@@ -105,6 +112,7 @@ class Map extends Mesh {
       ctx.beginPath();
       ctx.arc(0, -15, 10, 0, Math.PI * 2);
       ctx.fill();
+      ctx.fillStyle = i === current ? '#393' : 'rgba(51, 51, 51, 0.9)';
       ctx.fillRect(-50, -1, 100, 20);
       ctx.fillStyle = i === current ? '#fff' : '#666';
       ctx.fillText(name.substr(0, 10).trim().toUpperCase() + (name.length > 10 ? '…' : ''), 0, 10);

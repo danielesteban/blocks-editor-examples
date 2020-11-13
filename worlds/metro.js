@@ -42,6 +42,7 @@ class Metro extends Group {
     track.isRunning = true;
     track.segments = 12;
     track.gap = destination ? (track.segments - 1) : (track.segments * 2 - 1);
+    track.progress = 0;
     track.station = destination ? stations.findIndex((name) => name === destination) : 0;
     this.add(track);
 
@@ -77,13 +78,19 @@ class Metro extends Group {
     this.add(train);
     this.train = train;
 
+    const updateMap = () => (
+      train.setMap(track.station, track.isRunning ? track.progress : 1, peers)
+    );
+    this.updateMap = updateMap;
+    this.updateMapTimer = 0;
+
     let peers = {};
     const updatePeers = () => (
       fetch('https://train.gatunes.com/rooms/peers')
         .then((res) => res.json())
         .then((rooms) => {
           peers = rooms;
-          train.setMap(track.station, peers);
+          updateMap();
         })
     );
 
@@ -93,12 +100,12 @@ class Metro extends Group {
     const updateDisplay = () => {
       const { display, name } = worlds[stations[track.station]];
       train.setDisplay(`${track.isRunning ? 'Next station: ' : ''}${display || name}`);
-      train.setMap(track.station, peers);
     };
 
     train.setMapStations(stations.map((id) => ({ id, name: worlds[id].display || worlds[id].name })));
     if (!destination) {
       updateDisplay();
+      updateMap();
     }
 
     Promise.all([
@@ -157,6 +164,8 @@ class Metro extends Group {
               chunk.instanceMatrix.needsUpdate = true;
             });
           }
+          track.progress = Math.min(Math.max((track.gap + track.position.z / 8) / (track.segments * 2), 0), 1);
+          track.progress += track.progress < 0.5 ? 0.5 : -0.5;
           track.updateMatrixWorld();
         };
         track.goTo = (station) => {
@@ -167,6 +176,7 @@ class Metro extends Group {
           }
           track.station = station % stations.length;
           updateDisplay();
+          updateMap();
         };
         this.track = track;
 
@@ -179,12 +189,13 @@ class Metro extends Group {
       });
   }
 
-  onAnimationTick({ delta }) {
+  onAnimationTick({ delta, time }) {
     const {
       elevator,
       player,
       track,
       train,
+      updateMapTimer,
     } = this;
     const isOnElevator = track && elevator.containsPoint(player.head.position);
     const isOnTrain = track && train.containsPoint(player.head.position);
@@ -217,6 +228,10 @@ class Metro extends Group {
         train.lightmap.materials.forEach(({ uniforms: { lightmapOrigin: { value: origin } } }) => {
           origin.copy(train.lightmap.origin).multiply(track.scale).add(track.position)
         });
+      }
+      if (track.isRunning && time >= updateMapTimer + 1) {
+        this.updateMapTimer = time;
+        this.updateMap();
       }
     }
   }
