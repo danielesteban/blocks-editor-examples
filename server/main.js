@@ -3,6 +3,7 @@ const express = require('express');
 const expressWS = require('express-ws');
 const helmet = require('helmet');
 const nocache = require('nocache');
+const Game = require('./game');
 const Room = require('./room');
 
 const allowedOrigins = process.env.ALLOWED_ORIGINS ? process.env.ALLOWED_ORIGINS.split(',') : false;
@@ -13,6 +14,12 @@ server.use(helmet());
 expressWS(server, null, { clientTracking: false });
 
 const rooms = new Map();
+
+rooms.set('Game', new Game({
+  dimensions: { width: 10, height: 20 },
+  players: 4,
+}));
+
 server.ws('/:room', (client, req) => {
   if (allowedOrigins && allowedOrigins.indexOf(req.headers.origin) === -1) {
     client.send(JSON.stringify({
@@ -38,6 +45,7 @@ server.ws('/:room', (client, req) => {
   }
   room.onClient(client, req);
 });
+
 server.get('/peers', cors({ origin: allowedOrigins ? allowedOrigins : true }), nocache(), (req, res) => {
   const peers = {};
   rooms.forEach(({ id, clients }) => {
