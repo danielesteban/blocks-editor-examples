@@ -15,9 +15,11 @@
     "sirv-cli": "^1.0.8"
   },
   "dependencies": {
+    "cors": "^2.8.5",
     "express": "^4.17.1",
     "express-ws": "^4.0.0",
     "helmet": "^4.2.0",
+    "nocache": "^2.1.0",
     "uuid": "^8.3.1"
   }
 }

@@ -1,6 +1,8 @@
+const cors = require('cors');
 const express = require('express');
 const expressWS = require('express-ws');
 const helmet = require('helmet');
+const nocache = require('nocache');
 const Room = require('./room');
 
 const allowedOrigins = process.env.ALLOWED_ORIGINS ? process.env.ALLOWED_ORIGINS.split(',') : false;
@@ -36,7 +38,7 @@ server.ws('/:room', (client, req) => {
   }
   room.onClient(client, req);
 });
-server.get('/peers', (req, res) => {
+server.get('/peers', cors({ origin: allowedOrigins ? allowedOrigins : true }), nocache(), (req, res) => {
   const peers = {};
   rooms.forEach(({ id, clients }) => {
     if (clients.length) {
