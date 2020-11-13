@@ -42,7 +42,6 @@ class Metro extends Group {
     track.isRunning = true;
     track.segments = 12;
     track.gap = destination ? (track.segments - 1) : (track.segments * 2 - 1);
-    track.progress = 0;
     track.station = destination ? stations.findIndex((name) => name === destination) : 0;
     this.add(track);
 
@@ -79,7 +78,7 @@ class Metro extends Group {
     this.train = train;
 
     const updateMap = () => (
-      train.setMap(track.station, track.isRunning ? track.progress : 1, peers)
+      train.setMap(track.station, track.isRunning ? track.progress : null, peers)
     );
     this.updateMap = updateMap;
     this.updateMapTimer = 0;
@@ -148,6 +147,7 @@ class Metro extends Group {
               track.position.z = 0;
               train.isOpen = true;
               updateDisplay();
+              updateMap();
             }
             station.position.z = (track.gap - track.segments) * 32;
             for (let i = 0; i < track.segments * 2; i += 1) {

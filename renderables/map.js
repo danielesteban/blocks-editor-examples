@@ -94,16 +94,18 @@ class Map extends Mesh {
     ctx.arc(renderer.width * 0.5, renderer.height * 0.5 - 15, dist, 0, Math.PI * 2);
     ctx.stroke();
     
-    ctx.lineCap = 'round';
-    ctx.strokeStyle = '#3a3';
-    const angle = (current === 0 ? stations.length - 1 : current - 1) * slice;
-    ctx.beginPath();
-    ctx.arc(renderer.width * 0.5, renderer.height * 0.5 - 15, dist, angle, angle + slice);
-    ctx.stroke();
-    ctx.strokeStyle = '#fff';
-    ctx.beginPath();
-    ctx.arc(renderer.width * 0.5, renderer.height * 0.5 - 15, dist, angle + slice * progress - 0.02, angle + slice * (progress + 0.02));
-    ctx.stroke();
+    if (progress !== null) {
+      ctx.lineCap = 'round';
+      ctx.strokeStyle = '#3a3';
+      const angle = (current === 0 ? stations.length - 1 : current - 1) * slice;
+      ctx.beginPath();
+      ctx.arc(renderer.width * 0.5, renderer.height * 0.5 - 15, dist, angle, angle + slice);
+      ctx.stroke();
+      ctx.strokeStyle = '#fff';
+      ctx.beginPath();
+      ctx.arc(renderer.width * 0.5, renderer.height * 0.5 - 15, dist, angle + slice * progress - 0.02, angle + slice * (progress + 0.02));
+      ctx.stroke();
+    }
 
     stations.forEach(({ id, name, x, y }, i) => {
       ctx.save();
