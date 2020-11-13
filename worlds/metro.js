@@ -14,15 +14,36 @@ import * as worlds from '../worlds/index.js';
 class Metro extends Group {
   constructor(scene, { destination, offset }) {
     super();
+    
+    if (!Metro.stations) {
+      const stations = Object.keys(worlds)
+        .filter((name) => name !== 'Metro');
+      const values = window.crypto.getRandomValues(new Uint32Array(stations.length));
+      for (let i = stations.length - 1; i >= 0; i -= 1) {
+        const rand = values[i] % (i + 1);
+        const temp = stations[i];
+        stations[i] = stations[rand];
+        stations[rand] = temp;
+      }
+      Metro.stations = stations;
+    }
+    const { stations } = Metro;
 
     const { ambient, models, player, pointables, translocables } = scene;
-    ambient.set('sounds/train.ogg');
+    if (!destination) {
+      ambient.set('sounds/train.ogg');
+    }
     scene.fog = new FogExp2(0, 0.015);
     this.player = player;
 
     const track = new Group();
     track.position.set(0, -2.75, 0);
     track.scale.setScalar(0.25);
+    track.isRunning = true;
+    track.segments = 12;
+    track.gap = destination ? (track.segments - 1) : (track.segments * 2 - 1);
+    track.station = destination ? stations.findIndex((name) => name === destination) : 0;
+    this.add(track);
 
     const elevator = new Elevator({
       isOpen: !destination,
@@ -56,21 +77,6 @@ class Metro extends Group {
     this.add(train);
     this.train = train;
 
-    if (!Metro.stations) {
-      const stations = Object.keys(worlds)
-        .filter((name) => name !== 'Metro');
-      const values = window.crypto.getRandomValues(new Uint32Array(stations.length));
-      for (let i = stations.length - 1; i >= 0; i -= 1) {
-        const rand = values[i] % (i + 1);
-        const temp = stations[i];
-        stations[i] = stations[rand];
-        stations[rand] = temp;
-      }
-      Metro.stations = stations;
-    }
-    const { stations } = Metro;
-    train.setMapStations(stations.map((id) => ({ id, name: worlds[id].display || worlds[id].name })));
-    
     let peers = {};
     const updatePeers = () => (
       fetch('https://train.gatunes.com/rooms/peers')
@@ -80,6 +86,7 @@ class Metro extends Group {
           train.setMap(track.station, peers);
         })
     );
+
     this.updatePeersInterval = setInterval(updatePeers, 10000);
     updatePeers();
 
@@ -88,6 +95,11 @@ class Metro extends Group {
       train.setDisplay(`${track.isRunning ? 'Next station: ' : ''}${display || name}`);
       train.setMap(track.station, peers);
     };
+
+    train.setMapStations(stations.map((id) => ({ id, name: worlds[id].display || worlds[id].name })));
+    if (!destination) {
+      updateDisplay();
+    }
 
     Promise.all([
       models.load('models/tunnel.glb'),
@@ -102,43 +114,38 @@ class Metro extends Group {
         station.add(elevator);
         track.add(station);
 
-        const count = 12;
         const chunks = [];
         const matrix = new Matrix4();
         tunnel.traverse((child) => {
           if (child.isMesh) {
-            const chunk = new InstancedMesh(child.geometry, child.material, count * 2);
+            const chunk = new InstancedMesh(child.geometry, child.material, track.segments * 2);
             chunk.position.copy(child.parent.position);
             chunks.push(chunk);
             track.add(chunk);
           }
         });
 
-        let gap = destination ? (count - 1) : (count * 2 - 1);
-        track.isRunning = true;
         track.position.z = 8;
-        track.station = destination ? stations.findIndex((name) => name === destination) : 0;
-        updateDisplay();
         track.animate = (delta) => {
           if (!track.isRunning) {
             return;
           }
-          const speed = Math.min(Math.max(Math.abs(count - (gap + track.position.z / 8)), 0.1), 1) * 8;
+          const speed = Math.min(Math.max(Math.abs(track.segments - (track.gap + track.position.z / 8)), 0.1), 1) * 8;
           track.position.z = track.position.z + delta * speed;
           if (track.position.z >= 8) {
-            gap = (gap + 1) % (count * 2 + 1);
+            track.gap = (track.gap + 1) % (track.segments * 2 + 1);
             track.position.z %= 8;
-            if (gap === count) {
+            if (track.gap === track.segments) {
               ambient.set('sounds/dark.ogg');
               track.isRunning = false;
               track.position.z = 0;
               train.isOpen = true;
               updateDisplay();
             }
-            station.position.z = (gap - count) * 32;
-            for (let i = 0; i < count * 2; i += 1) {
-              let z = (i - count) * 32;
-              if (i === gap) {
+            station.position.z = (track.gap - track.segments) * 32;
+            for (let i = 0; i < track.segments * 2; i += 1) {
+              let z = (i - track.segments) * 32;
+              if (i === track.gap) {
                 z += 32;
               }
               matrix.setPosition(0, 0, z);
@@ -161,8 +168,6 @@ class Metro extends Group {
           track.station = station % stations.length;
           updateDisplay();
         };
-
-        this.add(track);
         this.track = track;
 
         if (destination) {
