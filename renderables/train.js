@@ -142,8 +142,8 @@ class Train extends Group {
     Map.setStations(stations);
   }
 
-  setMap(station) {
-    Map.update(station);
+  setMap(station, peers) {
+    Map.update(station, peers);
   }
 }
 

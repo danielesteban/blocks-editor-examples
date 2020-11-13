@@ -69,12 +69,24 @@ class Metro extends Group {
       Metro.stations = stations;
     }
     const { stations } = Metro;
-    train.setMapStations(stations.map((id) => worlds[id].display || worlds[id].name));
+    train.setMapStations(stations.map((id) => ({ id, name: worlds[id].display || worlds[id].name })));
+    
+    let peers = {};
+    const updatePeers = () => (
+      fetch('https://train.gatunes.com/rooms/peers')
+        .then((res) => res.json())
+        .then((rooms) => {
+          peers = rooms;
+          train.setMap(track.station, peers);
+        })
+    );
+    this.updatePeersInterval = setInterval(updatePeers, 10000);
+    updatePeers();
 
     const updateDisplay = () => {
       const { display, name } = worlds[stations[track.station]];
       train.setDisplay(`${track.isRunning ? 'Next station: ' : ''}${display || name}`);
-      train.setMap(track.station);
+      train.setMap(track.station, peers);
     };
 
     Promise.all([
@@ -202,6 +214,11 @@ class Metro extends Group {
         });
       }
     }
+  }
+
+  onUnload() {
+    const { updatePeersInterval } = this;
+    clearInterval(updatePeersInterval);
   }
 }
 

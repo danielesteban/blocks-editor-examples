@@ -60,9 +60,10 @@ class Map extends Mesh {
     const { renderer } = Map;
     const dist = renderer.width * 0.36;
     const slice = Math.PI * 2 / stations.length;
-    Map.stations = stations.map((name, i) => {
+    Map.stations = stations.map(({ id, name }, i) => {
       const angle = slice * i;
       return {
+        id,
         name,
         index: i,
         x: Math.cos(angle) * dist + renderer.width * 0.5,
@@ -71,7 +72,7 @@ class Map extends Mesh {
     });
   }
 
-  static update(current) {
+  static update(current, peers) {
     if (!Map.renderer || !Map.texture) {
       Map.setupTexture();
     }
@@ -97,16 +98,20 @@ class Map extends Mesh {
     ctx.arc(renderer.width * 0.5, renderer.height * 0.5 - 15, dist - 5, 0, Math.PI * 2);
     ctx.fill();
 
-    stations.forEach(({ name, x, y }, i) => {
+    stations.forEach(({ id, name, x, y }, i) => {
       ctx.save();
       ctx.translate(x, y);
       ctx.fillStyle = i === current ? '#393' : '#333';
-      ctx.fillRect(-50, 0, 100, 20);
       ctx.beginPath();
       ctx.arc(0, -15, 10, 0, Math.PI * 2);
       ctx.fill();
+      ctx.fillRect(-50, -1, 100, 20);
       ctx.fillStyle = i === current ? '#fff' : '#666';
       ctx.fillText(name.substr(0, 10).trim().toUpperCase() + (name.length > 10 ? '…' : ''), 0, 10);
+      if (peers[id]) {
+        ctx.fillStyle = '#fff';
+        ctx.fillText(peers[id], 0, -15);
+      }
       ctx.restore();
     });
     texture.needsUpdate = true;
