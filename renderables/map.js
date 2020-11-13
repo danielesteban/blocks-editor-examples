@@ -116,8 +116,8 @@ class Map extends Mesh {
       ctx.arc(0, -15, 10, 0, Math.PI * 2);
       ctx.fill();
       if (isMultiplayer || peers[id]) {
-        ctx.fillStyle = '#fff';
-        ctx.fillText(peers[id] || 0, 0, -15);
+        ctx.fillStyle = peers[id] ? '#fff' : '#666';
+        ctx.fillText(peers[id] || 0, 0, -14);
       }
       ctx.fillStyle = i === current ? '#393' : 'rgba(51, 51, 51, 0.9)';
       ctx.beginPath();
