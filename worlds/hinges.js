@@ -11,6 +11,7 @@ import Box from '../renderables/box.js';
 import Door from '../renderables/door.js';
 import Clouds from '../renderables/clouds.js';
 import Explosion from '../renderables/explosion.js';
+import Boxes from '../renderables/boxes.js';
 import Spheres from '../renderables/spheres.js';
 
 class Hinges extends ElevatorWorld {
@@ -81,11 +82,11 @@ class Hinges extends ElevatorWorld {
           controller.physics.onContact = ({ mesh, index, point }) => {
             if (
               !this.isPicking[i]
-              && mesh === this.spheres
+              && (mesh === this.boxes || mesh === this.spheres)
               && controller.hand
               && controller.buttons.grip
             ) {
-              this.spheres.getMatrixAt(index, matrix);
+              mesh.getMatrixAt(index, matrix);
               inverse.getInverse(matrix);
               this.isPicking[i] = this.physics.addConstraint(controller.physics, {
                 type: 'p2p',
@@ -99,18 +100,26 @@ class Hinges extends ElevatorWorld {
           this.physics.addMesh(controller.physics, 0, { isKinematic: true, isTrigger: true });
         });
 
+        this.box = 0;
         this.sphere = 0;
-        this.spheres = new Spheres({ count: 50 });
+        this.boxes = new Boxes({ count: 25 });
+        this.spheres = new Spheres({ count: 25 });
         const matrix = new Matrix4();
-        for (let i = 0; i < this.spheres.count; i += 1) {
+        for (let i = 0, l = this.boxes.count + this.spheres.count; i < l; i += 1) {
           matrix.setPosition(
             (Math.random() - 0.5) * 12,
             4 + (Math.random() - 0.5) * 4,
             (Math.random() - 0.5) * 3 - 2
           );
-          this.spheres.setMatrixAt(i, matrix);
+          if (i < this.boxes.count) {
+            this.boxes.setMatrixAt(i, matrix);
+          } else {
+            this.spheres.setMatrixAt(i - this.boxes.count, matrix);
+          }
         }
+        this.physics.addMesh(this.boxes, 1);
         this.physics.addMesh(this.spheres, 1);
+        this.add(this.boxes);
         this.add(this.spheres);
 
         for (let i = 0; i < 4; i += 1) {
@@ -119,9 +128,9 @@ class Hinges extends ElevatorWorld {
           trigger.material.opacity = 0.75;
           trigger.position.set(-6 + 4 * i, 2.95, -9.5);
           trigger.onContact = ({ mesh, index, point }) => {
-            if (mesh === this.spheres) {
+            if (mesh === this.boxes || mesh === this.spheres) {
               const color = new Color();
-              this.spheres.getColorAt(index, color);
+              mesh.getColorAt(index, color);
               trigger.material.color = color;
               const explosion = explosions.find(({ sound, visible }) => (
                 !visible && (!sound || !sound.isPlaying)
@@ -135,7 +144,7 @@ class Hinges extends ElevatorWorld {
                 });
               }
               physics.setMeshPosition(
-                this.spheres,
+                mesh,
                 new Vector3((Math.random() - 0.5) * 12, 1, (Math.random() - 0.5) * 2),
                 index
               );
@@ -155,6 +164,7 @@ class Hinges extends ElevatorWorld {
   onAnimationTick(animation) {
     super.onAnimationTick(animation);
     const {
+      boxes,
       clouds,
       explosions,
       isOnElevator,
@@ -186,18 +196,25 @@ class Hinges extends ElevatorWorld {
       isDesktop,
       raycaster,
     }) => {
-      if ((hand && buttons.triggerDown) || (isDesktop && buttons.primaryDown)) {
-        const { sphere } = this;
-        const { origin, direction } = raycaster.ray;
-        this.sphere = (this.sphere + 1) % spheres.count;
+      const launchBox = (hand && hand.handedness === 'left' && buttons.triggerDown) || (isDesktop && buttons.secondaryDown);
+      const launchSphere = (hand && hand.handedness === 'right' && buttons.triggerDown) || (isDesktop && buttons.primaryDown);
+      const { origin, direction } = raycaster.ray;
+      if (launchBox || launchSphere) {
+        const bodies = launchBox ? boxes : spheres;
+        const index = launchBox ? this.box : this.sphere;
+        if (launchBox) {
+          this.box = (index + 1) % boxes.count;
+        } else {
+          this.sphere = (index + 1) % spheres.count;
+        }
         physics.setMeshPosition(
-          spheres,
+          bodies,
           origin
             .clone()
             .addScaledVector(direction, 0.5),
-          sphere
+          index
         );
-        physics.applyImpulse(spheres, direction.clone().multiplyScalar(12), sphere);
+        physics.applyImpulse(bodies, direction.clone().multiplyScalar(16), index);
       }
     });
   }
