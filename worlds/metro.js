@@ -7,11 +7,17 @@ import {
 } from '../core/three.js';
 import Elevator from '../renderables/elevator.js';
 import Train from '../renderables/train.js';
-import * as worlds from './index.js';
 
 class Metro extends Group {
   constructor(scene, { destination, offset }) {
     super();
+
+    const { ambient, models, player, pointables, sfx, translocables, worlds } = scene;
+    if (!destination) {
+      ambient.set('sounds/train.ogg');
+    }
+    scene.fog = new FogExp2(0, 0.015);
+    this.player = player;
 
     if (!Metro.stations) {
       const stations = Object.keys(worlds)
@@ -26,13 +32,6 @@ class Metro extends Group {
       Metro.stations = stations;
     }
     const { stations } = Metro;
-
-    const { ambient, models, player, pointables, sfx, translocables } = scene;
-    if (!destination) {
-      ambient.set('sounds/train.ogg');
-    }
-    scene.fog = new FogExp2(0, 0.015);
-    this.player = player;
 
     const track = new Group();
     track.position.set(0, -2.75, 0);
