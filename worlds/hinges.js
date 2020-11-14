@@ -40,13 +40,16 @@ class Hinges extends ElevatorWorld {
     });
     this.explosions = explosions;
 
-    const doors = [...Array(2)].map((v, i) => {
-      const orientation = i === 0 ? 1 : -1;
-      const door = new Door({ models, orientation });
-      door.position.set(-0.5 * orientation, 1.75, -4);
-      this.add(door);
-      return door;
-    });
+    const doors = [...Array(3)].reduce((doors, v, j) => {
+      for (let i = 0; i < 2; i += 1) {
+        const orientation = i === 0 ? 1 : -1;
+        const door = new Door({ models, orientation });
+        door.position.set(-5 + j * 5 + 0.5 * -orientation, 1.75, -4);
+        this.add(door);
+        doors.push(door);
+      }
+      return doors;
+    }, []);
 
     models.load('models/hinges.glb')
       .then((model) => {
