@@ -15,19 +15,22 @@ class ElevatorWorld extends Group {
   }) {
     super();
 
-    const { models, player, translocables } = scene;
+    const { models, player, sfx, translocables } = scene;
     this.player = player;
 
-    const elevator = new Elevator({ models });
+    const elevator = new Elevator({
+      models,
+      sfx,
+      onOpen: () => {
+        elevator.onClose = () => (
+          scene.load('Metro', { destination: this.constructor.name, offset: elevator.getOffset(player) })
+        );
+      },
+    });
     elevator.position.copy(position);
     elevator.rotation.copy(rotation);
     elevator.scale.setScalar(0.25);
     translocables.push(elevator.translocables);
-    elevator.onOpen = () => {
-      elevator.onClose = () => (
-        scene.load('Metro', { destination: this.constructor.name, offset: elevator.getOffset(player) })
-      );
-    };
     this.add(elevator);
     this.elevator = elevator;
 

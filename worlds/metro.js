@@ -27,7 +27,7 @@ class Metro extends Group {
     }
     const { stations } = Metro;
 
-    const { ambient, models, player, pointables, translocables } = scene;
+    const { ambient, models, player, pointables, sfx, translocables } = scene;
     if (!destination) {
       ambient.set('sounds/train.ogg');
     }
@@ -45,11 +45,19 @@ class Metro extends Group {
     ) : (
       Math.floor(Math.random() * stations.length)
     );
-    this.add(track);
+    if (destination) {
+      this.add(track);
+    }
 
     const elevator = new Elevator({
       isOpen: !destination,
       models,
+      sfx,
+      onOpen: () => {
+        elevator.onClose = () => (
+          scene.load(stations[track.station], { offset: elevator.getOffset(player) })
+        );
+      },
     });
     elevator.position.set(18, 9, 0);
     elevator.rotation.y = Math.PI * -0.5;
@@ -196,10 +204,9 @@ class Metro extends Group {
 
         if (destination) {
           elevator.isOpen = true;
+        } else {
+          this.add(track);
         }
-        elevator.onClose = () => (
-          scene.load(stations[track.station], { offset: elevator.getOffset(player) })
-        );
       });
   }
 

@@ -1,12 +1,23 @@
 import { Box3, Group, Vector3 } from '../core/three.js';
 
 class Elevator extends Group {
-  constructor({ isOpen = false, models }) {
+  constructor({
+    isOpen = false,
+    models,
+    sfx,
+    onOpen,
+  }) {
     super();
     this.aux = new Box3();
     this.bounds = new Box3();
     this.isOpen = isOpen;
+    this.onOpen = onOpen;
     this.translocables = [];
+    if (isOpen && onOpen) {
+      const { onOpen } = this;
+      delete this.onOpen;
+      setTimeout(onOpen, 0);
+    }
     models.load('models/elevator.glb')
       .then((model) => {
         model.updateMatrixWorld();
@@ -37,10 +48,19 @@ class Elevator extends Group {
           return door;
         });
       });
+    sfx.load('sounds/ding.ogg')
+      .then((sound) => {
+        const filter = sound.context.createBiquadFilter();
+        filter.type = 'lowpass';
+        filter.frequency.value = 256;
+        sound.setFilter(filter);
+        this.add(sound);
+        this.sound = sound;
+      });
   }
 
   animate(delta) {
-    const { doors, isOpen } = this;
+    const { doors, isOpen, sound } = this;
     if (!doors) {
       return;
     }
@@ -63,6 +83,9 @@ class Elevator extends Group {
         const { onOpen } = this;
         delete this.onOpen;
         setTimeout(onOpen, 0);
+        if (sound && sound.context.state === 'running') {
+          sound.play();
+        }
       }
     });
   }
