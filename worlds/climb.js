@@ -29,10 +29,8 @@ class Climb extends ElevatorWorld {
     this.add(birds);
     this.birds = birds;
 
-    const clouds = new Clouds();
-    clouds.position.y = 64;
-    this.add(clouds);
-    this.clouds = clouds;
+    this.clouds = new Clouds();
+    this.add(this.clouds);
 
     const ocean = new Ocean();
     ocean.position.y = 0.125;
@@ -91,7 +89,12 @@ class Climb extends ElevatorWorld {
     }
     let climbing = 0;
     aux.vector.set(0, 0, 0);
-    player.controllers.forEach(({ hand, buttons, physics, worldspace }, i) => {
+    player.controllers.forEach(({
+      hand,
+      buttons,
+      physics,
+      worldspace,
+    }, i) => {
       if (!hand) {
         return;
       }

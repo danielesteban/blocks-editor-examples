@@ -28,10 +28,8 @@ class Hinges extends ElevatorWorld {
     scene.background = new Color(0x336688);
     scene.fog = new FogExp2(scene.background.getHex(), 0.03);
 
-    const clouds = new Clouds();
-    clouds.position.y = 64;
-    this.add(clouds);
-    this.clouds = clouds;
+    this.clouds = new Clouds();
+    this.add(this.clouds);
 
     const explosions = [...Array(5)].map(() => {
       const explosion = new Explosion({ sfx });

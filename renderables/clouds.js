@@ -150,6 +150,7 @@ class Clouds extends Group {
       cloud.speed = 0.025 + Math.random() * 0.05;
       this.add(cloud);
     });
+    this.position.set(0, 64, 0);
     this.scale.set(10, 1, 10);
   }
 

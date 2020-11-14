@@ -27,10 +27,8 @@ class Island extends ElevatorWorld {
     scene.background = new Color(0x336688);
     scene.fog = new FogExp2(scene.background.getHex(), 0.06);
 
-    const clouds = new Clouds();
-    clouds.position.y = 64;
-    this.add(clouds);
-    this.clouds = clouds;
+    this.clouds = new Clouds();
+    this.add(this.clouds);
 
     const ocean = new Ocean();
     ocean.position.y = 3.725;

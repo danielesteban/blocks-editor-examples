@@ -34,10 +34,8 @@ class Court extends ElevatorWorld {
     this.cannon.position.set(0, 1, -9.5);
     this.add(this.cannon);
 
-    const clouds = new Clouds();
-    clouds.position.y = 64;
-    this.add(clouds);
-    this.clouds = clouds;
+    this.clouds = new Clouds();
+    this.add(this.clouds);
 
     const rain = new Rain({ anchor: player, heightmapScale: 0.5 });
     rain.timer = 30 + Math.random() * 60;
