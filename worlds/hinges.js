@@ -7,6 +7,7 @@ import {
   Vector3,
 } from '../core/three.js';
 import ElevatorWorld from '../core/elevatorWorld.js';
+import Birds from '../renderables/birds.js';
 import Box from '../renderables/box.js';
 import Boxes from '../renderables/boxes.js';
 import Clouds from '../renderables/clouds.js';
@@ -28,6 +29,9 @@ class Hinges extends ElevatorWorld {
     ambient.set('sounds/forest.ogg');
     scene.background = new Color(0x336688);
     scene.fog = new FogExp2(scene.background.getHex(), 0.03);
+
+    this.birds = new Birds({ anchor: player });
+    this.add(this.birds);
 
     this.clouds = new Clouds();
     this.add(this.clouds);
@@ -204,6 +208,7 @@ class Hinges extends ElevatorWorld {
   onAnimationTick(animation) {
     super.onAnimationTick(animation);
     const {
+      birds,
       boxes,
       clouds,
       explosions,
@@ -214,6 +219,7 @@ class Hinges extends ElevatorWorld {
       rain,
       spheres,
     } = this;
+    birds.animate(animation);
     clouds.animate(animation);
     explosions.forEach((explosion) => explosion.animate(animation));
     rain.animateStorm(animation);
@@ -259,6 +265,11 @@ class Hinges extends ElevatorWorld {
         physics.applyImpulse(bodies, direction.clone().multiplyScalar(16), index);
       }
     });
+  }
+
+  onUnload() {
+    const { birds } = this;
+    birds.dispose();
   }
 }
 

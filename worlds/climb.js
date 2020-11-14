@@ -25,9 +25,8 @@ class Climb extends ElevatorWorld {
     scene.background = new Color(0x336688);
     scene.fog = new FogExp2(scene.background.getHex(), 0.025);
 
-    const birds = new Birds({ anchor: player });
-    this.add(birds);
-    this.birds = birds;
+    this.birds = new Birds({ anchor: player });
+    this.add(this.birds);
 
     this.clouds = new Clouds();
     this.add(this.clouds);
