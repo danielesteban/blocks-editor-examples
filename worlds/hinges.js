@@ -62,6 +62,13 @@ class Hinges extends ElevatorWorld {
         this.elevator.isOpen = true;
       });
 
+    models.load('models/forest.glb')
+      .then((model) => {
+        model.scale.setScalar(0.5);
+        model.position.z = -4;
+        this.add(model);
+      });
+
     Promise.all([
       scene.getPhysics(),
       models.physics('models/hingesPhysics.json', 0.5),
