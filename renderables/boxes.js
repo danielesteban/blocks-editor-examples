@@ -1,7 +1,4 @@
-import {
-  BoxGeometry,
-  BufferGeometry,
-} from '../core/three.js';
+import { BoxGeometry, BufferGeometry } from '../core/three.js';
 import Bodies from './bodies.js';
 
 class Boxes extends Bodies {

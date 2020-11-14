@@ -1,7 +1,4 @@
-import {
-  BufferGeometry,
-  IcosahedronGeometry,
-} from '../core/three.js';
+import { BufferGeometry, IcosahedronGeometry } from '../core/three.js';
 import Bodies from './bodies.js';
 
 class Spheres extends Bodies {

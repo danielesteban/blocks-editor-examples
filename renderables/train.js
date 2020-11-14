@@ -1,4 +1,4 @@
-import { Box3, Group, Vector3 } from '../core/three.js';
+import { Box3, Group } from '../core/three.js';
 import Display from './display.js';
 import Map from './map.js';
 

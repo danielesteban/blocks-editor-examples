@@ -2,7 +2,6 @@ import {
   BufferAttribute,
   BufferGeometry,
   DynamicDrawUsage,
-  Group,
   InstancedMesh,
   Matrix4,
   MeshBasicMaterial,

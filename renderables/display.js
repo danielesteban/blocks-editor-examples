@@ -1,7 +1,6 @@
 import {
   CanvasTexture,
   Mesh,
-  MeshBasicMaterial,
   PlaneBufferGeometry,
 } from '../core/three.js';
 

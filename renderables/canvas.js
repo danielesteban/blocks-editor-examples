@@ -1,5 +1,4 @@
 import {
-  Color,
   CanvasTexture,
   Mesh,
   MeshBasicMaterial,

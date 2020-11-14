@@ -4,7 +4,6 @@ import {
   InstancedBufferGeometry,
   InstancedBufferAttribute,
   Mesh,
-  PositionalAudio,
   ShaderLib,
   ShaderMaterial,
   UniformsUtils,

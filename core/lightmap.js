@@ -3,7 +3,6 @@ import {
   LinearFilter,
   ShaderMaterial,
   RedFormat,
-  UnsignedByteType,
   ShaderLib,
   UniformsUtils,
   Vector3,
