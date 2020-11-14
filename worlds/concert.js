@@ -15,7 +15,7 @@ class Concert extends ElevatorWorld {
       rotation: new Euler(0, Math.PI, 0),
     });
 
-    const { ambient, models, player, translocables } = scene;
+    const { models, translocables } = scene;
     scene.background = new Color(0x336699);
 
     const performance = new Performance({

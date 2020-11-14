@@ -49,7 +49,9 @@ class Map extends Mesh {
     const { aux } = this;
     const { renderer, stations } = Map;
     this.worldToLocal(target).divideScalar(6).add(aux.set(0.5, 0.5, 0));
-    return stations.find(({ x, y }) => aux.set(x / renderer.width, 1 - (y / renderer.height), 0).distanceTo(target) < radius);
+    return stations.find(({ x, y }) => (
+      aux.set(x / renderer.width, 1 - (y / renderer.height), 0).distanceTo(target) < radius
+    ));
   }
 
   static setStations(stations) {
@@ -58,7 +60,7 @@ class Map extends Mesh {
     }
     const { renderer } = Map;
     const dist = renderer.width * 0.36;
-    const slice = Math.PI * 2 / stations.length;
+    const slice = (Math.PI * 2) / stations.length;
     Map.stations = stations.map(({ id, isMultiplayer, name }, i) => {
       const angle = slice * i;
       return {
@@ -82,18 +84,17 @@ class Map extends Mesh {
     ctx.fillRect(0, 0, renderer.width, renderer.height);
     ctx.lineWidth = 4;
     ctx.strokeStyle = '#222';
-    const b = 4;
     ctx.strokeRect(6, 6, renderer.width - 12, renderer.height - 12);
-    
+
     const dist = renderer.width * 0.36;
-    const slice = Math.PI * 2 / stations.length;
+    const slice = (Math.PI * 2) / stations.length;
 
     ctx.lineWidth = 10;
     ctx.strokeStyle = '#666';
     ctx.beginPath();
     ctx.arc(renderer.width * 0.5, renderer.height * 0.5 - 15, dist, 0, Math.PI * 2);
     ctx.stroke();
-    
+
     if (progress !== null) {
       ctx.lineCap = 'round';
       ctx.strokeStyle = '#3a3';
@@ -103,11 +104,20 @@ class Map extends Mesh {
       ctx.stroke();
       ctx.strokeStyle = '#fff';
       ctx.beginPath();
-      ctx.arc(renderer.width * 0.5, renderer.height * 0.5 - 15, dist, angle + slice * progress - 0.02, angle + slice * (progress + 0.02));
+      ctx.arc(
+        renderer.width * 0.5, renderer.height * 0.5 - 15,
+        dist, angle + slice * progress - 0.02, angle + slice * (progress + 0.02)
+      );
       ctx.stroke();
     }
 
-    stations.forEach(({ id, isMultiplayer, name, x, y }, i) => {
+    stations.forEach(({
+      id,
+      isMultiplayer,
+      name,
+      x,
+      y,
+    }, i) => {
       ctx.save();
       ctx.translate(x, y);
       ctx.fillStyle = i === current ? '#393' : '#333';

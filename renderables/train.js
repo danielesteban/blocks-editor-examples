@@ -92,7 +92,7 @@ class Train extends Group {
             this.doors = [
               { open: -3.75, closed: -1.5 },
               { open: 3.75, closed: 1.5 },
-            ].map((animation, i) => {
+            ].map((animation) => {
               const door = model.clone();
               door.animation = animation;
               door.position.set(4.25, 0, animation[isOpen ? 'open' : 'closed']);
@@ -116,10 +116,10 @@ class Train extends Group {
     }
     doors.forEach(({ animation, position }) => {
       let diff;
-      if (isOpen && position.z != animation.open) {
+      if (isOpen && position.z !== animation.open) {
         diff = animation.open - position.z;
       }
-      if (!isOpen && position.z != animation.closed) {
+      if (!isOpen && position.z !== animation.closed) {
         diff = animation.closed - position.z;
       }
       if (diff) {

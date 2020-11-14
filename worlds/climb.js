@@ -23,7 +23,7 @@ class Climb extends ElevatorWorld {
     ambient.set('sounds/sea.ogg');
     scene.background = new Color(0x336688);
     scene.fog = new FogExp2(scene.background.getHex(), 0.025);
-  
+
     const clouds = new Clouds();
     clouds.position.y = 64;
     this.add(clouds);
@@ -44,7 +44,7 @@ class Climb extends ElevatorWorld {
       .then((model) => {
         model.scale.setScalar(0.5);
         this.add(model);
-  
+
         this.elevator.isOpen = true;
       });
 
@@ -75,7 +75,6 @@ class Climb extends ElevatorWorld {
       isOnElevator,
       peers,
       player,
-      rain,
     } = this;
     clouds.animate(animation);
     Ocean.animate(animation);

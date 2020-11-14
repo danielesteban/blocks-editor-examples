@@ -29,7 +29,7 @@ server.ws('/:room', (client, req) => {
     client.terminate();
     return;
   }
-  const { room: id } = req.params; 
+  const { room: id } = req.params;
   if (allowedRooms && allowedRooms.indexOf(id) === -1) {
     client.send(JSON.stringify({
       type: 'ERROR',
@@ -43,10 +43,10 @@ server.ws('/:room', (client, req) => {
     room = new Room(id);
     rooms.set(id, room);
   }
-  room.onClient(client, req);
+  room.onClient(client);
 });
 
-server.get('/peers', cors({ origin: allowedOrigins ? allowedOrigins : true }), nocache(), (req, res) => {
+server.get('/peers', cors({ origin: allowedOrigins || true }), nocache(), (req, res) => {
   const peers = {};
   rooms.forEach(({ id, clients }) => {
     if (clients.length) {

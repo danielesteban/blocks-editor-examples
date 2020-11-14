@@ -35,7 +35,7 @@ class Player extends Group {
     this.head.rotation.order = 'YXZ';
     const physics = new Mesh(
       new BoxBufferGeometry(0.015, 0.09, 0.14),
-      new MeshBasicMaterial({ visible: false }),
+      new MeshBasicMaterial({ visible: false })
     );
     physics.position.set(0, -0.1 / 3, 0.02);
     this.controllers = [...Array(2)].map((v, i) => {

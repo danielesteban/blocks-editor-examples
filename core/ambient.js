@@ -5,7 +5,7 @@ class Ambient {
     this.isRunning = isRunning;
     this.sounds = [];
   }
-  
+
   resume() {
     const { sounds } = this;
     this.isRunning = true;
@@ -18,7 +18,7 @@ class Ambient {
 
   set(ambient) {
     const { isRunning, sounds } = this;
-    
+
     sounds.forEach((sound) => {
       sound.fadeIn = false;
       sound.fadeOut = true;

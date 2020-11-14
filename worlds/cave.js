@@ -14,12 +14,12 @@ class Cave extends ElevatorWorld {
 
     const { ambient, models, player, translocables } = scene;
     ambient.set('sounds/dark.ogg');
-  
+
     models.load('models/cave.glb')
       .then((model) => {
         model.scale.setScalar(0.5);
         this.add(model);
-  
+
         this.elevator.isOpen = true;
       });
 
@@ -40,30 +40,34 @@ class Cave extends ElevatorWorld {
             this.physics.addMesh(physics, 0, { isKinematic: true });
           });
         }),
-      ])
-        .then(([lightmap]) => {
-          lightmap.material.uniforms.lightmapSize.value.copy(lightmap.size).multiplyScalar(0.5);
-          lightmap.material.uniforms.lightmapOrigin.value.copy(lightmap.origin).multiplyScalar(0.5);
-          lightmap.material.vertexColors = true;
-  
-          this.box = 0;
-          this.sphere = 0;
-          this.boxes = new Boxes({ count: 50, material: lightmap.material });
-          this.spheres = new Spheres({ count: 50, material: lightmap.material });
-          const matrix = new Matrix4();
-          for (let i = 0, l = this.boxes.count + this.spheres.count; i < l; i += 1) {
-            matrix.setPosition((Math.random() - 0.5) * 8, 8 + (Math.random() - 0.5) * 8, (Math.random() - 0.5) * 8);
-            if (i < this.boxes.count) {
-              this.boxes.setMatrixAt(i, matrix);
-            } else {
-              this.spheres.setMatrixAt(i - this.boxes.count, matrix);
-            }
+    ])
+      .then(([lightmap]) => {
+        lightmap.material.uniforms.lightmapSize.value.copy(lightmap.size).multiplyScalar(0.5);
+        lightmap.material.uniforms.lightmapOrigin.value.copy(lightmap.origin).multiplyScalar(0.5);
+        lightmap.material.vertexColors = true;
+
+        this.box = 0;
+        this.sphere = 0;
+        this.boxes = new Boxes({ count: 50, material: lightmap.material });
+        this.spheres = new Spheres({ count: 50, material: lightmap.material });
+        const matrix = new Matrix4();
+        for (let i = 0, l = this.boxes.count + this.spheres.count; i < l; i += 1) {
+          matrix.setPosition(
+            (Math.random() - 0.5) * 8,
+            8 + (Math.random() - 0.5) * 8,
+            (Math.random() - 0.5) * 8
+          );
+          if (i < this.boxes.count) {
+            this.boxes.setMatrixAt(i, matrix);
+          } else {
+            this.spheres.setMatrixAt(i - this.boxes.count, matrix);
           }
-          this.physics.addMesh(this.boxes, 1);
-          this.physics.addMesh(this.spheres, 1);
-          this.add(this.boxes);
-          this.add(this.spheres);
-        });
+        }
+        this.physics.addMesh(this.boxes, 1);
+        this.physics.addMesh(this.spheres, 1);
+        this.add(this.boxes);
+        this.add(this.spheres);
+      });
   }
 
   onAnimationTick(animation) {
@@ -81,7 +85,12 @@ class Cave extends ElevatorWorld {
     [
       player.desktopControls,
       ...player.controllers,
-    ].forEach(({ buttons, hand, isDesktop, raycaster }) => {
+    ].forEach(({
+      buttons,
+      hand,
+      isDesktop,
+      raycaster,
+    }) => {
       const launchBox = (hand && hand.handedness === 'left' && buttons.triggerDown) || (isDesktop && buttons.secondaryDown);
       const launchSphere = (hand && hand.handedness === 'right' && buttons.triggerDown) || (isDesktop && buttons.primaryDown);
       const { origin, direction } = raycaster.ray;

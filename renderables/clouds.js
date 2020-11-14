@@ -154,7 +154,7 @@ class Clouds extends Group {
   }
 
   animate({ delta }) {
-    const { children, position } = this;
+    const { children } = this;
     children.forEach((cloud) => {
       const { position, speed } = cloud;
       position.x += speed * delta;

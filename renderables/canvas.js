@@ -68,4 +68,3 @@ class Canvas extends Mesh {
 }
 
 export default Canvas;
-

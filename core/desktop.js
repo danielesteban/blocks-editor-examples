@@ -28,7 +28,7 @@ class DesktopControls {
       primary: false,
       secondary: false,
     };
-    this.buttonState = {...this.buttons};
+    this.buttonState = { ...this.buttons };
     this.keyboard = new Vector3(0, 0, 0);
     this.pointer = new Vector2(0, 0);
     this.raycaster = new Raycaster();
@@ -186,6 +186,8 @@ class DesktopControls {
       case 2:
         buttonState.secondary = true;
         break;
+      default:
+        break;
     }
   }
 
@@ -209,6 +211,8 @@ class DesktopControls {
       case 2:
         buttonState.secondary = false;
         break;
+      default:
+        break;
     }
   }
 
@@ -226,7 +230,6 @@ class DesktopControls {
     }
     document.body.requestPointerLock();
   }
-
 }
 
 export default DesktopControls;

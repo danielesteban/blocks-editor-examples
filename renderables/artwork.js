@@ -50,17 +50,22 @@ class Artwork extends Mesh {
         });
       });
   }
-  
+
   animate(animation) {
-    const { artworks, doors, index, isOpen } = this;
+    const {
+      artworks,
+      doors,
+      index,
+      isOpen,
+    } = this;
     if (doors) {
       const { delta } = animation;
       doors.forEach(({ animation, position }) => {
         let diff;
-        if (isOpen && position.x != animation.open) {
+        if (isOpen && position.x !== animation.open) {
           diff = animation.open - position.x;
         }
-        if (!isOpen && position.x != animation.closed) {
+        if (!isOpen && position.x !== animation.closed) {
           diff = animation.closed - position.x;
         }
         if (diff) {
@@ -81,7 +86,7 @@ class Artwork extends Mesh {
   }
 
   load(index) {
-    const { artworks, isOpen, isLoading } = this;
+    const { artworks, isLoading } = this;
     if (!isLoading) {
       this.index = index % artworks.length;
       this.isOpen = false;
@@ -105,10 +110,10 @@ class Artwork extends Mesh {
         let w = renderer.width;
         let h = renderer.height;
         if (aspect < 1) {
-          w = loader.width * renderer.height / loader.height;
+          w = (loader.width * renderer.height) / loader.height;
           x = renderer.width * 0.5 - w * 0.5;
         } else {
-          h = loader.height * renderer.width / loader.width;
+          h = (loader.height * renderer.width) / loader.width;
           y = renderer.height * 0.5 - h * 0.5;
         }
         ctx.drawImage(loader, x, y, w, h);

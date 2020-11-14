@@ -70,9 +70,16 @@ class Court extends ElevatorWorld {
     const auxColor = new Color();
     const auxVector = new Vector3();
     const onContact = (scoreboard) => ({ mesh, index, point }) => {
-      const { explosions, physics, scoreboards, spheres } = this;
+      const {
+        explosions,
+        physics,
+        scoreboards,
+        spheres,
+      } = this;
       if (mesh === spheres) {
-        const explosion = explosions.find(({ sound, visible }) => (!visible && (!sound || !sound.isPlaying)));
+        const explosion = explosions.find(({ sound, visible }) => (
+          !visible && (!sound || !sound.isPlaying)
+        ));
         if (explosion) {
           explosion.detonate({
             color: spheres.getColorAt(index, auxColor),
@@ -134,7 +141,11 @@ class Court extends ElevatorWorld {
 
         this.physics.addMesh(goal, 0, { isTrigger: true, noContactResponse: true });
         paddles.forEach((paddle) => {
-          this.physics.addMesh(paddle, 0, { isKinematic: true, isTrigger: true, noContactResponse: true });
+          this.physics.addMesh(paddle, 0, {
+            isKinematic: true,
+            isTrigger: true,
+            noContactResponse: true,
+          });
         });
 
         this.timer = 0;
@@ -147,7 +158,7 @@ class Court extends ElevatorWorld {
         }
         this.physics.addMesh(this.spheres, 1);
         this.add(this.spheres);
-    });
+      });
   }
 
   onAnimationTick(animation) {
@@ -158,7 +169,6 @@ class Court extends ElevatorWorld {
       explosions,
       isOnElevator,
       physics,
-      player,
       spheres,
       timer,
       rain,

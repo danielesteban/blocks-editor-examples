@@ -14,7 +14,7 @@ class Scene extends ThreeScene {
 
     this.locomotion = Scene.locomotions.teleport;
     this.locomotions = Scene.locomotions;
-  
+
     this.models = new Models();
 
     this.player = new Player({ camera, dom, xr: renderer.xr });
@@ -95,7 +95,7 @@ class Scene extends ThreeScene {
       translocables,
       world,
     } = this;
-    ambient.onAnimationTick(animation)
+    ambient.onAnimationTick(animation);
     player.onAnimationTick({ animation, camera });
     player.controllers.forEach((controller) => {
       const {

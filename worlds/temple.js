@@ -19,7 +19,7 @@ class Temple extends ElevatorWorld {
     const { ambient, models, player, translocables } = scene;
     ambient.set('sounds/museum.ogg');
     scene.background = new Color(0x224466);
-  
+
     this.aux = {
       impulse: new Vector3(),
       position: new Vector3(),
@@ -30,7 +30,7 @@ class Temple extends ElevatorWorld {
       .then((model) => {
         model.scale.setScalar(0.5);
         this.add(model);
-  
+
         this.elevator.isOpen = true;
       });
 
@@ -51,20 +51,24 @@ class Temple extends ElevatorWorld {
             this.physics.addMesh(physics, 0, { isKinematic: true });
           });
         }),
-      ])
-        .then(([lightmap]) => {
-          lightmap.material.uniforms.lightmapSize.value.copy(lightmap.size).multiplyScalar(0.5);
-          lightmap.material.uniforms.lightmapOrigin.value.copy(lightmap.origin).multiplyScalar(0.5);
-          lightmap.material.vertexColors = true;
+    ])
+      .then(([lightmap]) => {
+        lightmap.material.uniforms.lightmapSize.value.copy(lightmap.size).multiplyScalar(0.5);
+        lightmap.material.uniforms.lightmapOrigin.value.copy(lightmap.origin).multiplyScalar(0.5);
+        lightmap.material.vertexColors = true;
 
-          this.spheres = new Spheres({ count: 100, material: lightmap.material });
-          const matrix = new Matrix4();
-          for (let i = 0; i < this.spheres.count; i += 1) {
-            matrix.setPosition((Math.random() - 0.5) * 4, 1 + (Math.random() - 0.5) * 4, (Math.random() - 0.5) * 4);
-            this.spheres.setMatrixAt(i, matrix);
-          }
-          this.physics.addMesh(this.spheres, 1);
-          this.add(this.spheres);
+        this.spheres = new Spheres({ count: 100, material: lightmap.material });
+        const matrix = new Matrix4();
+        for (let i = 0; i < this.spheres.count; i += 1) {
+          matrix.setPosition(
+            (Math.random() - 0.5) * 4,
+            1 + (Math.random() - 0.5) * 4,
+            (Math.random() - 0.5) * 4
+          );
+          this.spheres.setMatrixAt(i, matrix);
+        }
+        this.physics.addMesh(this.spheres, 1);
+        this.add(this.spheres);
       });
   }
 

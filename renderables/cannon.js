@@ -39,7 +39,7 @@ class Cannon extends Group {
   }
 
   getShot() {
-    const { shaft, shot, sound } = this;
+    const { shaft, shot } = this;
     shaft.localToWorld(shot.origin.copy(shaft.launchPoint));
     shaft.getWorldPosition(shot.direction);
     shot.direction.subVectors(shot.origin, shot.direction).normalize();

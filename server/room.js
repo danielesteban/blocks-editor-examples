@@ -23,9 +23,9 @@ class Room {
     }
   }
 
-  onClient(client, req) {
+  onClient(client) {
     const { clients, pingInterval, state } = this;
-    const { maxClients } = Room; 
+    const { maxClients } = Room;
     if (clients.length >= maxClients) {
       client.send(JSON.stringify({
         type: 'ERROR',
@@ -95,7 +95,7 @@ class Room {
         break;
       }
       case 'STATE': {
-        let state = parseInt(request.data, 10);
+        const state = parseInt(request.data, 10);
         if (!Number.isNaN(state)) {
           this.state = state;
         } else {

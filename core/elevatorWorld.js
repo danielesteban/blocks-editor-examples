@@ -17,7 +17,7 @@ class ElevatorWorld extends Group {
 
     const { models, player, translocables } = scene;
     this.player = player;
-    
+
     const elevator = new Elevator({ models });
     elevator.position.copy(position);
     elevator.rotation.copy(rotation);
@@ -44,7 +44,7 @@ class ElevatorWorld extends Group {
     }
   }
 
-  onAnimationTick({ delta, time }) {
+  onAnimationTick({ delta }) {
     const { elevator, player } = this;
     elevator.animate(delta);
     this.isOnElevator = elevator.containsPoint(player.head.position);

@@ -18,7 +18,7 @@ class Escher extends ElevatorWorld {
       rotation: new Euler(0, Math.PI, 0),
     });
 
-    const { ambient, models, player } = scene;
+    const { ambient, models } = scene;
     ambient.set('sounds/wind.ogg');
     scene.background = new Color(0x0D001A);
     scene.fog = new FogExp2(scene.background.getHex(), 0.03);
@@ -58,7 +58,7 @@ class Escher extends ElevatorWorld {
             this.world.add(chunk);
           }
         });
-  
+
         this.elevator.isOpen = true;
       });
   }

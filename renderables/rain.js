@@ -32,10 +32,9 @@ class Rain extends Mesh {
     Rain.material = new ShaderMaterial({
       uniforms: {
         ...UniformsUtils.clone(uniforms),
-        diffuse: new Color(0x10857176),
+        diffuse: { value: new Color(0xa5aad8) },
       },
-      fragmentShader: ShaderLib.basic.fragmentShader,
-      vertexShader: ShaderLib.basic.vertexShader
+      vertexShader: vertexShader
         .replace(
           '#include <common>',
           [
@@ -49,7 +48,7 @@ class Rain extends Mesh {
             'vec3 transformed = vec3( position + offset );',
           ].join('\n')
         ),
-      uniforms: UniformsUtils.clone(ShaderLib.basic.uniforms),
+      fragmentShader,
       fog: true,
       defines: {
         FOG_DENSITY: 0.03,
@@ -163,7 +162,7 @@ class Rain extends Mesh {
     const offsets = geometry.getAttribute('offset');
     offsets.setX(i, aux.x);
     offsets.setZ(i, aux.z);
-    
+
     aux
       .divideScalar(heightmaps.scale)
       .floor();

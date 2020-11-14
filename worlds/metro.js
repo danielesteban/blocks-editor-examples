@@ -7,12 +7,12 @@ import {
 } from '../core/three.js';
 import Elevator from '../renderables/elevator.js';
 import Train from '../renderables/train.js';
-import * as worlds from '../worlds/index.js';
+import * as worlds from './index.js';
 
 class Metro extends Group {
   constructor(scene, { destination, offset }) {
     super();
-    
+
     if (!Metro.stations) {
       const stations = Object.keys(worlds)
         .filter((name) => name !== 'Metro');
@@ -151,7 +151,7 @@ class Metro extends Group {
             return;
           }
           const speed = Math.min(Math.max(Math.abs(track.segments - (track.gap + track.position.z / 8)), 0.1), 1) * 8;
-          track.position.z = track.position.z + delta * speed;
+          track.position.z += delta * speed;
           if (track.position.z >= 8) {
             track.gap = (track.gap + 1) % (track.segments * 2 + 1);
             track.position.z %= 8;
@@ -216,14 +216,19 @@ class Metro extends Group {
     [
       player.desktopControls,
       ...player.controllers,
-    ].forEach(({ buttons, hand, isDesktop, pointer }) => {
+    ].forEach(({
+      buttons,
+      hand,
+      isDesktop,
+      pointer,
+    }) => {
       if ((hand && buttons.triggerDown) || (isDesktop && buttons.primaryDown)) {
         if (pointer && pointer.visible && pointer.target.object.isMap) {
           const station = pointer.target.object.getStationAtPoint(pointer.target.point);
           if (station) {
             track.goTo(station.index);
           }
-          return; 
+          return;
         }
 
         if (isOnElevator && elevator.isOpen) {
@@ -239,9 +244,9 @@ class Metro extends Group {
     if (track) {
       track.animate(delta);
       if (train.lightmap) {
-        train.lightmap.materials.forEach(({ uniforms: { lightmapOrigin: { value: origin } } }) => {
+        train.lightmap.materials.forEach(({ uniforms: { lightmapOrigin: { value: origin } } }) => (
           origin.copy(train.lightmap.origin).multiply(track.scale).add(track.position)
-        });
+        ));
       }
       if (track.isRunning && time >= updateMapTimer + 1) {
         this.updateMapTimer = time;
@@ -257,4 +262,3 @@ class Metro extends Group {
 }
 
 export default Metro;
-

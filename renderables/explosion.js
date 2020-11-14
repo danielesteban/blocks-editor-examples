@@ -65,7 +65,7 @@ class Explosion extends Mesh {
             'vec3 transformed = vec3( position * (2.0 - step * step * 2.0) + direction * step * 5.0 + offset );',
           ].join('\n')
         ),
-      fragmentShader: fragmentShader,
+      fragmentShader,
       fog: true,
       vertexColors: true,
     });

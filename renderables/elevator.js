@@ -46,10 +46,10 @@ class Elevator extends Group {
     }
     doors.forEach(({ animation, position }) => {
       let diff;
-      if (isOpen && position.x != animation.open) {
+      if (isOpen && position.x !== animation.open) {
         diff = animation.open - position.x;
       }
-      if (!isOpen && position.x != animation.closed) {
+      if (!isOpen && position.x !== animation.closed) {
         diff = animation.closed - position.x;
       }
       if (diff) {
@@ -78,10 +78,10 @@ class Elevator extends Group {
       position: this.worldToLocal(new Vector3(
         player.head.position.x,
         player.position.y,
-        player.head.position.z,
+        player.head.position.z
       )),
       rotation: this.rotation.y,
-    }
+    };
   }
 }
 

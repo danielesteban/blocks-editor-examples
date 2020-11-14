@@ -37,7 +37,7 @@ class Building extends ElevatorWorld {
           dummy.position.set(
             Math.cos(angle) * dist,
             y,
-            Math.sin(angle) * dist,
+            Math.sin(angle) * dist
           );
           dummy.lookAt(0, y, 0);
           dummy.rotation.y += Math.PI;
@@ -55,7 +55,7 @@ class Building extends ElevatorWorld {
               matrix.identity();
               matrix.setPosition(position.x, position.y + (i > count ? -47 : 0), position.z);
               if (i > 0) {
-                matrix.premultiply(offsets[(i - 1) % count])
+                matrix.premultiply(offsets[(i - 1) % count]);
               }
               chunk.setMatrixAt(i, matrix);
             }
@@ -65,7 +65,7 @@ class Building extends ElevatorWorld {
 
         this.elevator.isOpen = true;
       });
-    
+
     const canvas = new Canvas();
     const color = new Color();
     const position = new Vector3();
@@ -112,7 +112,7 @@ class Building extends ElevatorWorld {
         }
         this.physics.addMesh(this.spheres, 1);
         this.add(this.spheres);
-    });
+      });
   }
 
   onAnimationTick(animation) {
@@ -129,7 +129,12 @@ class Building extends ElevatorWorld {
     [
       player.desktopControls,
       ...player.controllers,
-    ].forEach(({ buttons, hand, isDesktop, raycaster }) => {
+    ].forEach(({
+      buttons,
+      hand,
+      isDesktop,
+      raycaster,
+    }) => {
       if ((hand && buttons.triggerDown) || (isDesktop && buttons.primaryDown)) {
         const { sphere } = this;
         const { origin, direction } = raycaster.ray;

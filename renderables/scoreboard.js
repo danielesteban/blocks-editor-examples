@@ -20,7 +20,7 @@ class Scoreboard extends Mesh {
     renderer.height = 256;
     super(
       Scoreboard.geometry,
-      new MeshBasicMaterial({ map: new CanvasTexture(renderer) }),
+      new MeshBasicMaterial({ map: new CanvasTexture(renderer) })
     );
     const ctx = renderer.getContext('2d');
     ctx.textAlign = 'center';

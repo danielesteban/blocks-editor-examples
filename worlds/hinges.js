@@ -43,10 +43,10 @@ class Hinges extends ElevatorWorld {
       .then((model) => {
         model.scale.setScalar(0.5);
         this.add(model);
-  
+
         this.elevator.isOpen = true;
       });
-    
+
     Promise.all([
       models.load('models/hingesDoor.glb'),
       Promise.all([
@@ -92,7 +92,11 @@ class Hinges extends ElevatorWorld {
           this.spheres = new Spheres({ count: 50 });
           const matrix = new Matrix4();
           for (let i = 0; i < this.spheres.count; i += 1) {
-            matrix.setPosition((Math.random() - 0.5) * 12, 4 + (Math.random() - 0.5) * 4, (Math.random() - 0.5) * 3 - 2);
+            matrix.setPosition(
+              (Math.random() - 0.5) * 12,
+              4 + (Math.random() - 0.5) * 4,
+              (Math.random() - 0.5) * 3 - 2
+            );
             this.spheres.setMatrixAt(i, matrix);
           }
           this.physics.addMesh(this.spheres, 1);
@@ -108,7 +112,9 @@ class Hinges extends ElevatorWorld {
                 const color = new Color();
                 this.spheres.getColorAt(index, color);
                 trigger.material.color = color;
-                const explosion = explosions.find(({ sound, visible }) => (!visible && (!sound || !sound.isPlaying)));
+                const explosion = explosions.find(({ sound, visible }) => (
+                  !visible && (!sound || !sound.isPlaying)
+                ));
                 if (explosion) {
                   explosion.detonate({
                     color,
@@ -129,58 +135,63 @@ class Hinges extends ElevatorWorld {
             this.physics.addConstraint(trigger, {
               type: 'hinge',
               position: new Vector3(0, 0.5, 0),
-              rotation: (new Quaternion()).setFromAxisAngle(new Vector3(0, 1, 0), Math.PI * -0.5)
+              rotation: (new Quaternion()).setFromAxisAngle(new Vector3(0, 1, 0), Math.PI * -0.5),
             });
           }
         }),
-      ])
-        .then(([doorModel]) => {
-          for (let i = 0; i < 2; i += 1) {
-            const door = new Group();
-            const orientation = i === 0 ? 1 : -1;
-            door.physics = [
-              {
-                shape: 'box',
-                width: 0.95,
-                height: 2.4,
-                depth: 0.125,
-              },
-              {
-                shape: 'box',
-                position: new Vector3(0.3 * orientation, 0, 0.1375),
-                width: 0.03,
-                height: 0.03,
-                depth: 0.15,
-              },
-              {
-                shape: 'box',
-                position: new Vector3(0.185 * orientation, 0, 0.175),
-                width: 0.2,
-                height: 0.03,
-                depth: 0.03,
-              },
-            ];
-            door.position.set(-0.5 * orientation, 1.75, -4);
-            const model = doorModel.children[0].clone();
-            model.position.set(-0.5, -1.75, -0.0625);
-            model.scale.set(0.5, 0.5, 0.125);
-            // const doorDebug = new Box(0.95, 2.4, 0.125);
-            // door.add(doorDebug);
-            door.physics.slice(1).forEach(({ width, height, depth, position }) => {
-              const handle = new Box(width, height, depth);
-              handle.position.copy(position);
-              door.add(handle);
-            });
-            door.add(model);
-            this.add(door);
-            this.physics.addMesh(door, 5);
-            this.physics.addConstraint(door, {
-              type: 'hinge',
-              position: new Vector3(-0.4 * orientation, 0, 0),
-              rotation: (new Quaternion()).setFromAxisAngle(new Vector3(1, 0, 0), Math.PI * 0.5),
-            });
-          }
-        });
+    ])
+      .then(([doorModel]) => {
+        for (let i = 0; i < 2; i += 1) {
+          const door = new Group();
+          const orientation = i === 0 ? 1 : -1;
+          door.physics = [
+            {
+              shape: 'box',
+              width: 0.95,
+              height: 2.4,
+              depth: 0.125,
+            },
+            {
+              shape: 'box',
+              position: new Vector3(0.3 * orientation, 0, 0.1375),
+              width: 0.03,
+              height: 0.03,
+              depth: 0.15,
+            },
+            {
+              shape: 'box',
+              position: new Vector3(0.185 * orientation, 0, 0.175),
+              width: 0.2,
+              height: 0.03,
+              depth: 0.03,
+            },
+          ];
+          door.position.set(-0.5 * orientation, 1.75, -4);
+          const model = doorModel.children[0].clone();
+          model.position.set(-0.5, -1.75, -0.0625);
+          model.scale.set(0.5, 0.5, 0.125);
+          // const doorDebug = new Box(0.95, 2.4, 0.125);
+          // door.add(doorDebug);
+          door.physics.slice(1).forEach(({
+            width,
+            height,
+            depth,
+            position,
+          }) => {
+            const handle = new Box(width, height, depth);
+            handle.position.copy(position);
+            door.add(handle);
+          });
+          door.add(model);
+          this.add(door);
+          this.physics.addMesh(door, 5);
+          this.physics.addConstraint(door, {
+            type: 'hinge',
+            position: new Vector3(-0.4 * orientation, 0, 0),
+            rotation: (new Quaternion()).setFromAxisAngle(new Vector3(1, 0, 0), Math.PI * 0.5),
+          });
+        }
+      });
   }
 
   onAnimationTick(animation) {
@@ -211,7 +222,12 @@ class Hinges extends ElevatorWorld {
     [
       player.desktopControls,
       ...player.controllers,
-    ].forEach(({ buttons, hand, isDesktop, raycaster }) => {
+    ].forEach(({
+      buttons,
+      hand,
+      isDesktop,
+      raycaster,
+    }) => {
       if ((hand && buttons.triggerDown) || (isDesktop && buttons.primaryDown)) {
         const { sphere } = this;
         const { origin, direction } = raycaster.ray;

@@ -28,7 +28,7 @@ class Paddle extends Mesh {
       const o = Math.random();
       offset.set([o, o, o, o], i);
     }
-    geometry.setAttribute('offset', new BufferAttribute(offset, 1))
+    geometry.setAttribute('offset', new BufferAttribute(offset, 1));
     geometry.physics = {
       shape: 'box',
       width: box.parameters.width,
@@ -62,7 +62,7 @@ class Paddle extends Mesh {
             'vColor.xyz *= 0.5 + (s > 0.5 ? 1.0 - s : s);',
           ].join('\n')
         ),
-      fragmentShader: fragmentShader,
+      fragmentShader,
       fog: true,
       vertexColors: true,
     });

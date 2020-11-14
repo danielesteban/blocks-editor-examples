@@ -70,7 +70,7 @@ class Models {
       }
     });
   }
-  
+
   physics(physics, scale = 1) {
     if (!Models.physicsMaterial) {
       Models.physicsMaterial = new MeshBasicMaterial({ visible: false });

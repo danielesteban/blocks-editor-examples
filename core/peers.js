@@ -27,7 +27,7 @@ class Peers extends Group {
 
   animate({ delta }) {
     const { peers, player } = this;
-    
+
     const hands = player.controllers
       .filter(({ hand }) => (!!hand))
       .sort(({ hand: { handedness: a } }, { hand: { handedness: b } }) => b.localeCompare(a));
@@ -109,7 +109,7 @@ class Peers extends Group {
   }
 
   connectToServer() {
-    const { peers, room } = this;
+    const { room } = this;
     if (this.server) {
       this.disconnect();
     }

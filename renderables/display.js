@@ -22,7 +22,6 @@ class Display extends Mesh {
   }
 
   constructor({
-    lightmap,
     material,
     materials,
     models,

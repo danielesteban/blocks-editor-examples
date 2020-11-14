@@ -12,6 +12,7 @@ class Box extends Mesh {
     Box.geometry.deleteAttribute('normal');
     Box.geometry.deleteAttribute('uv');
   }
+
   static setupMaterial() {
     Box.material = new MeshBasicMaterial({ opacity: 0.5, transparent: true });
   }
@@ -25,7 +26,7 @@ class Box extends Mesh {
     }
     super(
       Box.geometry,
-      Box.material,
+      Box.material
     );
     this.scale.set(width, height, depth);
     this.physics = {
