@@ -1,11 +1,11 @@
-import ElevatorWorld from '../core/elevatorWorld.js';
-import Peers from '../core/peers.js';
 import {
   Color,
   Euler,
   FogExp2,
   Vector3,
 } from '../core/three.js';
+import ElevatorWorld from '../core/elevatorWorld.js';
+import Peers from '../core/peers.js';
 import Pixels from '../renderables/pixels.js';
 
 class Game extends ElevatorWorld {

@@ -1,5 +1,3 @@
-import ElevatorWorld from '../core/elevatorWorld.js';
-import Lightmap from '../core/lightmap.js';
 import {
   Color,
   Euler,
@@ -7,6 +5,8 @@ import {
   Matrix4,
   Vector3,
 } from '../core/three.js';
+import ElevatorWorld from '../core/elevatorWorld.js';
+import Lightmap from '../core/lightmap.js';
 import Spheres from '../renderables/spheres.js';
 
 class Temple extends ElevatorWorld {

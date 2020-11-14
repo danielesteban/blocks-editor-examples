@@ -1,9 +1,9 @@
-import ElevatorWorld from '../core/elevatorWorld.js';
 import {
   Color,
   Euler,
   Vector3,
 } from '../core/three.js';
+import ElevatorWorld from '../core/elevatorWorld.js';
 import Performance from '../renderables/performance.js';
 
 class Concert extends ElevatorWorld {

@@ -1,11 +1,11 @@
-import ElevatorWorld from '../core/elevatorWorld.js';
-import Peers from '../core/peers.js';
 import {
   Color,
   Euler,
   FogExp2,
   Vector3,
 } from '../core/three.js';
+import ElevatorWorld from '../core/elevatorWorld.js';
+import Peers from '../core/peers.js';
 import Clouds from '../renderables/clouds.js';
 import Ocean from '../renderables/ocean.js';
 import Rain from '../renderables/rain.js';

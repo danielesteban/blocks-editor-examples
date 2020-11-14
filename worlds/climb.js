@@ -1,5 +1,3 @@
-import ElevatorWorld from '../core/elevatorWorld.js';
-import Peers from '../core/peers.js';
 import {
   Box3,
   Color,
@@ -7,6 +5,8 @@ import {
   FogExp2,
   Vector3,
 } from '../core/three.js';
+import ElevatorWorld from '../core/elevatorWorld.js';
+import Peers from '../core/peers.js';
 import Clouds from '../renderables/clouds.js';
 import Ocean from '../renderables/ocean.js';
 import Spheres from '../renderables/spheres.js';

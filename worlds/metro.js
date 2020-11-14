@@ -1,4 +1,3 @@
-import Lightmap from '../core/lightmap.js';
 import {
   Box3,
   FogExp2,
@@ -7,6 +6,7 @@ import {
   Matrix4,
   Vector3,
 } from '../core/three.js';
+import Lightmap from '../core/lightmap.js';
 import Elevator from '../renderables/elevator.js';
 import Train from '../renderables/train.js';
 import * as worlds from '../worlds/index.js';

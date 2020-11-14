@@ -1,4 +1,3 @@
-import ElevatorWorld from '../core/elevatorWorld.js';
 import {
   Color,
   Euler,
@@ -8,6 +7,7 @@ import {
   Quaternion,
   Vector3,
 } from '../core/three.js';
+import ElevatorWorld from '../core/elevatorWorld.js';
 import Box from '../renderables/box.js';
 import Clouds from '../renderables/clouds.js';
 import Explosion from '../renderables/explosion.js';
