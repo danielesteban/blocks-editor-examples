@@ -44,7 +44,7 @@ class Hinges extends ElevatorWorld {
       for (let i = 0; i < 2; i += 1) {
         const orientation = i === 0 ? 1 : -1;
         const door = new Door({
-          limits: i === 0 ? { low: Math.PI * -0.5, high: 0 } : { low: 0, high: Math.PI * 0.5 },
+          limits: i === 0 ? { low: -Math.PI, high: 0 } : { low: 0, high: Math.PI },
           models,
           orientation,
         });
