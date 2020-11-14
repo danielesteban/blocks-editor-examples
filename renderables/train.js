@@ -3,13 +3,14 @@ import Display from './display.js';
 import Map from './map.js';
 
 class Train extends Group {
-  constructor({ models, isOpen = false }) {
+  constructor({ isOpen = false, models, stations }) {
     super();
     this.aux = new Box3();
     this.bounds = new Box3();
     this.isOpen = isOpen;
     this.pointables = [];
     this.translocables = [];
+    Map.setStations(stations);
     models.lightmap('models/tunnelLightmap.json')
       .then((lightmap) => {
         lightmap.material.uniforms.lightmapBlending.value = 0.7;
@@ -137,10 +138,6 @@ class Train extends Group {
 
   setDisplay(text) {
     Display.update(text);
-  }
-
-  setMapStations(stations) {
-    Map.setStations(stations);
   }
 
   setMap(station, progress, peers) {

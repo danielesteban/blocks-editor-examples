@@ -12,16 +12,14 @@ class Metro extends Group {
   constructor(scene, { destination, offset }) {
     super();
 
-    const { ambient, models, player, pointables, sfx, translocables, worlds } = scene;
-    if (!destination) {
-      ambient.set('sounds/train.ogg');
-    }
-    scene.fog = new FogExp2(0, 0.015);
-    this.player = player;
-
     if (!Metro.stations) {
-      const stations = Object.keys(worlds)
-        .filter((name) => name !== 'Metro');
+      const stations = Object.keys(scene.worlds)
+        .filter((name) => name !== 'Metro')
+        .map((id) => ({
+          id,
+          isMultiplayer: scene.worlds[id].isMultiplayer,
+          name: scene.worlds[id].display || scene.worlds[id].name,
+        }));
       const values = window.crypto.getRandomValues(new Uint32Array(stations.length));
       for (let i = stations.length - 1; i >= 0; i -= 1) {
         const rand = values[i] % (i + 1);
@@ -33,6 +31,13 @@ class Metro extends Group {
     }
     const { stations } = Metro;
 
+    const { ambient, models, player, pointables, sfx, translocables } = scene;
+    if (!destination) {
+      ambient.set('sounds/train.ogg');
+    }
+    scene.fog = new FogExp2(0, 0.015);
+    this.player = player;
+
     const track = new Group();
     track.position.set(0, -2.75, 0);
     track.scale.setScalar(0.25);
@@ -40,7 +45,7 @@ class Metro extends Group {
     track.segments = 12;
     track.gap = destination ? (track.segments - 1) : (track.segments * 2 - 1);
     track.station = destination ? (
-      stations.findIndex((name) => name === destination)
+      stations.findIndex(({ id }) => id === destination)
     ) : (
       Math.floor(Math.random() * stations.length)
     );
@@ -54,7 +59,7 @@ class Metro extends Group {
       sfx,
       onOpen: () => {
         elevator.onClose = () => (
-          scene.load(stations[track.station], { offset: elevator.getOffset(player) })
+          scene.load(stations[track.station].id, { offset: elevator.getOffset(player) })
         );
       },
     });
@@ -78,6 +83,7 @@ class Metro extends Group {
     const train = new Train({
       isOpen: !!destination,
       models,
+      stations,
     });
     train.scale.setScalar(0.25);
     train.position.set(0, -0.25, 4.625);
@@ -86,13 +92,23 @@ class Metro extends Group {
     this.add(train);
     this.train = train;
 
+    let peers = {};
+
     const updateMap = () => (
       train.setMap(track.station, track.isRunning ? track.progress : null, peers)
     );
     this.updateMap = updateMap;
     this.updateMapTimer = 0;
 
-    let peers = {};
+    const updateDisplay = () => {
+      const { id, isMultiplayer, name } = stations[track.station];
+      if (track.isRunning) {
+        train.setDisplay(`Next station: ${name}`);
+      } else {
+        train.setDisplay(`${name}${(isMultiplayer || peers[id]) ? ` - ${peers[id] || 0} Players` : ''}`);
+      }
+    };
+
     const updatePeers = () => (
       fetch('https://train.gatunes.com/rooms/peers')
         .then((res) => res.json())
@@ -107,22 +123,6 @@ class Metro extends Group {
 
     this.updatePeersInterval = setInterval(updatePeers, 10000);
     updatePeers();
-
-    const updateDisplay = () => {
-      const id = stations[track.station];
-      const { display, isMultiplayer, name } = worlds[id];
-      if (track.isRunning) {
-        train.setDisplay(`Next station: ${display || name}`);
-      } else {
-        train.setDisplay(`${display || name}${(isMultiplayer || peers[id]) ? ` - ${peers[id] || 0} Players` : ''}`);
-      }
-    };
-
-    train.setMapStations(stations.map((id) => ({
-      id,
-      isMultiplayer: worlds[id].isMultiplayer,
-      name: worlds[id].display || worlds[id].name,
-    })));
     if (!destination) {
       updateDisplay();
       updateMap();
