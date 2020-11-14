@@ -58,12 +58,15 @@ class Door extends Group {
       this.add(handle);
     });
 
+    this.translocables = [];
+
     if (model) {
       models.load(model)
         .then((door) => {
           const model = door.children[0].clone();
           model.position.set(-0.5, -1.75, -0.0625);
           model.scale.set(0.5, 0.5, 0.125);
+          this.translocables.push(model.children[0]);
           this.add(model);
           // const debug = new Box(0.95, 2.4, 0.125);
           // this.add(debug);

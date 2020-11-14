@@ -49,6 +49,7 @@ class Hinges extends ElevatorWorld {
           orientation,
         });
         door.position.set(-5 + j * 5 + 0.5 * -orientation, 1.75, -4);
+        translocables.push(door.translocables);
         this.add(door);
         doors.push(door);
       }
