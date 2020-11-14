@@ -7,7 +7,7 @@ class Door extends Group {
   constructor({
     limits,
     models,
-    model = 'models/hingesDoor.glb',
+    model,
     orientation = 1,
   }) {
     super();

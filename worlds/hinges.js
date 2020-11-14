@@ -8,10 +8,11 @@ import {
 } from '../core/three.js';
 import ElevatorWorld from '../core/elevatorWorld.js';
 import Box from '../renderables/box.js';
-import Door from '../renderables/door.js';
-import Clouds from '../renderables/clouds.js';
-import Explosion from '../renderables/explosion.js';
 import Boxes from '../renderables/boxes.js';
+import Clouds from '../renderables/clouds.js';
+import Door from '../renderables/door.js';
+import Explosion from '../renderables/explosion.js';
+import Rain from '../renderables/rain.js';
 import Spheres from '../renderables/spheres.js';
 
 class Hinges extends ElevatorWorld {
@@ -43,6 +44,7 @@ class Hinges extends ElevatorWorld {
         const orientation = i === 0 ? 1 : -1;
         const door = new Door({
           limits: i === 0 ? { low: -Math.PI, high: 0 } : { low: 0, high: Math.PI },
+          model: 'models/labDoor.glb',
           models,
           orientation,
         });
@@ -54,10 +56,30 @@ class Hinges extends ElevatorWorld {
       return doors;
     }, []);
 
-    models.load('models/hinges.glb')
+    const rain = new Rain({ anchor: player, heightmapScale: 0.5 });
+    rain.timer = 30 + Math.random() * 60;
+    rain.animateStorm = (animation) => {
+      rain.animate(animation);
+      rain.timer -= animation.delta;
+      if (rain.timer <= 0) {
+        rain.visible = !rain.visible;
+        ambient.set(rain.visible ? ['sounds/rain.ogg', 'sounds/forest.ogg'] : 'sounds/forest.ogg');
+        rain.timer = 30 + Math.random() * 60;
+      }
+    };
+    this.add(rain);
+    this.rain = rain;
+
+    models.load('models/lab.glb')
       .then((model) => {
         model.scale.setScalar(0.5);
         this.add(model);
+        model.traverse((child) => {
+          if (child.isMesh) {
+            rain.addToHeightmap(child);
+          }
+        });
+        rain.reset();
 
         this.elevator.isOpen = true;
       });
@@ -65,13 +87,18 @@ class Hinges extends ElevatorWorld {
     models.load('models/forest.glb')
       .then((model) => {
         model.scale.setScalar(0.5);
-        model.position.z = -4;
         this.add(model);
+        model.traverse((child) => {
+          if (child.isMesh) {
+            rain.addToHeightmap(child);
+          }
+        });
+        rain.reset();
       });
 
     Promise.all([
       scene.getPhysics(),
-      models.physics('models/hingesPhysics.json', 0.5),
+      models.physics('models/labPhysics.json', 0.5),
     ])
       .then(([physics, boxes]) => {
         this.physics = physics;
@@ -184,10 +211,12 @@ class Hinges extends ElevatorWorld {
       isPicking,
       physics,
       player,
+      rain,
       spheres,
     } = this;
     clouds.animate(animation);
     explosions.forEach((explosion) => explosion.animate(animation));
+    rain.animateStorm(animation);
     if (!physics) {
       return;
     }
