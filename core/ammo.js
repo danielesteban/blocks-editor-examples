@@ -11,7 +11,7 @@
 
 /* eslint-disable */
 
-import { DynamicDrawUsage, Quaternion, Vector3 } from './three.js';
+import { DynamicDrawUsage, Matrix4, Quaternion, Vector3 } from './three.js';
 
 async function AmmoPhysics() {
 
@@ -39,6 +39,7 @@ async function AmmoPhysics() {
   const auxQuaternion = new AmmoLib.btQuaternion();
   const zero = new AmmoLib.btVector3( 0, 0, 0 );
   const worldspace = {
+    matrix: new Matrix4(),
     position: new Vector3(),
     quaternion: new Quaternion(),
     scale: new Vector3(),
@@ -441,7 +442,26 @@ async function AmmoPhysics() {
 
       if ( mesh.isInstancedMesh ) {
 
-        // TODO: Update kinematic instances bodies
+        const bodies = meshMap.get( mesh );
+
+        for ( let j = 0, k = bodies.length; j < k; j ++ ) {
+
+          mesh.getMatrixAt(j, worldspace.matrix);
+
+          const body = bodies[ j ];
+          const motionState = body.getMotionState();
+          
+          worldspace.matrix.decompose(worldspace.position, worldspace.quaternion, worldspace.scale);
+
+          auxTransform.setIdentity();
+          auxVector.setValue( worldspace.position.x, worldspace.position.y, worldspace.position.z );
+          auxTransform.setOrigin( auxVector );
+          auxQuaternion.setValue( worldspace.quaternion.x, worldspace.quaternion.y, worldspace.quaternion.z, worldspace.quaternion.w );
+          auxTransform.setRotation( auxQuaternion );
+
+          motionState.setWorldTransform( auxTransform );
+
+        }
 
       } else if ( mesh.isGroup || mesh.isMesh ) {
 
