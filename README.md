@@ -14,6 +14,7 @@
  * [Create WebXR voxels worlds from scratch](https://www.youtube.com/watch?v=rDMLVdFtnYo&list=PLxS3QOrB_ETGLcx9mEr2H3x2XKFog9eRh&index=1)
  * [Create WebXR voxels worlds: Locomotion](https://www.youtube.com/watch?v=VSTP2KlF0XM&list=PLxS3QOrB_ETGLcx9mEr2H3x2XKFog9eRh&index=2)
  * [Create WebXR voxels worlds: Climbing](https://www.youtube.com/watch?v=sa2NW_aTloQ&list=PLxS3QOrB_ETGLcx9mEr2H3x2XKFog9eRh&index=3)
+ * [Create WebXR voxels worlds: P2P Multiplayer](https://www.youtube.com/watch?v=YVFYuMRNkhc&list=PLxS3QOrB_ETGLcx9mEr2H3x2XKFog9eRh&index=4)
 
 #### Local development
 

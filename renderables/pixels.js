@@ -1,6 +1,7 @@
 import {
   BoxGeometry,
   BufferGeometry,
+  DynamicDrawUsage,
   InstancedBufferAttribute,
   InstancedMesh,
   Matrix4,
@@ -102,7 +103,7 @@ class Pixels extends InstancedMesh {
     }
     const count = (width * resolution) * (height * resolution);
     const geometry = Pixels.geometry.clone();
-    geometry.setAttribute('instanceColor', new InstancedBufferAttribute(new Float32Array(count), 1));
+    geometry.setAttribute('instanceColor', (new InstancedBufferAttribute(new Float32Array(count), 1)).setUsage(DynamicDrawUsage));
     super(
       geometry,
       Pixels.material,
