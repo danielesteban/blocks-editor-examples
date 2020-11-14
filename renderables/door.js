@@ -5,6 +5,7 @@ import Box from './box.js';
 
 class Door extends Group {
   constructor({
+    limits,
     models,
     model = 'models/hingesDoor.glb',
     orientation = 1,
@@ -13,6 +14,7 @@ class Door extends Group {
 
     this.hinge = {
       type: 'hinge',
+      limits,
       position: new Vector3(0.4 * -orientation, 0, 0),
       rotation: (new Quaternion()).setFromAxisAngle(new Vector3(1, 0, 0), Math.PI * 0.5),
     };

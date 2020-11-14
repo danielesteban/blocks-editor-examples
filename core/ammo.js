@@ -9,6 +9,8 @@
 //   - isTrigger
 // + Removed a bunch of memory leaks and extra allocations
 
+/* eslint-disable */
+
 import { DynamicDrawUsage, Quaternion, Vector3 } from './three.js';
 
 async function AmmoPhysics() {
@@ -316,6 +318,15 @@ async function AmmoPhysics() {
           auxTransform.setRotation( auxQuaternion );
         }
         constraint = new AmmoLib.btHingeConstraint( getBody( mesh, index ), auxTransform );
+        if (options.limits) {
+          constraint.setLimit(
+            options.limits.low,
+            options.limits.high,
+            options.limits.softness || 0.9,
+            options.limits.biasFactor || 0.3,
+            options.limits.relaxationFactor || 1.0
+          );
+        }
         break;
       case 'p2p':
         auxVector.setValue( options.pivotInA.x, options.pivotInA.y, options.pivotInA.z );

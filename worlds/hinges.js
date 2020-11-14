@@ -43,7 +43,11 @@ class Hinges extends ElevatorWorld {
     const doors = [...Array(3)].reduce((doors, v, j) => {
       for (let i = 0; i < 2; i += 1) {
         const orientation = i === 0 ? 1 : -1;
-        const door = new Door({ models, orientation });
+        const door = new Door({
+          limits: i === 0 ? { low: Math.PI * -0.5, high: 0 } : { low: 0, high: Math.PI * 0.5 },
+          models,
+          orientation,
+        });
         door.position.set(-5 + j * 5 + 0.5 * -orientation, 1.75, -4);
         this.add(door);
         doors.push(door);
