@@ -9,7 +9,6 @@ import ElevatorWorld from '../core/elevatorWorld.js';
 import Peers from '../core/peers.js';
 import Clouds from '../renderables/clouds.js';
 import Ocean from '../renderables/ocean.js';
-import Spheres from '../renderables/spheres.js';
 
 class Climb extends ElevatorWorld {
   constructor(scene, { offset }) {

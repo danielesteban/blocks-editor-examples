@@ -1,6 +1,5 @@
 import { Euler, Matrix4, Vector3 } from '../core/three.js';
 import ElevatorWorld from '../core/elevatorWorld.js';
-import Lightmap from '../core/lightmap.js';
 import Boxes from '../renderables/boxes.js';
 import Spheres from '../renderables/spheres.js';
 
