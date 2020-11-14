@@ -7,6 +7,7 @@ import {
 } from '../core/three.js';
 import ElevatorWorld from '../core/elevatorWorld.js';
 import Peers from '../core/peers.js';
+import Birds from '../renderables/birds.js';
 import Clouds from '../renderables/clouds.js';
 import Ocean from '../renderables/ocean.js';
 
@@ -23,6 +24,10 @@ class Climb extends ElevatorWorld {
     ambient.set('sounds/sea.ogg');
     scene.background = new Color(0x336688);
     scene.fog = new FogExp2(scene.background.getHex(), 0.025);
+
+    const birds = new Birds({ anchor: player });
+    this.add(birds);
+    this.birds = birds;
 
     const clouds = new Clouds();
     clouds.position.y = 64;
@@ -69,6 +74,7 @@ class Climb extends ElevatorWorld {
     super.onAnimationTick(animation);
     const {
       aux,
+      birds,
       clouds,
       collision,
       isClimbing,
@@ -76,6 +82,7 @@ class Climb extends ElevatorWorld {
       peers,
       player,
     } = this;
+    birds.animate(animation);
     clouds.animate(animation);
     Ocean.animate(animation);
     peers.animate(animation);
@@ -111,7 +118,8 @@ class Climb extends ElevatorWorld {
   }
 
   onUnload() {
-    const { peers } = this;
+    const { birds, peers } = this;
+    birds.dispose();
     peers.disconnect();
   }
 }
