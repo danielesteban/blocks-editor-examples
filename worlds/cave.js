@@ -13,7 +13,7 @@ class Cave extends ElevatorWorld {
     });
 
     const { ambient, models, player, translocables } = scene;
-    ambient.set('sounds/dark.ogg');
+    ambient.set('sounds/cave.ogg');
 
     models.load('models/cave.glb')
       .then((model) => {
@@ -36,8 +36,32 @@ class Cave extends ElevatorWorld {
             this.physics.addMesh(box);
             this.add(box);
           });
-          player.controllers.forEach(({ physics }) => {
-            this.physics.addMesh(physics, 0, { isKinematic: true });
+
+          this.isPicking = [false, false];
+          const pivots = { left: new Vector3(0.05, 0, 0), right: new Vector3(-0.05, 0, 0) };
+          player.controllers.forEach((controller, i) => {
+            const matrix = new Matrix4();
+            const inverse = new Matrix4();
+            const vector = new Vector3();
+            controller.physics.onContact = ({ mesh, index, point }) => {
+              if (
+                !this.isPicking[i]
+                && (mesh === this.boxes || mesh === this.spheres)
+                && controller.hand
+                && controller.buttons.grip
+              ) {
+                mesh.getMatrixAt(index, matrix);
+                inverse.getInverse(matrix);
+                this.isPicking[i] = this.physics.addConstraint(controller.physics, {
+                  type: 'p2p',
+                  mesh,
+                  index,
+                  pivotInA: pivots[controller.hand.handedness],
+                  pivotInB: vector.copy(point).applyMatrix4(inverse),
+                });
+              }
+            };
+            this.physics.addMesh(controller.physics, 0, { isKinematic: true, isTrigger: true });
           });
         }),
     ])
@@ -75,11 +99,21 @@ class Cave extends ElevatorWorld {
     const {
       boxes,
       isOnElevator,
+      isPicking,
       physics,
       player,
       spheres,
     } = this;
-    if (isOnElevator || !physics || !spheres) {
+    if (!physics) {
+      return;
+    }
+    player.controllers.forEach(({ hand, buttons }, i) => {
+      if (isPicking[i] && hand && buttons.gripUp) {
+        physics.removeConstraint(isPicking[i]);
+        isPicking[i] = false;
+      }
+    });
+    if (isOnElevator || !boxes || !spheres) {
       return;
     }
     [
