@@ -116,8 +116,8 @@ class Hinges extends ElevatorWorld {
         for (let i = 0, l = this.boxes.count + this.spheres.count; i < l; i += 1) {
           matrix.setPosition(
             (Math.random() - 0.5) * 12,
-            4 + (Math.random() - 0.5) * 4,
-            (Math.random() - 0.5) * 3 - 2
+            1 + Math.random(),
+            (Math.random() - 0.5) * 5
           );
           if (i < this.boxes.count) {
             this.boxes.setMatrixAt(i, matrix);
@@ -153,7 +153,7 @@ class Hinges extends ElevatorWorld {
               }
               physics.setMeshPosition(
                 mesh,
-                new Vector3((Math.random() - 0.5) * 12, 1, (Math.random() - 0.5) * 2),
+                new Vector3((Math.random() - 0.5) * 12, 1, (Math.random() - 0.5) * 5),
                 index
               );
             }
