@@ -177,7 +177,7 @@ class Sequencer extends ElevatorWorld {
     if (isOnElevator || !physics || !spheres) {
       return;
     }
-    const sequence = Math.floor((animation.time / (60 / (bpm * 4))) % 32);
+    const sequence = Math.floor((animation.time / (60 / (bpm * 4))));
     if (this.sequence !== sequence) {
       this.sequence = sequence;
       cannons.forEach((cannon) => {
