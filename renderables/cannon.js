@@ -4,9 +4,15 @@ class Cannon extends Group {
   constructor({ models, sfx }) {
     super();
     this.shaft = new Group();
-    this.shaft.position.set(0, 0.75, -0.125);
+    this.shaft.position.set(0, 0.25, -0.125);
     this.shaft.launchPoint = new Vector3(0, 0, 1.75);
     this.add(this.shaft);
+    this.physics = {
+      shape: 'box',
+      width: 1,
+      height: 1,
+      depth: 1,
+    };
     this.shot = {
       origin: new Vector3(),
       direction: new Vector3(),
@@ -14,7 +20,7 @@ class Cannon extends Group {
     models.load('models/cannon.glb')
       .then((model) => {
         const [base, shaft] = model.children;
-        base.position.set(-0.5, 0, -0.5);
+        base.position.set(-0.5, -0.5, -0.5);
         base.scale.setScalar(0.125);
         this.add(base);
         shaft.position.set(-0.25, 0.25, -0.125);
@@ -22,14 +28,16 @@ class Cannon extends Group {
         shaft.scale.setScalar(0.125);
         this.shaft.add(shaft);
       });
-    sfx.load('sounds/shot.ogg')
-      .then((sound) => {
-        sound.filter = sound.context.createBiquadFilter();
-        sound.setFilter(sound.filter);
-        sound.setRefDistance(2);
-        this.add(sound);
-        this.sound = sound;
-      });
+    if (sfx) {
+      sfx.load('sounds/shot.ogg')
+        .then((sound) => {
+          sound.filter = sound.context.createBiquadFilter();
+          sound.setFilter(sound.filter);
+          sound.setRefDistance(2);
+          this.add(sound);
+          this.sound = sound;
+        });
+    }
   }
 
   animate({ time }) {

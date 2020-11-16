@@ -31,7 +31,7 @@ class Court extends ElevatorWorld {
     scene.fog = new FogExp2(scene.background.getHex(), 0.03);
 
     this.cannon = new Cannon({ models, sfx });
-    this.cannon.position.set(0, 1, -9.5);
+    this.cannon.position.set(0, 1.5, -9.5);
     this.add(this.cannon);
 
     this.clouds = new Clouds();
