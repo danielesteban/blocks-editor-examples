@@ -43,7 +43,7 @@ class Cannon extends Group {
     this.add(this.base);
 
     this.shaft = new Group();
-    this.shaft.position.copy(position).add(new Vector3(0, 0.5, 0));
+    this.shaft.position.copy(position).add(new Vector3(0, 0.425, 0));
     this.shaft.physics = {
       shape: 'box',
       width: 0.4,
@@ -54,8 +54,8 @@ class Cannon extends Group {
       type: 'hinge',
       friction: true,
       mesh: this.shaft,
-      pivotInA: new Vector3(0, 0.5, 0),
-      pivotInB: new Vector3(0, 0, 0.125),
+      pivotInA: new Vector3(0, 0.425, -0.125),
+      pivotInB: new Vector3(0, 0, -0.125),
       axisInA: new Vector3(1, 0, 0),
       axisInB: new Vector3(1, 0, 0),
     };

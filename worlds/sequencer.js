@@ -145,11 +145,7 @@ class Sequencer extends ElevatorWorld {
         this.spheres = new Spheres({ count: 24 });
         const matrix = new Matrix4();
         for (let i = 0; i < this.spheres.count; i += 1) {
-          matrix.setPosition(
-            -6 + Math.floor(Math.random() * 7) * 2,
-            4,
-            (Math.random() * 0.5) - 3.5
-          );
+          matrix.setPosition(0, -100 - i, 0);
           this.spheres.setMatrixAt(i, matrix);
         }
         this.physics.addMesh(this.spheres, 1);
