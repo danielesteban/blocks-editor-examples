@@ -5,18 +5,14 @@ class Cannon extends Group {
     super();
     this.shaft = new Group();
     this.shaft.position.set(0, 0.25, -0.125);
-    this.shaft.launchPoint = new Vector3(0, 0, 1.75);
     this.add(this.shaft);
-    this.physics = {
-      shape: 'box',
-      width: 1,
-      height: 1,
-      depth: 1,
-    };
+
     this.shot = {
-      origin: new Vector3(),
+      launchPoint: new Vector3(0, 0, 1.75),
       direction: new Vector3(),
+      origin: new Vector3(),
     };
+
     models.load('models/cannon.glb')
       .then((model) => {
         const [base, shaft] = model.children;
@@ -28,6 +24,7 @@ class Cannon extends Group {
         shaft.scale.setScalar(0.125);
         this.shaft.add(shaft);
       });
+
     if (sfx) {
       sfx.load('sounds/shot.ogg')
         .then((sound) => {
@@ -48,7 +45,7 @@ class Cannon extends Group {
 
   getShot() {
     const { shaft, shot } = this;
-    shaft.localToWorld(shot.origin.copy(shaft.launchPoint));
+    shaft.localToWorld(shot.origin.copy(shot.launchPoint));
     shaft.getWorldPosition(shot.direction);
     shot.direction.subVectors(shot.origin, shot.direction).normalize();
     return shot;

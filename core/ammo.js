@@ -36,6 +36,8 @@ async function AmmoPhysics() {
   const auxTransform = new AmmoLib.btTransform();
   const auxVector = new AmmoLib.btVector3();
   const auxVectorB = new AmmoLib.btVector3();
+  const auxVectorC = new AmmoLib.btVector3();
+  const auxVectorD = new AmmoLib.btVector3();
   const auxQuaternion = new AmmoLib.btQuaternion();
   const zero = new AmmoLib.btVector3( 0, 0, 0 );
   const worldspace = {
@@ -309,16 +311,31 @@ async function AmmoPhysics() {
 
     switch (options.type) {
       case 'hinge':
-        auxTransform.setIdentity();
-        if (options.position) {
-          auxVector.setValue( options.position.x, options.position.y, options.position.z );
-          auxTransform.setOrigin( auxVector );
+        if (options.mesh) {
+          auxVector.setValue( options.pivotInA.x, options.pivotInA.y, options.pivotInA.z );
+          auxVectorB.setValue( options.pivotInB.x, options.pivotInB.y, options.pivotInB.z );
+          auxVectorC.setValue( options.axisInA.x, options.axisInA.y, options.axisInA.z );
+          auxVectorD.setValue( options.axisInB.x, options.axisInB.y, options.axisInB.z );
+          constraint = new Ammo.btHingeConstraint(
+            getBody( mesh, index ),
+            getBody( options.mesh, options.index ),
+            auxVector, auxVectorB, auxVectorC, auxVectorD
+          );
+        } else {
+          auxTransform.setIdentity();
+          if (options.position) {
+            auxVector.setValue( options.position.x, options.position.y, options.position.z );
+            auxTransform.setOrigin( auxVector );
+          }
+          if (options.rotation) {
+            auxQuaternion.setValue( options.rotation.x, options.rotation.y, options.rotation.z, options.rotation.w );
+            auxTransform.setRotation( auxQuaternion );
+          }
+          constraint = new AmmoLib.btHingeConstraint( getBody( mesh, index ), auxTransform );
         }
-        if (options.rotation) {
-          auxQuaternion.setValue( options.rotation.x, options.rotation.y, options.rotation.z, options.rotation.w );
-          auxTransform.setRotation( auxQuaternion );
+        if (options.friction) {
+          constraint.enableAngularMotor(true, 0, 0.5);
         }
-        constraint = new AmmoLib.btHingeConstraint( getBody( mesh, index ), auxTransform );
         if (options.limits) {
           constraint.setLimit(
             options.limits.low,

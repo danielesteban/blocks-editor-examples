@@ -7,7 +7,7 @@ import {
 } from '../core/three.js';
 import ElevatorWorld from '../core/elevatorWorld.js';
 import Birds from '../renderables/birds.js';
-import Cannon from '../renderables/cannon.js';
+import Cannon from '../renderables/cannonHinges.js';
 import Clouds from '../renderables/clouds.js';
 import Pad from '../renderables/pad.js';
 import Spheres from '../renderables/spheres.js';
@@ -76,25 +76,17 @@ class Sequencer extends ElevatorWorld {
     ];
 
     this.cannons = [
-      [3, 0, 8],
-      [8, 1, 2],
-      [0, 0, 8],
-      [1, 4, 8],
-      [2, 2, 4],
-      [13, 2, 8],
-      [16, 3, 4],
-    ].map(([target, offset, rate], i) => {
-      const cannon = new Cannon({ models });
-      cannon.position.set(-6 + i * 2, 1, -4);
-      target = this.pads[target];
-      cannon.lookAt(target.position.x, cannon.position.y, target.position.z);
-      if (target.position.y === 4.5) {
-        cannon.shaft.rotation.x = Math.PI * -0.17;
-      } else if (target.position.y === 3) {
-        cannon.shaft.rotation.x = Math.PI * -0.112;
-      } else {
-        cannon.shaft.rotation.x = Math.PI * -0.05;
-      }
+      [0, 8],
+      [1, 2],
+      [0, 8],
+      [4, 8],
+      [2, 4],
+      [2, 8],
+      [1, 4],
+    ].map(([offset, rate], i) => {
+      const cannon = new Cannon({ models, position: new Vector3(-6 + i * 2, 1, -4) });
+      cannon.base.rotation.y = Math.PI;
+      cannon.shaft.rotation.copy(cannon.base.rotation);
       cannon.enabled = true;
       cannon.offset = offset;
       cannon.rate = rate;
@@ -139,7 +131,10 @@ class Sequencer extends ElevatorWorld {
         });
 
         this.cannons.forEach((cannon) => {
-          this.physics.addMesh(cannon, 0, { isKinematic: true });
+          this.physics.addMesh(cannon.base, 5);
+          this.physics.addConstraint(cannon.base, cannon.base.hinge);
+          this.physics.addMesh(cannon.shaft, 5);
+          this.physics.addConstraint(cannon.base, cannon.shaft.hinge);
         });
 
         this.pads.forEach((pad) => {
@@ -147,10 +142,14 @@ class Sequencer extends ElevatorWorld {
         });
 
         this.sphere = 0;
-        this.spheres = new Spheres({ count: 32 });
+        this.spheres = new Spheres({ count: 24 });
         const matrix = new Matrix4();
         for (let i = 0; i < this.spheres.count; i += 1) {
-          matrix.setPosition(0, -100 - i, 0);
+          matrix.setPosition(
+            -6 + Math.floor(Math.random() * 7) * 2,
+            4,
+            (Math.random() * 0.5) - 3.5
+          );
           this.spheres.setMatrixAt(i, matrix);
         }
         this.physics.addMesh(this.spheres, 1);
