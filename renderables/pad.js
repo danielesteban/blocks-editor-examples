@@ -9,7 +9,7 @@ class Pad extends Box {
     sample,
     sfx,
   }) {
-    super(1, 1, 0.2);
+    super(1, 1, 0.5);
     if (sample) {
       sfx.load(sample)
         .then((sound) => {
