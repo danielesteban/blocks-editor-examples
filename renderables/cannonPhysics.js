@@ -174,7 +174,7 @@ class Cannon extends Group {
       const values = i === 0 ? offsets : rates;
       const value = values[Math.round(angle * (values.length - 1))];
       if (i === 0) {
-        monitors[i].set(value);
+        monitors[i].set(value > 0 ? `+${value}` : value);
         this.offset = value;
       } else {
         monitors[i].set(rateNames[value]);
@@ -188,9 +188,9 @@ Cannon.offsets = [0, 1, 2, 4];
 Cannon.rates = [0, 8, 4, 2];
 Cannon.rateNames = {
   0: 'OFF',
-  8: '1',
-  4: '1/2',
-  2: '1/4',
+  8: 'x1',
+  4: 'x2',
+  2: 'x4',
 };
 Cannon.worldUp = new Vector3(0, 1, 0);
 
