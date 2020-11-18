@@ -4,11 +4,18 @@ import {
   Quaternion,
   Vector3,
 } from '../core/three.js';
-import Box from './box.js';
+// import Box from './box.js';
 import Monitor from './monitor.js';
 
 class Cannon extends Group {
-  constructor({ models, position, rotation = 0 }) {
+  constructor({
+    models,
+    position,
+    offset = 0,
+    pitch = 0,
+    rate = 0,
+    yaw = 0,
+  }) {
     super();
     this.base = new Group();
     this.base.position.copy(position);
@@ -120,8 +127,27 @@ class Cannon extends Group {
 
     const matrix = new Matrix4();
     const transform = new Matrix4();
+
+    const pivot = this.shaft.position.clone().add(this.shaft.hinge.pivotInB);
+    transform.makeTranslation(-pivot.x, -pivot.y, -pivot.z);
+    transform.premultiply(matrix.makeRotationX(pitch));
+    transform.premultiply(
+      matrix.makeTranslation(pivot.x, pivot.y, pivot.z)
+    );
+    this.shaft.applyMatrix4(transform);
+
+    this.levers.forEach((lever, i) => {
+      const pivot = lever.position.clone().add(lever.hinge.pivotInB);
+      transform.makeTranslation(-pivot.x, -pivot.y, -pivot.z);
+      transform.premultiply(matrix.makeRotationX(Math.PI * -0.2 * (i === 0 ? offset : rate)));
+      transform.premultiply(
+        matrix.makeTranslation(pivot.x, pivot.y, pivot.z)
+      );
+      lever.applyMatrix4(transform);
+    });
+
     transform.makeTranslation(-this.base.position.x, -this.base.position.y, -this.base.position.z);
-    transform.premultiply(matrix.makeRotationY(rotation));
+    transform.premultiply(matrix.makeRotationY(yaw));
     transform.premultiply(
       matrix.makeTranslation(this.base.position.x, this.base.position.y, this.base.position.z)
     );

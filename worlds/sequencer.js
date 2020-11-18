@@ -75,10 +75,58 @@ class Sequencer extends ElevatorWorld {
       }, []),
     ];
 
-    this.cannons = [...Array(7)].map((v, i) => {
+    this.cannons = [
+      {
+        rate: 0.6,
+        pitch: Math.PI * 0.1,
+        yaw: Math.PI * -0.015,
+      },
+      {
+        offset: 0.25,
+        rate: 0.6,
+        pitch: Math.PI * 0.04,
+        yaw: Math.PI * 0.06,
+      },
+      {
+        rate: 0.25,
+        pitch: Math.PI * 0.15,
+        yaw: Math.PI * -0.015,
+      },
+      {
+        offset: 1,
+        rate: 0.25,
+        pitch: Math.PI * 0.16,
+      },
+      {
+        rate: 1,
+        pitch: Math.PI * 0.15,
+        yaw: Math.PI * 0.014,
+      },
+      {
+        offset: 0.75,
+        rate: 0.6,
+        pitch: Math.PI * 0.05,
+        yaw: Math.PI * 0.05,
+      },
+      {
+        offset: 0.75,
+        rate: 0.6,
+        pitch: Math.PI * 0.1,
+        yaw: Math.PI * 0.025,
+      },
+    ].map(({
+      offset,
+      pitch,
+      rate,
+      yaw,
+    }, i) => {
       const cannon = new Cannon({
         models,
         position: new Vector3(-6 + i * 2, 1, -4),
+        offset,
+        pitch,
+        rate,
+        yaw,
       });
       this.add(cannon);
       return cannon;
