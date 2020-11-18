@@ -319,7 +319,8 @@ async function AmmoPhysics() {
           constraint = new Ammo.btHingeConstraint(
             getBody( mesh, index ),
             getBody( options.mesh, options.index ),
-            auxVector, auxVectorB, auxVectorC, auxVectorD
+            auxVector, auxVectorB, auxVectorC, auxVectorD,
+            true
           );
         } else {
           auxTransform.setIdentity();
@@ -331,10 +332,10 @@ async function AmmoPhysics() {
             auxQuaternion.setValue( options.rotation.x, options.rotation.y, options.rotation.z, options.rotation.w );
             auxTransform.setRotation( auxQuaternion );
           }
-          constraint = new AmmoLib.btHingeConstraint( getBody( mesh, index ), auxTransform );
+          constraint = new AmmoLib.btHingeConstraint( getBody( mesh, index ), auxTransform, true );
         }
         if (options.friction) {
-          constraint.enableAngularMotor(true, 0, 0.5);
+          constraint.enableAngularMotor(true, 0, 1);
         }
         if (options.limits) {
           constraint.setLimit(

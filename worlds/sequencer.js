@@ -25,7 +25,7 @@ class Sequencer extends ElevatorWorld {
     scene.background = new Color(0x336688);
     scene.fog = new FogExp2(scene.background.getHex(), 0.03);
 
-    this.bpm = 90;
+    this.bpm = 100;
     const intervals = [
       [2, 1, 2, 2, 1, 2], // Aeolian
       [1, 2, 2, 1, 2, 2], // Locrian
@@ -75,21 +75,11 @@ class Sequencer extends ElevatorWorld {
       }, []),
     ];
 
-    this.cannons = [
-      [0, 8],
-      [1, 2],
-      [0, 8],
-      [4, 8],
-      [2, 4],
-      [2, 8],
-      [1, 4],
-    ].map(([offset, rate], i) => {
-      const cannon = new Cannon({ models, position: new Vector3(-6 + i * 2, 1, -4) });
-      cannon.base.rotation.y = Math.PI;
-      cannon.shaft.rotation.copy(cannon.base.rotation);
-      cannon.enabled = true;
-      cannon.offset = offset;
-      cannon.rate = rate;
+    this.cannons = [...Array(7)].map((v, i) => {
+      const cannon = new Cannon({
+        models,
+        position: new Vector3(-6 + i * 2, 1, -4),
+      });
       this.add(cannon);
       return cannon;
     });
@@ -135,6 +125,10 @@ class Sequencer extends ElevatorWorld {
           this.physics.addConstraint(cannon.base, cannon.base.hinge);
           this.physics.addMesh(cannon.shaft, 5);
           this.physics.addConstraint(cannon.base, cannon.shaft.hinge);
+          cannon.levers.forEach((lever) => {
+            this.physics.addMesh(lever, 1);
+            this.physics.addConstraint(cannon.base, lever.hinge);
+          });
         });
 
         this.pads.forEach((pad) => {
@@ -176,7 +170,8 @@ class Sequencer extends ElevatorWorld {
     if (this.sequence !== sequence) {
       this.sequence = sequence;
       cannons.forEach((cannon) => {
-        if (!cannon.enabled || (sequence + cannon.offset) % cannon.rate !== 0) {
+        cannon.updateLevers();
+        if ((sequence + cannon.offset) % cannon.rate !== 0) {
           return;
         }
         const { sphere } = this;
@@ -220,8 +215,9 @@ class Sequencer extends ElevatorWorld {
   }
 
   onUnload() {
-    const { birds } = this;
+    const { birds, cannons } = this;
     birds.dispose();
+    cannons.forEach((cannon) => cannon.dispose());
   }
 }
 
