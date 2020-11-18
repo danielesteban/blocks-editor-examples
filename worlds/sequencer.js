@@ -25,7 +25,14 @@ class Sequencer extends ElevatorWorld {
     scene.background = new Color(0x336688);
     scene.fog = new FogExp2(scene.background.getHex(), 0.03);
 
+    this.birds = new Birds({ anchor: player });
+    this.add(this.birds);
+
+    this.clouds = new Clouds();
+    this.add(this.clouds);
+
     this.bpm = 100;
+
     const intervals = [
       [2, 1, 2, 2, 1, 2], // Aeolian
       [1, 2, 2, 1, 2, 2], // Locrian
@@ -131,12 +138,6 @@ class Sequencer extends ElevatorWorld {
       this.add(cannon);
       return cannon;
     });
-
-    this.birds = new Birds({ anchor: player });
-    this.add(this.birds);
-
-    this.clouds = new Clouds();
-    this.add(this.clouds);
 
     models.load('models/sequencer.glb')
       .then((model) => {

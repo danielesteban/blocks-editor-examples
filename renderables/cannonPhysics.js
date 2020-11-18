@@ -106,12 +106,42 @@ class Cannon extends Group {
 
     this.shaft = new Group();
     this.shaft.position.copy(position).add(new Vector3(0, 0.425, 0));
-    this.shaft.physics = {
-      shape: 'box',
-      width: 0.4,
-      height: 0.4,
-      depth: 1.5,
-    };
+    this.shaft.physics = [
+      {
+        shape: 'box',
+        position: new Vector3(0, 0, 0),
+        width: 0.4,
+        height: 0.4,
+        depth: 1.5,
+      },
+      // Handle
+      {
+        shape: 'box',
+        position: new Vector3(-0.075, 0, 0.775),
+        width: 0.05,
+        height: 0.05,
+        depth: 0.05,
+      },
+      {
+        shape: 'box',
+        position: new Vector3(0.075, 0, 0.775),
+        width: 0.05,
+        height: 0.05,
+        depth: 0.05,
+      },
+      {
+        shape: 'box',
+        position: new Vector3(0, 0, 0.825),
+        width: 0.2,
+        height: 0.05,
+        depth: 0.05,
+      },
+    ];
+    // this.shaft.physics.forEach(({ position, width, height, depth }) => {
+    //   const box = new Box(width, height, depth);
+    //   box.position.copy(position);
+    //   this.shaft.add(box);
+    // });
     this.shaft.hinge = {
       type: 'hinge',
       friction: true,
@@ -121,8 +151,6 @@ class Cannon extends Group {
       axisInA: new Vector3(1, 0, 0),
       axisInB: new Vector3(1, 0, 0),
     };
-    // const box = new Box(0.4, 0.4, 1.5);
-    // this.shaft.add(box);
     this.add(this.shaft);
 
     const matrix = new Matrix4();
@@ -165,7 +193,7 @@ class Cannon extends Group {
 
     models.load('models/cannon.glb')
       .then((model) => {
-        const [base, shaft, lever] = model.children;
+        const [base, shaft, handle, lever] = model.children;
         base.position.set(-0.5, -0.5, -0.5);
         base.scale.setScalar(0.125);
         this.base.add(base);
@@ -173,6 +201,10 @@ class Cannon extends Group {
         shaft.rotation.x = Math.PI * -0.5;
         shaft.scale.set(0.1, 0.125, 0.1);
         this.shaft.add(shaft);
+        handle.position.set(-0.1, 0.025, 0.7);
+        handle.rotation.x = Math.PI * 0.5;
+        handle.scale.setScalar(0.05);
+        this.shaft.add(handle);
         lever.scale.setScalar(0.05);
         this.levers.forEach((mesh, i) => {
           const model = lever.clone();
