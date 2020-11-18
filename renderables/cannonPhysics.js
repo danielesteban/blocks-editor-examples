@@ -77,11 +77,11 @@ class Cannon extends Group {
           depth: 0.05,
         },
       ];
-      lever.physics.forEach(({ position, width, height, depth }) => {
-        const box = new Box(width, height, depth);
-        box.position.copy(position);
-        lever.add(box);
-      });
+      // lever.physics.forEach(({ position, width, height, depth }) => {
+      //   const box = new Box(width, height, depth);
+      //   box.position.copy(position);
+      //   lever.add(box);
+      // });
       lever.position.copy(position).add(new Vector3(0.51 * (i === 0 ? -1 : 1), 0.2, 0.35));
       lever.hinge = {
         type: 'hinge',
@@ -139,7 +139,7 @@ class Cannon extends Group {
 
     models.load('models/cannon.glb')
       .then((model) => {
-        const [base, shaft] = model.children;
+        const [base, shaft, lever] = model.children;
         base.position.set(-0.5, -0.5, -0.5);
         base.scale.setScalar(0.125);
         this.base.add(base);
@@ -147,6 +147,15 @@ class Cannon extends Group {
         shaft.rotation.x = Math.PI * -0.5;
         shaft.scale.set(0.1, 0.125, 0.1);
         this.shaft.add(shaft);
+        lever.scale.setScalar(0.05);
+        this.levers.forEach((mesh, i) => {
+          const model = lever.clone();
+          model.position.set(0.025 * (i === 0 ? 1 : -1), -0.3, 0.025 * (i === 0 ? 1 : -1));
+          if (i === 0) {
+            model.rotation.y = Math.PI;
+          }
+          mesh.add(model);
+        });
       });
   }
 
