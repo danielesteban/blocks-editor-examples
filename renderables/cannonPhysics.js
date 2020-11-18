@@ -86,7 +86,7 @@ class Cannon extends Group {
       lever.hinge = {
         type: 'hinge',
         friction: true,
-        limits: { low: Math.PI * -0.25, high: 0 },
+        limits: { low: Math.PI * -0.2, high: 0 },
         mesh: lever,
         pivotInA: new Vector3(0.51 * (i === 0 ? -1 : 1), 0, 0.35),
         pivotInB: new Vector3(0, -0.2, 0),
@@ -170,7 +170,7 @@ class Cannon extends Group {
     const { offsets, rates, rateNames, worldUp } = Cannon;
     levers.forEach(({ matrixWorld }, i) => {
       auxVector.set(0, 1, 0).transformDirection(matrixWorld);
-      const angle = Math.min(Math.max(auxVector.angleTo(worldUp) / (Math.PI * 0.25), 0), 1);
+      const angle = Math.min(Math.max(auxVector.angleTo(worldUp) / (Math.PI * 0.2), 0), 1);
       const values = i === 0 ? offsets : rates;
       const value = values[Math.round(angle * (values.length - 1))];
       if (i === 0) {

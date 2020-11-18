@@ -123,7 +123,7 @@ class Sequencer extends ElevatorWorld {
         this.cannons.forEach((cannon) => {
           this.physics.addMesh(cannon.base, 5);
           this.physics.addConstraint(cannon.base, cannon.base.hinge);
-          this.physics.addMesh(cannon.shaft, 5);
+          this.physics.addMesh(cannon.shaft, 1);
           this.physics.addConstraint(cannon.base, cannon.shaft.hinge);
           cannon.levers.forEach((lever) => {
             this.physics.addMesh(lever, 1);
