@@ -66,7 +66,7 @@ class Pad extends Box {
 
   updateColor() {
     const { hue, material, power } = this;
-    material.color.setHSL(hue, 1, Math.max(Math.min(power, 0.9), 0.1));
+    material.color.setHSL(hue, 0.8, Math.max(Math.min(power, 0.9), 0.1));
   }
 }
 
