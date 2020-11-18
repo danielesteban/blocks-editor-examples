@@ -43,7 +43,7 @@ class Display extends Mesh {
     models.load('models/display.glb')
       .then((model) => {
         model.scale.setScalar(0.5);
-        model.position.set(-4, -1, -0.85);
+        model.position.set(-4, -1.5, -0.85);
         const modelMaterials = {};
         model.traverse((child) => {
           if (child.isMesh) {
