@@ -8,7 +8,7 @@ import {
 } from '../core/three.js';
 import ElevatorWorld from '../core/elevatorWorld.js';
 import Box from '../renderables/box.js';
-import Cannon from '../renderables/cannon.js';
+import Cannon from '../renderables/cannonAnimated.js';
 import Clouds from '../renderables/clouds.js';
 import Explosion from '../renderables/explosion.js';
 import Paddle from '../renderables/paddle.js';

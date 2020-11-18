@@ -7,7 +7,7 @@ import {
 } from '../core/three.js';
 import ElevatorWorld from '../core/elevatorWorld.js';
 import Birds from '../renderables/birds.js';
-import Cannon from '../renderables/cannonHinges.js';
+import Cannon from '../renderables/cannonPhysics.js';
 import Clouds from '../renderables/clouds.js';
 import Pad from '../renderables/pad.js';
 import Spheres from '../renderables/spheres.js';
