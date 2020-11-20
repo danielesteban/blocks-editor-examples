@@ -10,17 +10,26 @@ import ElevatorWorld from '../core/elevatorWorld.js';
 import Birds from '../renderables/birds.js';
 import Cannon from '../renderables/cannonPhysics.js';
 import Clouds from '../renderables/clouds.js';
+import Explosion from '../renderables/explosion.js';
 import Ground from '../renderables/ground.js';
 import Ocean from '../renderables/ocean.js';
 import Spheres from '../renderables/spheres.js';
 
 class Tower extends ElevatorWorld {
   constructor(scene, { offset }) {
+    const boat = new Group();
+    boat.angle = 0;
+    boat.modelOffset = new Vector3(-4, -3, 0);
+    boat.position.set(-28, 5, -28);
+    boat.rotation.set(0, Math.PI * -0.75, 0);
+    boat.rotation.order = 'YXZ';
+    boat.updateMatrixWorld();
+
     super({
       scene,
       offset,
-      position: new Vector3(0, 14.5, 7.75),
-      rotation: new Euler(0, Math.PI, 0),
+      position: boat.localToWorld(new Vector3(0, -0.5, 4.25)),
+      rotation: new Euler(0, boat.rotation.y - Math.PI, 0),
     });
 
     const { ambient, models, player, sfx, translocables } = scene;
@@ -41,13 +50,6 @@ class Tower extends ElevatorWorld {
     ocean.position.y = 2.125;
     this.add(ocean);
 
-    const boat = new Group();
-    boat.angle = 0;
-    boat.modelOffset = new Vector3(-4, -3, 0);
-    boat.position.set(-22, 5, -22);
-    boat.rotation.set(0, Math.PI * -0.25, 0);
-    boat.rotation.order = 'YXZ';
-    boat.updateMatrixWorld();
     this.add(boat);
     this.boat = boat;
 
@@ -77,9 +79,8 @@ class Tower extends ElevatorWorld {
         return cannon;
       }),
       ...[
-        { position: new Vector3(3.5, 0.5, 0) },
-        { position: new Vector3(3.5, 0.5, -4.5) },
-        { position: new Vector3(3.5, 0.5, 4.5) },
+        { position: new Vector3(-2, 0.5, -7.5) },
+        { position: new Vector3(2, 0.5, -7.5) },
       ].map(({ position }) => {
         const cannon = new Cannon({
           models,
@@ -90,6 +91,7 @@ class Tower extends ElevatorWorld {
           rate: Math.max(Math.random(), 0.2),
           yaw: Math.PI * -0.75 + (Math.random() - 0.5) * 0.5,
         });
+        cannon.impulse = 32;
         // cannon.base.hinge = {
         //   type: 'hinge',
         //   friction: true,
@@ -104,9 +106,11 @@ class Tower extends ElevatorWorld {
       }),
     ];
 
-    // HACK! Teleport player to the boat
-    player.teleport(boat.position);
-    player.rotate(Math.PI * -0.75);
+    this.explosions = [...Array(25)].map(() => {
+      const explosion = new Explosion({ sfx });
+      this.add(explosion);
+      return explosion;
+    });
 
     models.load('models/boat.glb')
       .then((model) => {
@@ -181,7 +185,30 @@ class Tower extends ElevatorWorld {
           matrix.setPosition(0, -100 - i, 0);
           this.spheres.setMatrixAt(i, matrix);
         }
-        this.physics.addMesh(this.spheres, 1);
+        const color = new Color();
+        const vector = new Vector3();
+        this.spheres.onContact = ({ mesh, point, trigger }) => {
+          if (mesh === this.spheres) {
+            return;
+          }
+          const explosion = this.explosions.find(({ sound, visible }) => (
+            !visible && (!sound || !sound.isPlaying)
+          ));
+          if (explosion) {
+            explosion.detonate({
+              color: this.spheres.getColorAt(trigger, color),
+              filter: 'highpass',
+              position: point,
+              scale: 0.1,
+            });
+          }
+          physics.setMeshPosition(
+            this.spheres,
+            vector.set(0, -100 - trigger, 0),
+            trigger
+          );
+        };
+        this.physics.addMesh(this.spheres, 1, { isTrigger: true });
         this.add(this.spheres);
       });
   }
@@ -193,11 +220,13 @@ class Tower extends ElevatorWorld {
       bpm,
       cannons,
       clouds,
+      explosions,
       physics,
       spheres,
     } = this;
     birds.animate(animation);
     clouds.animate(animation);
+    explosions.forEach((explosion) => explosion.animate(animation));
     Ocean.animate(animation);
     if (!physics || !spheres) {
       return;
@@ -220,7 +249,7 @@ class Tower extends ElevatorWorld {
         );
         physics.applyImpulse(
           spheres,
-          direction.multiplyScalar(24),
+          direction.multiplyScalar(cannon.impulse || 24),
           sphere
         );
         cannon.playSound();

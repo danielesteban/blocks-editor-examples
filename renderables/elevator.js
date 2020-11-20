@@ -13,6 +13,7 @@ class Elevator extends Group {
     this.isOpen = isOpen;
     this.onOpen = onOpen;
     this.translocables = [];
+    this.rotation.order = 'YXZ';
     if (isOpen && onOpen) {
       const { onOpen } = this;
       delete this.onOpen;
