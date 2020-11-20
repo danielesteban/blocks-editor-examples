@@ -55,7 +55,7 @@ class Tower extends ElevatorWorld {
 
     const step = new Vector3();
     boat.onPhysicsStep = (delta) => {
-      if (boat.position.x < -24) {
+      if (boat.position.x < -18) {
         const d = Math.min(delta * 0.5, 1 / 60);
         step.set(d, 0, d);
         boat.position.add(step);
@@ -74,14 +74,15 @@ class Tower extends ElevatorWorld {
     boat.cannons = [
       { position: new Vector3(-2, 0.5, -7.5) },
       { position: new Vector3(2, 0.5, -7.5) },
-    ].map(({ position }) => {
+    ].map(({ position }, i) => {
       const cannon = new Cannon({
+        levers: false,
         models,
         sfx,
         position: boat.localToWorld(position.clone()),
-        offset: Math.random(),
+        offset: i * 0.5,
         pitch: Math.PI * 0.15,
-        rate: Math.max(Math.random(), 0.2),
+        rate: 0.5,
         yaw: Math.PI * -0.75 + (Math.random() - 0.5) * 0.5,
       });
       cannon.impulse = 32;
@@ -101,16 +102,17 @@ class Tower extends ElevatorWorld {
 
     this.cannons = [
       ...[
-        { position: new Vector3(-4.5, 15.5, -7.5), yaw: Math.PI * 0.25 },
-        { position: new Vector3(4.5, 15.5, -7.5), yaw: Math.PI * 0.3 },
-        // { position: new Vector3(-4.5, 15.5, 7.5), yaw: Math.PI },
-        // { position: new Vector3(4.5, 15.5, 7.5), yaw: Math.PI },
-        { position: new Vector3(-7.5, 15.5, -4.5), yaw: Math.PI * 0.5 },
-        // { position: new Vector3(7.5, 15.5, -4.5), yaw: Math.PI * -0.5 },
-        { position: new Vector3(-7.5, 15.5, 4.5), yaw: Math.PI * 0.25 },
-        // { position: new Vector3(7.5, 15.5, 4.5), yaw: Math.PI * -0.5 },
+        { position: new Vector3(-4.5, 23.5, -7.5), yaw: Math.PI * 0.25 },
+        { position: new Vector3(4.5, 23.5, -7.5), yaw: Math.PI * 0.3 },
+        // { position: new Vector3(-4.5, 23.5, 7.5), yaw: Math.PI },
+        // { position: new Vector3(4.5, 23.5, 7.5), yaw: Math.PI },
+        { position: new Vector3(-7.5, 23.5, -4.5), yaw: Math.PI * 0.5 },
+        // { position: new Vector3(7.5, 23.5, -4.5), yaw: Math.PI * -0.5 },
+        { position: new Vector3(-7.5, 23.5, 4.5), yaw: Math.PI * 0.25 },
+        // { position: new Vector3(7.5, 23.5, 4.5), yaw: Math.PI * -0.5 },
       ].map(({ position, yaw }) => {
         const cannon = new Cannon({
+          levers: false,
           models,
           sfx,
           position,
@@ -192,10 +194,6 @@ class Tower extends ElevatorWorld {
           this.physics.addConstraint(cannon.base, cannon.base.hinge);
           this.physics.addMesh(cannon.shaft, 1);
           this.physics.addConstraint(cannon.base, cannon.shaft.hinge);
-          cannon.levers.forEach((lever) => {
-            this.physics.addMesh(lever, 1);
-            this.physics.addConstraint(cannon.base, lever.hinge);
-          });
         });
 
         this.sphere = 0;
@@ -219,7 +217,7 @@ class Tower extends ElevatorWorld {
               color: this.spheres.getColorAt(trigger, color),
               filter: 'highpass',
               position: point,
-              scale: 0.4,
+              scale: 0.5,
             });
           }
           physics.setMeshPosition(
@@ -267,7 +265,6 @@ class Tower extends ElevatorWorld {
     if (this.sequence !== sequence) {
       this.sequence = sequence;
       cannons.forEach((cannon) => {
-        cannon.updateLevers();
         if (cannon.disabled || (sequence + cannon.offset) % cannon.rate !== 0) {
           return;
         }
@@ -321,9 +318,8 @@ class Tower extends ElevatorWorld {
   }
 
   onUnload() {
-    const { birds, cannons } = this;
+    const { birds } = this;
     birds.dispose();
-    cannons.forEach((cannon) => cannon.dispose());
   }
 }
 
