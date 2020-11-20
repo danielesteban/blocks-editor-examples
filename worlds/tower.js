@@ -1,4 +1,5 @@
 import {
+  Box3,
   Color,
   Euler,
   FogExp2,
@@ -20,7 +21,7 @@ class Tower extends ElevatorWorld {
     const boat = new Group();
     boat.angle = 0;
     boat.modelOffset = new Vector3(-4, -3, 0);
-    boat.position.set(-28, 5, -28);
+    boat.position.set(-48, 5, -48);
     boat.rotation.set(0, Math.PI * -0.75, 0);
     boat.rotation.order = 'YXZ';
     boat.updateMatrixWorld();
@@ -50,20 +51,63 @@ class Tower extends ElevatorWorld {
     ocean.position.y = 2.125;
     this.add(ocean);
 
-    this.add(boat);
-    this.boat = boat;
-
     this.bpm = 100;
+
+    const step = new Vector3();
+    boat.onPhysicsStep = (delta) => {
+      if (boat.position.x < -24) {
+        const d = Math.min(delta * 0.5, 1 / 60);
+        step.set(d, 0, d);
+        boat.position.add(step);
+        boat.updateWorldMatrix();
+        this.elevator.position.add(step);
+        if (!player.destination) {
+          player.move(step);
+        }
+      } else {
+        boat.cannons.forEach((cannon) => {
+          cannon.disabled = true;
+        });
+        delete boat.onPhysicsStep;
+      }
+    };
+    boat.cannons = [
+      { position: new Vector3(-2, 0.5, -7.5) },
+      { position: new Vector3(2, 0.5, -7.5) },
+    ].map(({ position }) => {
+      const cannon = new Cannon({
+        models,
+        sfx,
+        position: boat.localToWorld(position.clone()),
+        offset: Math.random(),
+        pitch: Math.PI * 0.15,
+        rate: Math.max(Math.random(), 0.2),
+        yaw: Math.PI * -0.75 + (Math.random() - 0.5) * 0.5,
+      });
+      cannon.impulse = 32;
+      cannon.base.hinge = {
+        type: 'hinge',
+        friction: true,
+        mesh: boat,
+        pivotInA: new Vector3(0, 0, 0),
+        pivotInB: position,
+        axisInA: new Vector3(0, 1, 0),
+        axisInB: new Vector3(0, 1, 0),
+      };
+      this.add(cannon);
+      return cannon;
+    });
+    this.add(boat);
 
     this.cannons = [
       ...[
-        { position: new Vector3(-4.5, 15.5, -7.5), yaw: 0 },
-        { position: new Vector3(4.5, 15.5, -7.5), yaw: 0 },
+        { position: new Vector3(-4.5, 15.5, -7.5), yaw: Math.PI * 0.25 },
+        { position: new Vector3(4.5, 15.5, -7.5), yaw: Math.PI * 0.3 },
         // { position: new Vector3(-4.5, 15.5, 7.5), yaw: Math.PI },
         // { position: new Vector3(4.5, 15.5, 7.5), yaw: Math.PI },
         { position: new Vector3(-7.5, 15.5, -4.5), yaw: Math.PI * 0.5 },
         // { position: new Vector3(7.5, 15.5, -4.5), yaw: Math.PI * -0.5 },
-        { position: new Vector3(-7.5, 15.5, 4.5), yaw: Math.PI * 0.5 },
+        { position: new Vector3(-7.5, 15.5, 4.5), yaw: Math.PI * 0.25 },
         // { position: new Vector3(7.5, 15.5, 4.5), yaw: Math.PI * -0.5 },
       ].map(({ position, yaw }) => {
         const cannon = new Cannon({
@@ -78,32 +122,7 @@ class Tower extends ElevatorWorld {
         this.add(cannon);
         return cannon;
       }),
-      ...[
-        { position: new Vector3(-2, 0.5, -7.5) },
-        { position: new Vector3(2, 0.5, -7.5) },
-      ].map(({ position }) => {
-        const cannon = new Cannon({
-          models,
-          sfx,
-          position: boat.localToWorld(position.clone()),
-          offset: Math.random(),
-          pitch: Math.PI * 0.15,
-          rate: Math.max(Math.random(), 0.2),
-          yaw: Math.PI * -0.75 + (Math.random() - 0.5) * 0.5,
-        });
-        cannon.impulse = 32;
-        // cannon.base.hinge = {
-        //   type: 'hinge',
-        //   friction: true,
-        //   mesh: boat,
-        //   pivotInA: new Vector3(0, 0, 0),
-        //   pivotInB: position,
-        //   axisInA: new Vector3(0, 1, 0),
-        //   axisInB: new Vector3(0, 1, 0),
-        // };
-        this.add(cannon);
-        return cannon;
-      }),
+      ...boat.cannons,
     ];
 
     this.explosions = [...Array(25)].map(() => {
@@ -137,9 +156,10 @@ class Tower extends ElevatorWorld {
     Promise.all([
       scene.getPhysics(),
       models.physics('models/boatPhysics.json', 0.5),
+      models.physics('models/towerIslandPhysics.json', 0.5),
       models.physics('models/towerPhysics.json', 0.5),
     ])
-      .then(([physics, boatPhysics, towerPhysics]) => {
+      .then(([physics, boatPhysics, islandPhysics, towerPhysics]) => {
         this.physics = physics;
         boat.physics = [];
         boatPhysics.forEach((box) => {
@@ -154,7 +174,7 @@ class Tower extends ElevatorWorld {
             depth: box.geometry.parameters.depth,
           });
         });
-        towerPhysics.forEach((box) => {
+        [...islandPhysics, ...towerPhysics].forEach((box) => {
           translocables.push(box);
           this.physics.addMesh(box);
           this.add(box);
@@ -165,7 +185,7 @@ class Tower extends ElevatorWorld {
           this.physics.addMesh(controller.physics, 0, { isKinematic: true });
         });
 
-        // this.physics.addMesh(boat, 0, { isKinematic: true });
+        this.physics.addMesh(boat, 0, { isKinematic: true });
 
         this.cannons.forEach((cannon) => {
           this.physics.addMesh(cannon.base, 5);
@@ -179,7 +199,7 @@ class Tower extends ElevatorWorld {
         });
 
         this.sphere = 0;
-        this.spheres = new Spheres({ count: 100 });
+        this.spheres = new Spheres({ count: 50 });
         const matrix = new Matrix4();
         for (let i = 0; i < this.spheres.count; i += 1) {
           matrix.setPosition(0, -100 - i, 0);
@@ -199,7 +219,7 @@ class Tower extends ElevatorWorld {
               color: this.spheres.getColorAt(trigger, color),
               filter: 'highpass',
               position: point,
-              scale: 0.1,
+              scale: 0.4,
             });
           }
           physics.setMeshPosition(
@@ -210,6 +230,16 @@ class Tower extends ElevatorWorld {
         };
         this.physics.addMesh(this.spheres, 1, { isTrigger: true });
         this.add(this.spheres);
+
+        this.climbing = {
+          box: new Box3(),
+          collision: towerPhysics.map((box) => {
+            const collision = new Box3();
+            return collision.setFromObject(box);
+          }),
+          hands: [false, false],
+          vector: new Vector3(),
+        };
       });
   }
 
@@ -219,16 +249,18 @@ class Tower extends ElevatorWorld {
       birds,
       bpm,
       cannons,
+      climbing,
       clouds,
       explosions,
       physics,
+      player,
       spheres,
     } = this;
     birds.animate(animation);
     clouds.animate(animation);
     explosions.forEach((explosion) => explosion.animate(animation));
     Ocean.animate(animation);
-    if (!physics || !spheres) {
+    if (!physics) {
       return;
     }
     const sequence = Math.floor((animation.time / (60 / (bpm * 4))));
@@ -236,7 +268,7 @@ class Tower extends ElevatorWorld {
       this.sequence = sequence;
       cannons.forEach((cannon) => {
         cannon.updateLevers();
-        if ((sequence + cannon.offset) % cannon.rate !== 0) {
+        if (cannon.disabled || (sequence + cannon.offset) % cannon.rate !== 0) {
           return;
         }
         const { sphere } = this;
@@ -254,6 +286,37 @@ class Tower extends ElevatorWorld {
         );
         cannon.playSound();
       });
+    }
+    let hands = 0;
+    climbing.vector.set(0, 0, 0);
+    player.controllers.forEach(({
+      hand,
+      buttons,
+      physics,
+      worldspace,
+    }, i) => {
+      if (!hand) {
+        return;
+      }
+      if (!climbing.hands[i] && buttons.triggerDown) {
+        climbing.box.setFromObject(physics);
+        if (climbing.collision.find((box) => box.intersectsBox(climbing.box))) {
+          climbing.hands[i] = true;
+        }
+      }
+      if (climbing.hands[i]) {
+        if (buttons.triggerUp) {
+          climbing.hands[i] = false;
+        } else {
+          climbing.vector.add(worldspace.movement);
+          hands += 1;
+        }
+      }
+    });
+    if (hands) {
+      player.move(
+        climbing.vector.divideScalar(hands).negate()
+      );
     }
   }
 

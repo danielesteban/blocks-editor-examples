@@ -454,9 +454,18 @@ async function AmmoPhysics() {
 
   function step() {
 
+    const time = performance.now();
+    const delta = ( time - lastTime ) / 1000;
+
     for ( let i = 0, l = kinematic.length; i < l; i ++ ) {
 
       const mesh = kinematic[ i ];
+
+      if ( mesh.onPhysicsStep ) {
+
+        mesh.onPhysicsStep(delta);
+
+      }
 
       if ( mesh.isInstancedMesh ) {
 
@@ -499,11 +508,7 @@ async function AmmoPhysics() {
     
     }
 
-    const time = performance.now();
-
     if ( lastTime > 0 ) {
-
-      const delta = ( time - lastTime ) / 1000;
 
       // console.time( 'world.step' );
       world.stepSimulation( delta, 10 );
