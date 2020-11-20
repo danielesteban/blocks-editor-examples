@@ -59,10 +59,11 @@ class Map extends Mesh {
       Map.setupTexture();
     }
     const { renderer } = Map;
-    const dist = renderer.width * 0.36;
+    const dist = renderer.width * 0.39;
     const slice = (Math.PI * 2) / stations.length;
+    const offset = stations.length % 2 === 0 ? 0 : slice * 0.25;
     Map.stations = stations.map(({ id, isMultiplayer, name }, i) => {
-      const angle = slice * i;
+      const angle = offset + slice * i;
       return {
         id,
         isMultiplayer,
@@ -86,8 +87,9 @@ class Map extends Mesh {
     ctx.strokeStyle = '#222';
     ctx.strokeRect(6, 6, renderer.width - 12, renderer.height - 12);
 
-    const dist = renderer.width * 0.36;
+    const dist = renderer.width * 0.39;
     const slice = (Math.PI * 2) / stations.length;
+    const offset = stations.length % 2 === 0 ? 0 : slice * 0.25;
 
     ctx.lineWidth = 10;
     ctx.strokeStyle = '#666';
@@ -98,7 +100,7 @@ class Map extends Mesh {
     if (progress !== null) {
       ctx.lineCap = 'round';
       ctx.strokeStyle = '#3a3';
-      const angle = (current === 0 ? stations.length - 1 : current - 1) * slice;
+      const angle = offset + (current === 0 ? stations.length - 1 : current - 1) * slice;
       ctx.beginPath();
       ctx.arc(renderer.width * 0.5, renderer.height * 0.5 - 15, dist, angle, angle + slice);
       ctx.stroke();
@@ -130,9 +132,9 @@ class Map extends Mesh {
       }
       ctx.fillStyle = i === current ? '#393' : 'rgba(51, 51, 51, 0.9)';
       ctx.beginPath();
-      ctx.arc(-40, 9, 10, 0, Math.PI * 2);
-      ctx.rect(-40, -1, 80, 20);
-      ctx.arc(40, 9, 10, 0, Math.PI * 2);
+      ctx.arc(-36, 9, 10, 0, Math.PI * 2);
+      ctx.rect(-36, -1, 72, 20);
+      ctx.arc(36, 9, 10, 0, Math.PI * 2);
       ctx.fill();
       ctx.fillStyle = i === current ? '#fff' : '#666';
       ctx.fillText(name.substr(0, 10).trim().toUpperCase() + (name.length > 10 ? '…' : ''), 0, 10);

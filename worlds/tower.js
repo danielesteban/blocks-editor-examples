@@ -324,6 +324,5 @@ class Tower extends ElevatorWorld {
 }
 
 Tower.display = 'Cannon Tower';
-Tower.isWIP = true;
 
 export default Tower;
