@@ -14,7 +14,7 @@ class Metro extends Group {
 
     if (!Metro.stations) {
       const stations = Object.keys(scene.worlds)
-        .filter((name) => name !== 'Metro')
+        .filter((id) => id !== 'Metro' && !scene.worlds[id].isWIP)
         .map((id) => ({
           id,
           isMultiplayer: scene.worlds[id].isMultiplayer,

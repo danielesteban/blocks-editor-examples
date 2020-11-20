@@ -10,6 +10,7 @@ import Monitor from './monitor.js';
 class Cannon extends Group {
   constructor({
     models,
+    sfx,
     position,
     offset = 0,
     pitch = 0,
@@ -215,6 +216,16 @@ class Cannon extends Group {
           mesh.add(model);
         });
       });
+
+    if (sfx) {
+      sfx.load('sounds/shot.ogg')
+        .then((sound) => {
+          sound.filter = sound.context.createBiquadFilter();
+          sound.setFilter(sound.filter);
+          this.shaft.add(sound);
+          this.sound = sound;
+        });
+    }
   }
 
   dispose() {
@@ -230,6 +241,14 @@ class Cannon extends Group {
     shaft.getWorldPosition(shot.direction);
     shot.direction.subVectors(shot.origin, shot.direction).normalize();
     return shot;
+  }
+
+  playSound() {
+    const { sound } = this;
+    if (sound && !sound.isPlaying && sound.context.state === 'running') {
+      sound.filter.frequency.value = (Math.random() + 0.5) * 1000;
+      sound.play();
+    }
   }
 
   updateLevers() {

@@ -241,6 +241,7 @@ class Player extends Group {
     const {
       auxMatrixA: transform,
       auxMatrixB: matrix,
+      controllers,
       head,
       position,
     } = this;
@@ -256,6 +257,12 @@ class Player extends Group {
       )
     );
     this.applyMatrix4(transform);
+    head.applyMatrix4(transform);
+    controllers.forEach(({ hand, worldspace }) => {
+      if (hand) {
+        worldspace.position.applyMatrix4(transform);
+      }
+    });
   }
 
   teleport(point) {

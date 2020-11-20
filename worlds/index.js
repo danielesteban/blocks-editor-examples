@@ -11,3 +11,4 @@ export { default as Metro } from './metro.js';
 export { default as Museum } from './museum.js';
 export { default as Sequencer } from './sequencer.js';
 export { default as Temple } from './temple.js';
+export { default as Tower } from './tower.js';
