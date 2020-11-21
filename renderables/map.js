@@ -18,7 +18,7 @@ class Map extends Mesh {
     const ctx = Map.renderer.getContext('2d');
     ctx.textAlign = 'center';
     ctx.textBaseline = 'middle';
-    ctx.font = '14px monospace';
+    ctx.font = '13px monospace';
     Map.texture = new CanvasTexture(Map.renderer);
   }
 
