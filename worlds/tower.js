@@ -60,7 +60,7 @@ class Tower extends ElevatorWorld {
     const islandTranslocables = [];
     boat.onPhysicsStep = (delta) => {
       if (boat.position.x < -18) {
-        const d = Math.min(delta, 1 / 60);
+        const d = Math.min(delta * 0.5, 1 / 60);
         step.set(d, 0, d);
         boat.position.add(step);
         boat.updateWorldMatrix();
