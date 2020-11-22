@@ -17,6 +17,7 @@ class Scene extends ThreeScene {
       aux: new Box3(),
       hands: [false, false],
       movement: new Vector3(),
+      points: [new Vector3(), new Vector3()],
     };
 
     this.locomotion = Scene.locomotions.teleport;
@@ -191,16 +192,21 @@ class Scene extends ThreeScene {
       if (climbables.length) {
         if (!climbing.hands[index] && (gripDown || triggerDown)) {
           climbing.aux.setFromObject(physics);
-          if (climbables.find((box) => box.intersectsBox(climbing.aux))) {
+          if (climbables.flat().find((box) => box.intersectsBox(climbing.aux))) {
             climbing.hands[index] = true;
           }
         }
         if (climbing.hands[index]) {
           if (gripUp || triggerUp || player.destination) {
             climbing.hands[index] = false;
+            if (!climbing.activeHands) {
+              climbing.isFalling = true;
+              climbing.fallSpeed = 0;
+            }
           } else {
             climbing.movement.add(worldspace.movement);
             climbing.activeHands += 1;
+            climbing.isFalling = false;
           }
         }
       }
@@ -222,6 +228,31 @@ class Scene extends ThreeScene {
       player.move(
         climbing.movement.divideScalar(climbing.activeHands).negate()
       );
+    } else if (climbing.isFalling && !player.destination) {
+      climbing.points[0].set(
+        player.head.position.x - 0.2,
+        player.position.y,
+        player.head.position.z - 0.2
+      );
+      climbing.points[1].set(
+        player.head.position.x + 0.2,
+        Math.max(player.position.y + 0.25, player.head.position.y - 0.25),
+        player.head.position.z + 0.2
+      );
+      climbing.aux.setFromPoints(climbing.points);
+      if (!translocables.flat().find((mesh) => {
+        if (!mesh.collision) {
+          mesh.collision = (new Box3()).setFromObject(mesh);
+        }
+        return mesh.collision.intersectsBox(climbing.aux);
+      })) {
+        climbing.fallSpeed -= 9.8 * animation.delta;
+        player.move(
+          climbing.movement.set(0, climbing.fallSpeed * animation.delta, 0)
+        );
+      } else {
+        climbing.isFalling = false;
+      }
     }
     if (world && world.onAnimationTick) {
       world.onAnimationTick(animation);
