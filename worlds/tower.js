@@ -33,7 +33,7 @@ class Tower extends ElevatorWorld {
       rotation: new Euler(0, boat.rotation.y - Math.PI, 0),
     });
 
-    const { ambient, climbables, models, player, sfx, translocables } = scene;
+    const { ambient, climbables, climbing, models, player, sfx, translocables } = scene;
     ambient.set([
       'sounds/sea.ogg',
       'sounds/wagner.ogg',
@@ -60,7 +60,7 @@ class Tower extends ElevatorWorld {
     const islandTranslocables = [];
     boat.onPhysicsStep = (delta) => {
       if (boat.position.x < -18) {
-        const d = Math.min(delta * 0.5, 1 / 60);
+        const d = Math.min(delta, 1 / 60);
         step.set(d, 0, d);
         boat.position.add(step);
         boat.updateWorldMatrix();
@@ -235,6 +235,15 @@ class Tower extends ElevatorWorld {
             trigger,
             false
           );
+          if (
+            (climbing.hands[0] || climbing.hands[1])
+            && player.head.position.distanceTo(point) < 1
+          ) {
+            climbing.hands[0] = false;
+            climbing.hands[1] = false;
+            climbing.isFalling = true;
+            climbing.fallSpeed = 0;
+          }
         };
         this.physics.addMesh(this.spheres, 1, { isSleeping: true, isTrigger: true });
         this.add(this.spheres);
