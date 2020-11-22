@@ -6,12 +6,14 @@ import Peer from '../renderables/peer.js';
 
 class Peers extends Group {
   constructor({
+    onPeerMessage,
     onState,
     onUpdate,
     player,
     room,
   }) {
     super();
+    this.onPeerMessage = onPeerMessage;
     this.onState = onState;
     this.onUpdate = onUpdate;
     this.peers = [];
@@ -81,6 +83,28 @@ class Peers extends Group {
     });
   }
 
+  broadcast(message) {
+    const { peers } = this;
+    const isRaw = message instanceof Uint8Array;
+    const encoded = !isRaw ? (new TextEncoder()).encode(JSON.stringify(message)) : message;
+    const payload = new Uint8Array(1 + encoded.byteLength);
+    payload[0] = !isRaw ? 0x02 : 0x03;
+    payload.set(new Uint8Array(encoded.buffer), 1);
+    peers.forEach(({ connection }) => {
+      if (
+        connection
+        && connection._channel
+        && connection._channel.readyState === 'open'
+      ) {
+        try {
+          connection.send(payload);
+        } catch (e) {
+          // console.log(e);
+        }
+      }
+    });
+  }
+
   connectToPeer({ id, initiator = false }) {
     const {
       player,
@@ -93,7 +117,7 @@ class Peers extends Group {
     });
     const peer = new Peer({ peer: id, connection, listener: player.head });
     connection.on('error', () => {});
-    connection.on('data', peer.onData.bind(peer));
+    connection.on('data', (data) => this.onPeerData(peer, data));
     connection.on('signal', (signal) => (
       server.send(JSON.stringify({
         type: 'SIGNAL',
@@ -201,6 +225,31 @@ class Peers extends Group {
         }
         break;
       default:
+        break;
+    }
+  }
+
+  onPeerData(peer, data) {
+    const { onPeerMessage } = this;
+    switch (data[0]) {
+      case 0x02:
+        if (onPeerMessage) {
+          let message = data.slice(1);
+          try {
+            message = JSON.parse(message);
+          } catch (e) {
+            break;
+          }
+          onPeerMessage({ peer: peer.peer, message });
+        }
+        break;
+      case 0x03:
+        if (onPeerMessage) {
+          onPeerMessage({ peer: peer.peer, message: data.slice(1) });
+        }
+        break;
+      default:
+        peer.onData(data);
         break;
     }
   }
