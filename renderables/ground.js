@@ -2,15 +2,19 @@ import {
   Mesh,
   MeshBasicMaterial,
   PlaneBufferGeometry,
+  Vector3,
 } from '../core/three.js';
 
 class Ground extends Mesh {
   static setupGeometry() {
     Ground.geometry = new PlaneBufferGeometry(1, 1);
     Ground.geometry.rotateX(Math.PI * -0.5);
-    Ground.geometry.translate(0, 0.5, 0);
     Ground.geometry.deleteAttribute('normal');
     Ground.geometry.deleteAttribute('uv');
+    Ground.geometry.physics = {
+      shape: 'plane',
+      normal: new Vector3(0, 1, 0),
+    };
   }
 
   static setupMaterial() {
@@ -28,15 +32,8 @@ class Ground extends Mesh {
       Ground.geometry,
       Ground.material.clone()
     );
-    this.position.y = -0.5;
     this.material.color.setHex(color);
     this.scale.set(width, 1, depth);
-    this.physics = {
-      shape: 'box',
-      width,
-      height: 1,
-      depth,
-    };
   }
 }
 

@@ -88,8 +88,9 @@ class Court extends ElevatorWorld {
         }
         physics.setMeshPosition(
           spheres,
-          auxVector.set(0, -100, 0),
-          index
+          auxVector.set(0, -100 - index, 0),
+          index,
+          false
         );
         scoreboards[scoreboard].inc(1);
       }
@@ -154,7 +155,7 @@ class Court extends ElevatorWorld {
           matrix.setPosition(0, -100 + i, 0);
           this.spheres.setMatrixAt(i, matrix);
         }
-        this.physics.addMesh(this.spheres, 1);
+        this.physics.addMesh(this.spheres, 1, { isSleeping: true });
         this.add(this.spheres);
       });
   }

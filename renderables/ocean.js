@@ -119,7 +119,7 @@ class Ocean extends InstancedMesh {
   }
 }
 
-Ocean.instances = 2;
+Ocean.instances = 3;
 Ocean.size = 16;
 
 export default Ocean;

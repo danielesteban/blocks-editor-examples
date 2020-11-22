@@ -34,10 +34,10 @@ class Tower extends ElevatorWorld {
     });
 
     const { ambient, models, player, sfx, translocables } = scene;
-    ambient.set([
-      'sounds/sea.ogg',
-      'sounds/wagner.ogg',
-    ]);
+    // ambient.set([
+    //   'sounds/sea.ogg',
+    //   'sounds/wagner.ogg',
+    // ]);
     scene.background = new Color(0x336688);
     scene.fog = new FogExp2(scene.background.getHex(), 0.03);
 
@@ -203,7 +203,7 @@ class Tower extends ElevatorWorld {
         this.spheres = new Spheres({ count: 50 });
         const matrix = new Matrix4();
         for (let i = 0; i < this.spheres.count; i += 1) {
-          matrix.setPosition(0, -100 - i, 0);
+          matrix.setPosition(0, 2000 + i, 0);
           this.spheres.setMatrixAt(i, matrix);
         }
         const color = new Color();
@@ -225,11 +225,12 @@ class Tower extends ElevatorWorld {
           }
           physics.setMeshPosition(
             this.spheres,
-            vector.set(0, -100 - trigger, 0),
-            trigger
+            vector.set(0, 2000 + trigger, 0),
+            trigger,
+            false
           );
         };
-        this.physics.addMesh(this.spheres, 1, { isTrigger: true });
+        this.physics.addMesh(this.spheres, 1, { isSleeping: true, isTrigger: true });
         this.add(this.spheres);
 
         this.climbing = {
@@ -284,7 +285,7 @@ class Tower extends ElevatorWorld {
           direction.multiplyScalar(cannon.impulse || 24),
           sphere
         );
-        cannon.playSound();
+        // cannon.playSound();
       });
     }
     let hands = 0;

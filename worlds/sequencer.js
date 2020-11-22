@@ -191,7 +191,7 @@ class Sequencer extends ElevatorWorld {
           matrix.setPosition(0, -100 - i, 0);
           this.spheres.setMatrixAt(i, matrix);
         }
-        this.physics.addMesh(this.spheres, 1);
+        this.physics.addMesh(this.spheres, 1, { isSleeping: true });
         this.add(this.spheres);
       });
   }

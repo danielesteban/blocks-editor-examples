@@ -51,6 +51,7 @@ async function AmmoPhysics() {
   const CF_KINEMATIC_OBJECT = 2;
   const CF_NO_CONTACT_RESPONSE = 4;
   const DISABLE_DEACTIVATION = 4;
+  const WANTS_DEACTIVATION = 3;
 
   function getShape( { geometry, physics } ) {
 
@@ -83,6 +84,15 @@ async function AmmoPhysics() {
   
       auxVector.setValue( physics.width / 2, physics.height / 2, physics.depth / 2 );
       const shape = new AmmoLib.btBoxShape( auxVector );
+
+      return shape;
+
+    }
+
+    if ( physics && physics.shape === 'plane' ) {
+  
+      auxVector.setValue( physics.normal.x, physics.normal.y, physics.normal.z );
+      const shape = new AmmoLib.btStaticPlaneShape( auxVector, physics.constant || 0 );
 
       return shape;
 
@@ -190,6 +200,12 @@ async function AmmoPhysics() {
   
     }
 
+    if ( flags.isSleeping ) {
+
+      body.setActivationState(WANTS_DEACTIVATION);
+
+    }
+
     world.addRigidBody( body );
 
     meshes.push(mesh);
@@ -244,6 +260,12 @@ async function AmmoPhysics() {
     
       }
 
+      if ( flags.isSleeping ) {
+
+        body.setActivationState(WANTS_DEACTIVATION);
+
+      }
+
       world.addRigidBody( body );
 
       instances.push( body );
@@ -286,7 +308,7 @@ async function AmmoPhysics() {
 
   }
 
-  function setMeshPosition( mesh, position, index = 0 ) {
+  function setMeshPosition( mesh, position, index = 0, activate = true ) {
 
     const body = getBody(mesh, index);
     
@@ -299,8 +321,13 @@ async function AmmoPhysics() {
       auxVector.setValue( position.x, position.y, position.z );
       auxTransform.setOrigin( auxVector );
       body.setWorldTransform( auxTransform );
-
-      body.activate();
+      body.getMotionState().setWorldTransform( auxTransform );
+  
+      if (activate) {
+        body.activate();
+      } else {
+        body.setActivationState(WANTS_DEACTIVATION);
+      }
 
     }
   }
