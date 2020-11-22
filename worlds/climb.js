@@ -20,7 +20,7 @@ class Climb extends ElevatorWorld {
       rotation: new Euler(0, Math.PI, 0),
     });
 
-    const { ambient, models, player, translocables } = scene;
+    const { ambient, climbables, models, player, translocables } = scene;
     ambient.set('sounds/sea.ogg');
     scene.background = new Color(0x336688);
     scene.fog = new FogExp2(scene.background.getHex(), 0.025);
@@ -52,71 +52,25 @@ class Climb extends ElevatorWorld {
 
     models.physics('models/climbPhysics.json', 0.5)
       .then((boxes) => {
-        this.collision = boxes.map((box) => {
+        boxes.forEach((box) => {
           translocables.push(box);
           this.add(box);
-          const collision = new Box3();
-          return collision.setFromObject(box);
+          climbables.push((new Box3()).setFromObject(box));
         });
       });
-
-    this.aux = {
-      box: new Box3(),
-      vector: new Vector3(),
-    };
-    this.isClimbing = [false, false];
   }
 
   onAnimationTick(animation) {
     super.onAnimationTick(animation);
     const {
-      aux,
       birds,
       clouds,
-      collision,
-      isClimbing,
-      isOnElevator,
       peers,
-      player,
     } = this;
     birds.animate(animation);
     clouds.animate(animation);
     Ocean.animate(animation);
     peers.animate(animation);
-    if (isOnElevator || !collision) {
-      return;
-    }
-    let climbing = 0;
-    aux.vector.set(0, 0, 0);
-    player.controllers.forEach(({
-      hand,
-      buttons,
-      physics,
-      worldspace,
-    }, i) => {
-      if (!hand) {
-        return;
-      }
-      if (!isClimbing[i] && buttons.triggerDown) {
-        aux.box.setFromObject(physics);
-        if (collision.find((box) => box.intersectsBox(aux.box))) {
-          isClimbing[i] = true;
-        }
-      }
-      if (isClimbing[i]) {
-        if (buttons.triggerUp) {
-          isClimbing[i] = false;
-        } else {
-          aux.vector.add(worldspace.movement);
-          climbing += 1;
-        }
-      }
-    });
-    if (climbing) {
-      player.move(
-        aux.vector.divideScalar(climbing).negate()
-      );
-    }
   }
 
   onUnload() {

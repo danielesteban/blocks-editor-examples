@@ -1,16 +1,23 @@
+import { Box3, Scene as ThreeScene, Vector3 } from './three.js';
 import Ambient from './ambient.js';
 import { AmmoPhysics } from './ammo.js';
 import CurveCast from './curvecast.js';
 import Models from './models.js';
 import Player from './player.js';
 import SFX from './sfx.js';
-import { Scene as ThreeScene } from './three.js';
 
 // A VR scene base class
 
 class Scene extends ThreeScene {
   constructor({ renderer: { camera, dom, renderer }, worlds }) {
     super();
+
+    this.climbing = {
+      activeHands: 0,
+      aux: new Box3(),
+      hands: [false, false],
+      movement: new Vector3(),
+    };
 
     this.locomotion = Scene.locomotions.teleport;
     this.locomotions = Scene.locomotions;
@@ -26,6 +33,7 @@ class Scene extends ThreeScene {
     this.ambient = new Ambient(this.player.head.context.state === 'running');
     this.sfx = new SFX({ listener: this.player.head });
 
+    this.climbables = [];
     this.pointables = [];
     this.translocables = [];
 
@@ -54,6 +62,7 @@ class Scene extends ThreeScene {
       ambient,
       physics,
       player,
+      climbables,
       pointables,
       translocables,
       worlds,
@@ -66,6 +75,7 @@ class Scene extends ThreeScene {
     if (physics) {
       physics.reset();
     }
+    climbables.length = 0;
     pointables.length = 0;
     translocables.length = 0;
     if (this.world) {
@@ -89,6 +99,8 @@ class Scene extends ThreeScene {
     const { locomotions } = Scene;
     const {
       ambient,
+      climbables,
+      climbing,
       locomotion,
       player,
       pointables,
@@ -97,20 +109,27 @@ class Scene extends ThreeScene {
     } = this;
     ambient.onAnimationTick(animation);
     player.onAnimationTick({ animation, camera });
-    player.controllers.forEach((controller) => {
+    climbing.activeHands = 0;
+    climbing.movement.set(0, 0, 0);
+    player.controllers.forEach((controller, index) => {
       const {
         buttons: {
           backwards,
           forwards,
           forwardsUp,
+          gripDown,
+          gripUp,
           leftwards,
           leftwardsDown,
           rightwards,
           rightwardsDown,
           secondaryDown,
+          triggerDown,
+          triggerUp,
         },
         hand,
         marker,
+        physics,
         pointer,
         raycaster,
         worldspace,
@@ -169,6 +188,22 @@ class Scene extends ThreeScene {
           movement,
         });
       }
+      if (climbables.length) {
+        if (!climbing.hands[index] && (gripDown || triggerDown)) {
+          climbing.aux.setFromObject(physics);
+          if (climbables.find((box) => box.intersectsBox(climbing.aux))) {
+            climbing.hands[index] = true;
+          }
+        }
+        if (climbing.hands[index]) {
+          if (gripUp || triggerUp || player.destination) {
+            climbing.hands[index] = false;
+          } else {
+            climbing.movement.add(worldspace.movement);
+            climbing.activeHands += 1;
+          }
+        }
+      }
       if (pointables.length) {
         const hit = raycaster.intersectObjects(pointables.flat())[0] || false;
         if (hit) {
@@ -183,6 +218,11 @@ class Scene extends ThreeScene {
         xr.getSession().end();
       }
     });
+    if (climbing.activeHands) {
+      player.move(
+        climbing.movement.divideScalar(climbing.activeHands).negate()
+      );
+    }
     if (world && world.onAnimationTick) {
       world.onAnimationTick(animation);
     }

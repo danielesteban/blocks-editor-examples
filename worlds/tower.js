@@ -33,11 +33,11 @@ class Tower extends ElevatorWorld {
       rotation: new Euler(0, boat.rotation.y - Math.PI, 0),
     });
 
-    const { ambient, models, player, sfx, translocables } = scene;
-    // ambient.set([
-    //   'sounds/sea.ogg',
-    //   'sounds/wagner.ogg',
-    // ]);
+    const { ambient, climbables, models, player, sfx, translocables } = scene;
+    ambient.set([
+      'sounds/sea.ogg',
+      'sounds/wagner.ogg',
+    ]);
     scene.background = new Color(0x336688);
     scene.fog = new FogExp2(scene.background.getHex(), 0.03);
 
@@ -57,6 +57,7 @@ class Tower extends ElevatorWorld {
     this.bpm = 100;
 
     const step = new Vector3();
+    const islandTranslocables = [];
     boat.onPhysicsStep = (delta) => {
       if (boat.position.x < -18) {
         const d = Math.min(delta * 0.5, 1 / 60);
@@ -72,6 +73,7 @@ class Tower extends ElevatorWorld {
           cannon.disabled = true;
         });
         delete boat.onPhysicsStep;
+        translocables.push(...islandTranslocables);
       }
     };
     boat.cannons = [
@@ -106,7 +108,7 @@ class Tower extends ElevatorWorld {
     this.cannons = [
       ...[
         { position: new Vector3(-4.5, 23.5, -7.5), yaw: Math.PI * 0.25 },
-        { position: new Vector3(4.5, 23.5, -7.5), yaw: Math.PI * 0.3 },
+        { position: new Vector3(4.5, 23.5, -7.5), yaw: Math.PI * 0.25 },
         // { position: new Vector3(-4.5, 23.5, 7.5), yaw: Math.PI },
         // { position: new Vector3(4.5, 23.5, 7.5), yaw: Math.PI },
         { position: new Vector3(-7.5, 23.5, -4.5), yaw: Math.PI * 0.5 },
@@ -121,7 +123,7 @@ class Tower extends ElevatorWorld {
           position,
           offset: Math.random(),
           pitch: Math.PI * -0.1,
-          rate: Math.max(Math.random(), 0.2),
+          rate: Math.max(Math.random() * 0.8, 0.2),
           yaw: yaw + Math.PI * (Math.random() - 0.5) * 0.1,
         });
         this.add(cannon);
@@ -180,11 +182,15 @@ class Tower extends ElevatorWorld {
           });
         });
         [...islandPhysics, ...towerPhysics].forEach((box) => {
-          translocables.push(box);
+          islandTranslocables.push(box);
           this.physics.addMesh(box);
           this.add(box);
         });
         this.physics.addMesh(ground);
+
+        towerPhysics.forEach((box) => (
+          climbables.push((new Box3()).setFromObject(box))
+        ));
 
         player.controllers.forEach((controller) => {
           this.physics.addMesh(controller.physics, 0, { isKinematic: true });
@@ -232,16 +238,6 @@ class Tower extends ElevatorWorld {
         };
         this.physics.addMesh(this.spheres, 1, { isSleeping: true, isTrigger: true });
         this.add(this.spheres);
-
-        this.climbing = {
-          box: new Box3(),
-          collision: towerPhysics.map((box) => {
-            const collision = new Box3();
-            return collision.setFromObject(box);
-          }),
-          hands: [false, false],
-          vector: new Vector3(),
-        };
       });
   }
 
@@ -251,11 +247,9 @@ class Tower extends ElevatorWorld {
       birds,
       bpm,
       cannons,
-      climbing,
       clouds,
       explosions,
       physics,
-      player,
       spheres,
     } = this;
     birds.animate(animation);
@@ -285,39 +279,8 @@ class Tower extends ElevatorWorld {
           direction.multiplyScalar(cannon.impulse || 24),
           sphere
         );
-        // cannon.playSound();
+        cannon.playSound();
       });
-    }
-    let hands = 0;
-    climbing.vector.set(0, 0, 0);
-    player.controllers.forEach(({
-      hand,
-      buttons,
-      physics,
-      worldspace,
-    }, i) => {
-      if (!hand) {
-        return;
-      }
-      if (!climbing.hands[i] && buttons.triggerDown) {
-        climbing.box.setFromObject(physics);
-        if (climbing.collision.find((box) => box.intersectsBox(climbing.box))) {
-          climbing.hands[i] = true;
-        }
-      }
-      if (climbing.hands[i]) {
-        if (buttons.triggerUp) {
-          climbing.hands[i] = false;
-        } else {
-          climbing.vector.add(worldspace.movement);
-          hands += 1;
-        }
-      }
-    });
-    if (hands) {
-      player.move(
-        climbing.vector.divideScalar(hands).negate()
-      );
     }
   }
 
