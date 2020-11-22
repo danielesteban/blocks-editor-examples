@@ -1,5 +1,4 @@
 import {
-  Box3,
   Color,
   Euler,
   FogExp2,
@@ -53,9 +52,9 @@ class Climb extends ElevatorWorld {
     models.physics('models/climbPhysics.json', 0.5)
       .then((boxes) => {
         boxes.forEach((box) => {
+          climbables.push(box);
           translocables.push(box);
           this.add(box);
-          climbables.push((new Box3()).setFromObject(box));
         });
       });
   }

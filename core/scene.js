@@ -192,7 +192,12 @@ class Scene extends ThreeScene {
       if (climbables.length) {
         if (!climbing.hands[index] && (gripDown || triggerDown)) {
           climbing.aux.setFromObject(physics);
-          if (climbables.flat().find((box) => box.intersectsBox(climbing.aux))) {
+          if (climbables.flat().find((mesh) => {
+            if (!mesh.collision) {
+              mesh.collision = (new Box3()).setFromObject(mesh);
+            }
+            return mesh.collision.intersectsBox(climbing.aux);
+          })) {
             climbing.hands[index] = true;
           }
         }

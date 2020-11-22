@@ -1,5 +1,4 @@
 import {
-  Box3,
   Color,
   Euler,
   FogExp2,
@@ -181,16 +180,18 @@ class Tower extends ElevatorWorld {
             depth: box.geometry.parameters.depth,
           });
         });
-        [...islandPhysics, ...towerPhysics].forEach((box) => {
+        islandPhysics.forEach((box) => {
+          islandTranslocables.push(box);
+          this.physics.addMesh(box);
+          this.add(box);
+        });
+        towerPhysics.forEach((box) => {
+          climbables.push(box);
           islandTranslocables.push(box);
           this.physics.addMesh(box);
           this.add(box);
         });
         this.physics.addMesh(ground);
-
-        towerPhysics.forEach((box) => (
-          climbables.push((new Box3()).setFromObject(box))
-        ));
 
         player.controllers.forEach((controller) => {
           this.physics.addMesh(controller.physics, 0, { isKinematic: true });
