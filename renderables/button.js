@@ -12,7 +12,7 @@ import {
 
 class Button extends Mesh {
   static setupGeometry() {
-    Button.geometry = new BoxBufferGeometry(0.75, 0.75, 0.25);
+    Button.geometry = new BoxBufferGeometry(0.375, 0.375, 0.125);
     const uv = Button.geometry.getAttribute('uv');
     for (let i = 0; i < uv.count; i += 1) {
       if (i >= 0 && i < 8) {
@@ -69,14 +69,14 @@ class Button extends Mesh {
     this.slider = {
       type: 'slider',
       limits: {
-        linear: { lower: 0, upper: 0.125 },
+        linear: { lower: 0, upper: 0.0625 },
       },
-      position: new Vector3(0, 0, 0.25),
+      position: new Vector3(0, 0, 0.125),
       rotation: (new Quaternion()).setFromAxisAngle(new Vector3(0, 1, 0), Math.PI * -0.5),
     };
 
     this.trigger = new Group();
-    this.trigger.position.copy(position).add(new Vector3(0, 0, 0.3));
+    this.trigger.position.copy(position).add(new Vector3(0, 0, 0.15));
     this.trigger.updateMatrixWorld();
     this.trigger.physics = {
       shape: 'box',

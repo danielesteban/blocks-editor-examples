@@ -1,4 +1,5 @@
 import {
+  Box3,
   Color,
   Euler,
   FogExp2,
@@ -57,22 +58,48 @@ class Tower extends ElevatorWorld {
     ocean.position.y = 1.675;
     this.add(ocean);
 
+    const rocket = new Group();
+    rocket.position.set(0, 31.25, 0);
+    rocket.initialPosition = rocket.position.clone();
+    rocket.rotation.set(0, Math.PI, 0);
+    this.add(rocket);
+    this.rocket = rocket;
+
+    rocket.aux = new Box3();
+    rocket.bounds = new Box3(new Vector3(-0.75, 0, -0.75), new Vector3(0.75, 4, 0.75));
+    const isOnRocket = (point) => {
+      rocket.aux.copy(rocket.bounds).applyMatrix4(rocket.matrixWorld);
+      return rocket.aux.containsPoint(point);
+    };
+
     this.fireworks = {
       aux: new Vector3(),
       enabled: false,
       tick: 0,
       timer: 0,
-      trigger() {
-        if (this.enabled) {
+      trigger: () => {
+        if (this.fireworks.enabled) {
           return;
         }
-        this.enabled = true;
-        this.tick = 0;
-        this.timer = 10;
+        this.fireworks.enabled = true;
+        this.fireworks.isOnRocket = isOnRocket(player.head.position);
+        this.fireworks.rocketSpeed = 0;
+        this.fireworks.tick = 0;
+        this.fireworks.timer = 10;
+
+        this.physics.removeConstraint(button.constraint);
+        this.physics.removeMesh(button);
+        rocket.worldToLocal(button.position);
+        rocket.add(button);
       },
       stop: () => {
         this.fireworks.enabled = false;
-        this.physics.setMeshPosition(button, button.initialPosition);
+        rocket.position.copy(rocket.initialPosition);
+        rocket.updateMatrixWorld();
+        button.position.copy(button.initialPosition);
+        this.add(button);
+        this.physics.addMesh(button, 1);
+        button.constraint = this.physics.addConstraint(button, button.slider);
         const origin = new Vector3(0, 2, -7);
         this.elevator.localToWorld(origin);
         player.teleport(origin);
@@ -88,7 +115,7 @@ class Tower extends ElevatorWorld {
       },
     };
 
-    const button = new Button({ position: new Vector3(0, 33, 1.25) });
+    const button = new Button({ position: new Vector3(0, 33.25, 0.625) });
     button.trigger.onContact = ({ mesh }) => {
       if (this.fireworks.enabled || mesh !== button) {
         return;
@@ -113,6 +140,12 @@ class Tower extends ElevatorWorld {
           boat.add(model.clone());
           this.add(boat);
         });
+      });
+
+    models.load('models/rocket.glb')
+      .then((model) => {
+        model.scale.setScalar(0.25);
+        rocket.add(model);
       });
 
     models.load('models/tower.glb')
@@ -202,7 +235,7 @@ class Tower extends ElevatorWorld {
 
           this.physics.addMesh(button, 1);
           this.physics.addMesh(button.trigger, 0, { isTrigger: true });
-          this.physics.addConstraint(button, button.slider);
+          button.constraint = this.physics.addConstraint(button, button.slider);
 
           this.sphere = 0;
           this.spheres = new Spheres({ count: 50 });
@@ -216,9 +249,10 @@ class Tower extends ElevatorWorld {
         }),
       models.physics('models/boatPhysics.json', 0.5),
       models.physics('models/towerIslandPhysics.json', 0.5),
+      models.physics('models/rocketPhysics.json', 0.25),
       models.physics('models/towerPhysics.json', 0.5),
     ])
-      .then(([/* physics */, boatPhysics, islandPhysics, towerPhysics]) => {
+      .then(([/* physics */, boatPhysics, islandPhysics, rocketPhysics, towerPhysics]) => {
         translocables.push(ground);
         boats.forEach((boat) => {
           boat.physics = [];
@@ -242,6 +276,19 @@ class Tower extends ElevatorWorld {
           this.physics.addMesh(box);
           this.add(box);
         });
+        rocket.physics = [];
+        rocketPhysics.forEach((box) => {
+          translocables.push(box);
+          rocket.add(box);
+          rocket.physics.push({
+            shape: 'box',
+            position: box.position,
+            width: box.geometry.parameters.width,
+            height: box.geometry.parameters.height,
+            depth: box.geometry.parameters.depth,
+          });
+        });
+        this.physics.addMesh(rocket, 0, { isKinematic: true });
         towerPhysics.forEach((box) => {
           box.isTower = true;
           climbables.push(box);
@@ -263,6 +310,7 @@ class Tower extends ElevatorWorld {
       peers,
       physics,
       player,
+      rocket,
     } = this;
     birds.animate(animation);
     clouds.animate(animation);
@@ -272,8 +320,13 @@ class Tower extends ElevatorWorld {
       peers.animate(animation);
     }
     if (fireworks.enabled) {
+      const step = fireworks.rocketSpeed * animation.delta;
+      fireworks.rocketSpeed += animation.delta * 5;
+      rocket.position.y += step;
+      if (fireworks.isOnRocket) {
+        player.move(new Vector3(0, step, 0));
+      }
       fireworks.tick -= animation.delta;
-      fireworks.timer -= animation.delta;
       if (fireworks.tick <= 0) {
         fireworks.tick = 0.05 + Math.random() * 0.05;
         const explosion = explosions.find(({ sound, visible }) => (
@@ -292,9 +345,10 @@ class Tower extends ElevatorWorld {
             scale: 0.5 + Math.random(),
           });
         }
-        if (fireworks.timer <= 0) {
-          fireworks.stop();
-        }
+      }
+      fireworks.timer -= animation.delta;
+      if (fireworks.timer <= 0) {
+        fireworks.stop();
       }
     }
     if (!physics || isOnElevator) {
