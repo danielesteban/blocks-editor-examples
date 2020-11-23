@@ -89,7 +89,8 @@ class Tower extends ElevatorWorld {
 
         this.physics.removeConstraint(button.constraint);
         this.physics.removeMesh(button);
-        rocket.worldToLocal(button.position);
+        rocket.worldToLocal(button.position.copy(button.initialPosition));
+        button.rotation.set(0, 0, 0);
         rocket.add(button);
       },
       stop: () => {
