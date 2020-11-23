@@ -137,7 +137,7 @@ class Map extends Mesh {
       ctx.arc(36, 9, 10, 0, Math.PI * 2);
       ctx.fill();
       ctx.fillStyle = i === current ? '#fff' : '#666';
-      ctx.fillText(name.substr(0, 10).trim().toUpperCase() + (name.length > 10 ? '…' : ''), 0, 10);
+      ctx.fillText(name.substr(0, name.length > 11 ? 10 : 11).trim().toUpperCase() + (name.length > 11 ? '…' : ''), 0, 10);
       ctx.restore();
     });
     texture.needsUpdate = true;
