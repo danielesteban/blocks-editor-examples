@@ -21,8 +21,6 @@ class Tower extends ElevatorWorld {
     const boats = [
       new Vector3(-17.5, 3.5, -21),
       new Vector3(21, 3.5, -21),
-      new Vector3(-22, 3.5, 21),
-      new Vector3(20, 4.5, 20),
     ].map((position) => {
       const boat = new Group();
       boat.position.copy(position);
