@@ -341,8 +341,9 @@ class Tower extends ElevatorWorld {
   }
 
   onUnload() {
-    const { birds } = this;
+    const { birds, peers } = this;
     birds.dispose();
+    peers.disconnect();
   }
 }
 
