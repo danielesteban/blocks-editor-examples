@@ -42,8 +42,8 @@ class ElevatorWorld extends Group {
       player.rotate(elevator.rotation.y - offset.rotation);
     } else {
       elevator.localToWorld(origin.set(0, 2, -7));
-      player.rotation.y = elevator.rotation.y - Math.PI;
       player.teleport(origin);
+      player.rotate(elevator.rotation.y - Math.PI - player.head.rotation.y);
     }
   }
 

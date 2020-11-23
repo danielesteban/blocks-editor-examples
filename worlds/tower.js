@@ -7,8 +7,9 @@ import {
   Vector3,
 } from '../core/three.js';
 import ElevatorWorld from '../core/elevatorWorld.js';
+import Peers from '../core/peers.js';
 import Birds from '../renderables/birds.js';
-import Cannon from '../renderables/cannonPhysics.js';
+import Button from '../renderables/button.js';
 import Clouds from '../renderables/clouds.js';
 import Explosion from '../renderables/explosion.js';
 import Ground from '../renderables/ground.js';
@@ -17,13 +18,21 @@ import Spheres from '../renderables/spheres.js';
 
 class Tower extends ElevatorWorld {
   constructor(scene, { offset }) {
-    const boat = new Group();
-    boat.angle = 0;
-    boat.modelOffset = new Vector3(-4, -3, 0);
-    boat.position.set(-48, 5, -48);
-    boat.rotation.set(0, Math.PI * -0.75, 0);
-    boat.rotation.order = 'YXZ';
-    boat.updateMatrixWorld();
+    const boats = [
+      new Vector3(-17.5, 3.5, -21),
+      new Vector3(21, 3.5, -21),
+      new Vector3(-22, 3.5, 21),
+      new Vector3(20, 4.5, 20),
+    ].map((position) => {
+      const boat = new Group();
+      boat.position.copy(position);
+      boat.rotation.order = 'YXZ';
+      boat.lookAt(0, position.y, 0);
+      boat.rotateY(Math.PI);
+      boat.updateMatrixWorld();
+      return boat;
+    });
+    const boat = boats[Math.floor(Math.random() * boats.length)];
 
     super({
       scene,
@@ -33,12 +42,9 @@ class Tower extends ElevatorWorld {
     });
 
     const { ambient, climbables, climbing, models, player, sfx, translocables } = scene;
-    ambient.set([
-      'sounds/sea.ogg',
-      'sounds/wagner.ogg',
-    ]);
+    ambient.set('sounds/sea.ogg');
     scene.background = new Color(0x336688);
-    scene.fog = new FogExp2(scene.background.getHex(), 0.03);
+    scene.fog = new FogExp2(scene.background.getHex(), 0.02);
 
     this.birds = new Birds({ anchor: player });
     this.add(this.birds);
@@ -46,102 +52,69 @@ class Tower extends ElevatorWorld {
     this.clouds = new Clouds();
     this.add(this.clouds);
 
-    const ground = new Ground(256, 256, 0xd3f531);
+    const ground = new Ground(256, 256, 0xd3f545);
     this.add(ground);
 
     const ocean = new Ocean();
-    ocean.position.y = 2.125;
+    ocean.position.y = 1.675;
     this.add(ocean);
 
-    this.bpm = 100;
-
-    const step = new Vector3();
-    const islandTranslocables = [];
-    boat.onPhysicsStep = (delta) => {
-      if (boat.position.x < -18) {
-        const d = Math.min(delta * 0.5, 1 / 60);
-        step.set(d, 0, d);
-        boat.position.add(step);
-        boat.updateWorldMatrix();
-        this.elevator.position.add(step);
-        if (!player.destination) {
-          player.move(step);
+    this.fireworks = {
+      aux: new Vector3(),
+      enabled: false,
+      tick: 0,
+      timer: 0,
+      trigger() {
+        if (this.enabled) {
+          return;
         }
-      } else {
-        boat.cannons.forEach((cannon) => {
-          cannon.disabled = true;
-        });
-        delete boat.onPhysicsStep;
-        translocables.push(...islandTranslocables);
-      }
+        this.enabled = true;
+        this.tick = 0;
+        this.timer = 10;
+      },
+      stop: () => {
+        this.fireworks.enabled = false;
+        this.physics.setMeshPosition(button, button.initialPosition);
+        const origin = new Vector3(0, 2, -7);
+        this.elevator.localToWorld(origin);
+        player.teleport(origin);
+        player.rotate(this.elevator.rotation.y - Math.PI - player.head.rotation.y);
+        for (let i = 0; i < this.spheres.count; i += 1) {
+          this.physics.setMeshPosition(
+            this.spheres,
+            new Vector3(0, 0.2, -1000 - i),
+            i,
+            false
+          );
+        }
+      },
     };
-    boat.cannons = [
-      { position: new Vector3(-2, 0.5, -7.5) },
-      { position: new Vector3(2, 0.5, -7.5) },
-    ].map(({ position }, i) => {
-      const cannon = new Cannon({
-        levers: false,
-        models,
-        sfx,
-        position: boat.localToWorld(position.clone()),
-        offset: i * 0.5,
-        pitch: Math.PI * 0.15,
-        rate: 0.5,
-        yaw: Math.PI * -0.75 + (Math.random() - 0.5) * 0.5,
-      });
-      cannon.impulse = 32;
-      cannon.base.hinge = {
-        type: 'hinge',
-        friction: true,
-        mesh: boat,
-        pivotInA: new Vector3(0, 0, 0),
-        pivotInB: position,
-        axisInA: new Vector3(0, 1, 0),
-        axisInB: new Vector3(0, 1, 0),
-      };
-      this.add(cannon);
-      return cannon;
-    });
-    this.add(boat);
 
-    this.cannons = [
-      ...[
-        { position: new Vector3(-4.5, 23.5, -7.5), yaw: Math.PI * 0.25 },
-        { position: new Vector3(4.5, 23.5, -7.5), yaw: Math.PI * 0.25 },
-        // { position: new Vector3(-4.5, 23.5, 7.5), yaw: Math.PI },
-        // { position: new Vector3(4.5, 23.5, 7.5), yaw: Math.PI },
-        { position: new Vector3(-7.5, 23.5, -4.5), yaw: Math.PI * 0.5 },
-        // { position: new Vector3(7.5, 23.5, -4.5), yaw: Math.PI * -0.5 },
-        { position: new Vector3(-7.5, 23.5, 4.5), yaw: Math.PI * 0.25 },
-        // { position: new Vector3(7.5, 23.5, 4.5), yaw: Math.PI * -0.5 },
-      ].map(({ position, yaw }) => {
-        const cannon = new Cannon({
-          levers: false,
-          models,
-          sfx,
-          position,
-          offset: Math.random(),
-          pitch: Math.PI * -0.1,
-          rate: Math.max(Math.random() * 0.8, 0.2),
-          yaw: yaw + Math.PI * (Math.random() - 0.5) * 0.1,
-        });
-        this.add(cannon);
-        return cannon;
-      }),
-      ...boat.cannons,
-    ];
+    const button = new Button({ position: new Vector3(0, 33, 1.25) });
+    button.trigger.onContact = ({ mesh }) => {
+      if (this.fireworks.enabled || mesh !== button) {
+        return;
+      }
+      this.fireworks.trigger();
+      this.peers.broadcast(new Uint8Array([0x01]));
+    };
+    this.add(button);
 
-    this.explosions = [...Array(25)].map(() => {
+    this.explosions = [...Array(50)].map(() => {
       const explosion = new Explosion({ sfx });
       this.add(explosion);
       return explosion;
     });
 
+    const boatModelOffset = new Vector3(-4, -3, 0);
     models.load('models/boat.glb')
       .then((model) => {
-        model.position.copy(boat.modelOffset);
+        model.position.copy(boatModelOffset);
         model.scale.setScalar(0.5);
-        boat.add(model);
+        boats.forEach((boat) => {
+          boat.add(model.clone());
+          this.add(boat);
+        });
       });
 
     models.load('models/tower.glb')
@@ -159,95 +132,125 @@ class Tower extends ElevatorWorld {
         this.elevator.isOpen = true;
       });
 
+    const color = new Color();
+    const vector = new Vector3();
+    const onContact = ({ mesh, index, point }) => {
+      if (mesh !== this.spheres) {
+        return;
+      }
+      const explosion = this.explosions.find(({ sound, visible }) => (
+        !visible && (!sound || !sound.isPlaying)
+      ));
+      if (explosion) {
+        explosion.detonate({
+          color: this.spheres.getColorAt(index, color),
+          filter: 'highpass',
+          position: point,
+          scale: 0.5,
+        });
+      }
+      this.physics.setMeshPosition(
+        this.spheres,
+        vector.set(0, 0.2, -1000 - index),
+        index,
+        false
+      );
+      if (
+        !climbing.isFalling && !player.destination && player.head.position.distanceTo(point) < 1
+      ) {
+        climbing.hands[0] = false;
+        climbing.hands[1] = false;
+        climbing.isFalling = true;
+        climbing.fallSpeed = 0;
+      }
+    };
+
     Promise.all([
-      scene.getPhysics(),
+      scene.getPhysics()
+        .then((physics) => {
+          this.physics = physics;
+          this.peers = new Peers({
+            onJoin: (peer) => {
+              peer.head.onContact = onContact;
+              this.physics.addMesh(peer.head, 0, { isKinematic: true, isTrigger: true });
+            },
+            onLeave: (peer) => {
+              this.physics.removeMesh(peer.head);
+            },
+            onPeerMessage: ({ message: { buffer } }) => {
+              if (!buffer) {
+                return;
+              }
+              if (buffer.byteLength === 1) {
+                this.fireworks.trigger();
+              } else if (buffer.byteLength === 24) {
+                const [x, y, z, ix, iy, iz] = new Float32Array(buffer);
+                this.spawnSphere({ x, y, z }, { x: ix, y: iy, z: iz });
+              }
+            },
+            player,
+            room: 'wss://train.gatunes.com/rooms/Tower',
+          });
+          this.add(this.peers);
+
+          player.head.physics.onContact = onContact;
+          this.physics.addMesh(player.head.physics, 0, { isKinematic: true, isTrigger: true });
+
+          player.controllers.forEach((controller) => {
+            this.physics.addMesh(controller.physics, 0, { isKinematic: true });
+          });
+
+          this.physics.addMesh(ground);
+
+          this.physics.addMesh(button, 1);
+          this.physics.addMesh(button.trigger, 0, { isTrigger: true });
+          this.physics.addConstraint(button, button.slider);
+
+          this.sphere = 0;
+          this.spheres = new Spheres({ count: 50 });
+          const matrix = new Matrix4();
+          for (let i = 0; i < this.spheres.count; i += 1) {
+            matrix.setPosition(0, 0.2, -1000 - i);
+            this.spheres.setMatrixAt(i, matrix);
+          }
+          this.physics.addMesh(this.spheres, 1, { isSleeping: true });
+          this.add(this.spheres);
+        }),
       models.physics('models/boatPhysics.json', 0.5),
       models.physics('models/towerIslandPhysics.json', 0.5),
       models.physics('models/towerPhysics.json', 0.5),
     ])
-      .then(([physics, boatPhysics, islandPhysics, towerPhysics]) => {
-        this.physics = physics;
-        boat.physics = [];
-        boatPhysics.forEach((box) => {
-          box.position.add(boat.modelOffset);
-          translocables.push(box);
-          boat.add(box);
-          boat.physics.push({
-            shape: 'box',
-            position: box.position,
-            width: box.geometry.parameters.width,
-            height: box.geometry.parameters.height,
-            depth: box.geometry.parameters.depth,
+      .then(([/* physics */, boatPhysics, islandPhysics, towerPhysics]) => {
+        translocables.push(ground);
+        boats.forEach((boat) => {
+          boat.physics = [];
+          boatPhysics.forEach((box) => {
+            box = box.clone();
+            box.position.add(boatModelOffset);
+            translocables.push(box);
+            boat.add(box);
+            boat.physics.push({
+              shape: 'box',
+              position: box.position,
+              width: box.geometry.parameters.width,
+              height: box.geometry.parameters.height,
+              depth: box.geometry.parameters.depth,
+            });
           });
+          this.physics.addMesh(boat);
         });
         islandPhysics.forEach((box) => {
-          islandTranslocables.push(box);
+          translocables.push(box);
           this.physics.addMesh(box);
           this.add(box);
         });
         towerPhysics.forEach((box) => {
+          box.isTower = true;
           climbables.push(box);
-          islandTranslocables.push(box);
+          translocables.push(box);
           this.physics.addMesh(box);
           this.add(box);
         });
-        this.physics.addMesh(ground);
-
-        player.controllers.forEach((controller) => {
-          this.physics.addMesh(controller.physics, 0, { isKinematic: true });
-        });
-
-        this.physics.addMesh(boat, 0, { isKinematic: true });
-
-        this.cannons.forEach((cannon) => {
-          this.physics.addMesh(cannon.base, 5);
-          this.physics.addConstraint(cannon.base, cannon.base.hinge);
-          this.physics.addMesh(cannon.shaft, 1);
-          this.physics.addConstraint(cannon.base, cannon.shaft.hinge);
-        });
-
-        this.sphere = 0;
-        this.spheres = new Spheres({ count: 50 });
-        const matrix = new Matrix4();
-        for (let i = 0; i < this.spheres.count; i += 1) {
-          matrix.setPosition(0, 2000 + i, 0);
-          this.spheres.setMatrixAt(i, matrix);
-        }
-        const color = new Color();
-        const vector = new Vector3();
-        this.spheres.onContact = ({ mesh, point, trigger }) => {
-          if (mesh === this.spheres) {
-            return;
-          }
-          const explosion = this.explosions.find(({ sound, visible }) => (
-            !visible && (!sound || !sound.isPlaying)
-          ));
-          if (explosion) {
-            explosion.detonate({
-              color: this.spheres.getColorAt(trigger, color),
-              filter: 'highpass',
-              position: point,
-              scale: 0.5,
-            });
-          }
-          physics.setMeshPosition(
-            this.spheres,
-            vector.set(0, 2000 + trigger, 0),
-            trigger,
-            false
-          );
-          if (
-            (climbing.hands[0] || climbing.hands[1])
-            && player.head.position.distanceTo(point) < 1
-          ) {
-            climbing.hands[0] = false;
-            climbing.hands[1] = false;
-            climbing.isFalling = true;
-            climbing.fallSpeed = 0;
-          }
-        };
-        this.physics.addMesh(this.spheres, 1, { isSleeping: true, isTrigger: true });
-        this.add(this.spheres);
       });
   }
 
@@ -255,43 +258,86 @@ class Tower extends ElevatorWorld {
     super.onAnimationTick(animation);
     const {
       birds,
-      bpm,
-      cannons,
       clouds,
       explosions,
+      isOnElevator,
+      fireworks,
+      peers,
       physics,
-      spheres,
+      player,
     } = this;
     birds.animate(animation);
     clouds.animate(animation);
     explosions.forEach((explosion) => explosion.animate(animation));
     Ocean.animate(animation);
-    if (!physics) {
+    if (peers) {
+      peers.animate(animation);
+    }
+    if (fireworks.enabled) {
+      fireworks.tick -= animation.delta;
+      fireworks.timer -= animation.delta;
+      if (fireworks.tick <= 0) {
+        fireworks.tick = 0.05 + Math.random() * 0.05;
+        const explosion = explosions.find(({ sound, visible }) => (
+          !visible && (!sound || !sound.isPlaying)
+        ));
+        if (explosion) {
+          fireworks.aux
+            .set((Math.random() - 0.5) * 2, (Math.random() - 0.5), (Math.random() - 0.5) * 2)
+            .normalize()
+            .multiplyScalar(24);
+          fireworks.aux.y += 30;
+          explosion.detonate({
+            color: { r: Math.random(), g: Math.random(), b: Math.random() },
+            filter: 'highpass',
+            position: fireworks.aux,
+            scale: 0.5 + Math.random(),
+          });
+        }
+        if (fireworks.timer <= 0) {
+          fireworks.stop();
+        }
+      }
+    }
+    if (!physics || isOnElevator) {
       return;
     }
-    const sequence = Math.floor((animation.time / (60 / (bpm * 4))));
-    if (this.sequence !== sequence) {
-      this.sequence = sequence;
-      cannons.forEach((cannon) => {
-        if (cannon.disabled || (sequence + cannon.offset) % cannon.rate !== 0) {
-          return;
-        }
-        const { sphere } = this;
-        this.sphere = (this.sphere + 1) % spheres.count;
-        const { origin, direction } = cannon.getShot();
-        physics.setMeshPosition(
-          spheres,
-          origin,
-          sphere
-        );
-        physics.applyImpulse(
-          spheres,
-          direction.multiplyScalar(cannon.impulse || 24),
-          sphere
-        );
-        cannon.playSound();
-      });
+    [
+      player.desktopControls,
+      ...player.controllers,
+    ].forEach(({
+      buttons,
+      hand,
+      isDesktop,
+      raycaster,
+    }) => {
+      if ((hand && buttons.triggerDown) || (isDesktop && buttons.primaryDown)) {
+        const { origin, direction } = raycaster.ray;
+        const position = origin
+          .clone()
+          .addScaledVector(direction, 0.5);
+        const impulse = direction.clone().multiplyScalar(16);
+        this.spawnSphere(position, impulse);
+        peers.broadcast(new Uint8Array(new Float32Array([
+          position.x, position.y, position.z,
+          impulse.x, impulse.y, impulse.z,
+        ]).buffer));
+      }
+    });
+  }
+
+  spawnSphere(position, impulse) {
+    const { physics, sphere, spheres } = this;
+    if (!this.physics) {
+      return;
     }
+    this.sphere = (this.sphere + 1) % spheres.count;
+    physics.setMeshPosition(
+      spheres,
+      position,
+      sphere
+    );
+    physics.applyImpulse(spheres, impulse, sphere);
   }
 
   onUnload() {
@@ -300,6 +346,7 @@ class Tower extends ElevatorWorld {
   }
 }
 
-Tower.display = 'Cannon Tower';
+Tower.display = 'P2P Tower';
+Tower.isMultiplayer = true;
 
 export default Tower;

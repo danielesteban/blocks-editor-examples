@@ -6,6 +6,8 @@ import Peer from '../renderables/peer.js';
 
 class Peers extends Group {
   constructor({
+    onLeave,
+    onJoin,
     onPeerMessage,
     onState,
     onUpdate,
@@ -13,6 +15,8 @@ class Peers extends Group {
     room,
   }) {
     super();
+    this.onLeave = onLeave;
+    this.onJoin = onJoin;
     this.onPeerMessage = onPeerMessage;
     this.onState = onState;
     this.onUpdate = onUpdate;
@@ -129,6 +133,9 @@ class Peers extends Group {
     ));
     connection.on('track', peer.onTrack.bind(peer));
     this.add(peer);
+    if (this.onJoin) {
+      this.onJoin(peer);
+    }
     return peer;
   }
 
@@ -196,6 +203,9 @@ class Peers extends Group {
           const [peer] = peers.splice(index, 1);
           this.remove(peer);
           peer.dispose();
+          if (this.onLeave) {
+            this.onLeave(peer);
+          }
         }
         break;
       }
@@ -240,12 +250,12 @@ class Peers extends Group {
           } catch (e) {
             break;
           }
-          onPeerMessage({ peer: peer.peer, message });
+          onPeerMessage({ peer, message });
         }
         break;
       case 0x03:
         if (onPeerMessage) {
-          onPeerMessage({ peer: peer.peer, message: data.slice(1) });
+          onPeerMessage({ peer, message: new Uint8Array(data.slice(1)) });
         }
         break;
       default:

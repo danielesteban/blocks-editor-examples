@@ -32,7 +32,7 @@ class Ground extends Mesh {
       Ground.geometry,
       Ground.material.clone()
     );
-    this.material.color.setHex(color);
+    this.material.color.setHex(color).convertSRGBToLinear();
     this.scale.set(width, 1, depth);
   }
 }

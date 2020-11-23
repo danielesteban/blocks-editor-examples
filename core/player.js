@@ -33,11 +33,17 @@ class Player extends Group {
     this.direction = new Vector3();
     this.head = new AudioListener();
     this.head.rotation.order = 'YXZ';
-    const physics = new Mesh(
-      new BoxBufferGeometry(0.015, 0.09, 0.14),
-      new MeshBasicMaterial({ visible: false })
+    const physicsMaterial = new MeshBasicMaterial({ visible: false });
+    this.head.physics = new Mesh(
+      new BoxBufferGeometry(0.3, 0.3, 0.3),
+      physicsMaterial
     );
-    physics.position.set(0, -0.1 / 3, 0.02);
+    this.head.add(this.head.physics);
+    const controllerPhysics = new Mesh(
+      new BoxBufferGeometry(0.015, 0.09, 0.14),
+      physicsMaterial
+    );
+    controllerPhysics.position.set(0, -0.1 / 3, 0.02);
     this.controllers = [...Array(2)].map((v, i) => {
       const controller = xr.getController(i);
       this.add(controller);
@@ -52,8 +58,7 @@ class Player extends Group {
         secondary: false,
       };
       controller.marker = new Marker();
-      controller.physics = physics.clone();
-      controller.add(controller.physics);
+      controller.physics = controllerPhysics.clone();
       controller.pointer = new Pointer();
       controller.add(controller.pointer);
       controller.raycaster = new Raycaster();
@@ -72,6 +77,7 @@ class Player extends Group {
         controller.hand = hand;
         controller.gamepad = gamepad;
         controller.add(hand);
+        controller.add(controller.physics);
         const attachments = this.attachments[handedness];
         if (attachments) {
           attachments.forEach((attachment) => {
@@ -90,6 +96,7 @@ class Player extends Group {
           });
         }
         controller.remove(controller.hand);
+        controller.remove(controller.physics);
         delete controller.hand;
         delete controller.gamepad;
         controller.marker.visible = false;
@@ -121,7 +128,8 @@ class Player extends Group {
   }
 
   detachAll() {
-    const { attachments, controllers } = this;
+    const { attachments, head, controllers } = this;
+    delete head.physics.onContact;
     controllers.forEach((controller) => {
       delete controller.physics.onContact;
       const children = controller.hand && attachments[controller.hand.handedness];

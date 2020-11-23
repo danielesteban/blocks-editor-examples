@@ -2,6 +2,7 @@
 // + an extra applyImpulse(mesh, impulse, index) method
 // + an extra addConstraint(mesh, options, index) method
 // + an extra removeConstraint(constraint) method
+// + an extra removeMesh(mesh, index) method
 // + an extra reset() method
 // + Extra flags on: addMesh( mesh, mass = 0, flags = {} )
 //   - noContactResponse
@@ -288,6 +289,42 @@ async function AmmoPhysics() {
     }
 
   }
+  
+  function removeMesh( mesh, index = 0 ) {
+
+    if ( mesh.isInstancedMesh ) {
+
+      // Not yet implemented
+
+    } else if ( mesh.isGroup || mesh.isMesh ) {
+
+      const body = meshMap.get( mesh );
+      const shape = body.getCollisionShape();
+      const motionState = body.getMotionState();
+      world.removeRigidBody(body);
+      Ammo.destroy(motionState);
+      Ammo.destroy(body);
+      meshMap.delete(mesh);
+      meshes.splice(meshes.findIndex((m) => m === mesh), 1);
+      const isDynamic = dynamic.findIndex((m) => m === mesh);
+      if (~isDynamic) {
+        dynamic.splice(isDynamic, 1);
+      }
+      const isKinematic = kinematic.findIndex((m) => m === mesh);
+      if (~isKinematic) {
+        kinematic.splice(isKinematic, 1);
+      }
+      shapes.splice(shapes.findIndex((s) => s === shape), 1);
+      if (shape instanceof AmmoLib.btCompoundShape) {
+        for (let i = 0, l = shape.getNumChildShapes(); i < l; i += 1) {
+          Ammo.destroy(shape.getChildShape(i));
+        }
+      }
+      Ammo.destroy(shape);
+
+    }
+
+  }
 
   function getBody( mesh, index = 0 ) {
 
@@ -306,30 +343,6 @@ async function AmmoPhysics() {
 
     return body;
 
-  }
-
-  function setMeshPosition( mesh, position, index = 0, activate = true ) {
-
-    const body = getBody(mesh, index);
-    
-    if ( body ) {
-
-      body.setAngularVelocity( zero );
-      body.setLinearVelocity( zero );
-
-      auxTransform.setIdentity();
-      auxVector.setValue( position.x, position.y, position.z );
-      auxTransform.setOrigin( auxVector );
-      body.setWorldTransform( auxTransform );
-      body.getMotionState().setWorldTransform( auxTransform );
-  
-      if (activate) {
-        body.activate();
-      } else {
-        body.setActivationState(WANTS_DEACTIVATION);
-      }
-
-    }
   }
 
   function addConstraint( mesh, options, index = 0 ) {
@@ -384,6 +397,24 @@ async function AmmoPhysics() {
           auxVectorB
         );
         break;
+      case 'slider':
+        auxTransform.setIdentity();
+        if (options.position) {
+          auxVector.setValue( options.position.x, options.position.y, options.position.z );
+          auxTransform.setOrigin( auxVector );
+        }
+        if (options.rotation) {
+          auxQuaternion.setValue( options.rotation.x, options.rotation.y, options.rotation.z, options.rotation.w );
+          auxTransform.setRotation( auxQuaternion );
+        }
+        constraint = new AmmoLib.btSliderConstraint( getBody( mesh, index ), auxTransform, true );
+        if (options.limits && options.limits.linear && options.limits.linear.lower !== undefined) {
+          constraint.setLowerLinLimit(options.limits.linear.lower);
+        }
+        if (options.limits && options.limits.linear && options.limits.linear.upper !== undefined) {
+          constraint.setUpperLinLimit(options.limits.linear.upper);
+        }
+        break;
       default:
         break;
     }
@@ -407,6 +438,30 @@ async function AmmoPhysics() {
       world.removeConstraint( constraint );
     }
 
+  }
+
+  function setMeshPosition( mesh, position, index = 0, activate = true ) {
+
+    const body = getBody(mesh, index);
+    
+    if ( body ) {
+
+      body.setAngularVelocity( zero );
+      body.setLinearVelocity( zero );
+
+      auxTransform.setIdentity();
+      auxVector.setValue( position.x, position.y, position.z );
+      auxTransform.setOrigin( auxVector );
+      body.setWorldTransform( auxTransform );
+      body.getMotionState().setWorldTransform( auxTransform );
+  
+      if (activate) {
+        body.activate();
+      } else {
+        body.setActivationState(WANTS_DEACTIVATION);
+      }
+
+    }
   }
 
   function applyImpulse( mesh, impulse, index = 0 ) {
@@ -655,9 +710,10 @@ async function AmmoPhysics() {
 
   return {
     addMesh,
-    setMeshPosition,
+    removeMesh,
     addConstraint,
     removeConstraint,
+    setMeshPosition,
     applyImpulse,
     reset,
   };

@@ -19,7 +19,7 @@ class Renderer {
     this.dom = dom;
 
     // Setup camera
-    this.camera = new PerspectiveCamera(70, 1, 0.01, 1000);
+    this.camera = new PerspectiveCamera(70, 1, 0.1, 512);
     this.camera.position.y = 1.6;
 
     // Setup renderer
