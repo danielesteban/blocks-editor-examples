@@ -187,6 +187,7 @@ async function AmmoPhysics() {
 
     body.mesh = mesh;
     body.isTrigger = flags.isTrigger;
+    body.shape = shape;
 
     if ( flags.noContactResponse ) {
 
@@ -247,6 +248,7 @@ async function AmmoPhysics() {
       body.mesh = mesh;
       body.index = i;
       body.isTrigger = flags.isTrigger;
+      body.shape = shape;
 
       if ( flags.noContactResponse ) {
       
@@ -299,7 +301,7 @@ async function AmmoPhysics() {
     } else if ( mesh.isGroup || mesh.isMesh ) {
 
       const body = meshMap.get( mesh );
-      const shape = body.getCollisionShape();
+      const { shape } = body;
       const motionState = body.getMotionState();
       world.removeRigidBody(body);
       Ammo.destroy(motionState);
