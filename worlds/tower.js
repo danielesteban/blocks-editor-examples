@@ -31,6 +31,7 @@ class Tower extends ElevatorWorld {
       boat.updateMatrixWorld();
       return boat;
     });
+    const boatModelOffset = new Vector3(-4, -3, 0);
     const boat = boats[Math.floor(Math.random() * boats.length)];
 
     super({
@@ -58,119 +59,116 @@ class Tower extends ElevatorWorld {
     ocean.position.y = 1.675;
     this.add(ocean);
 
-    const rocket = new Group();
-    rocket.position.set(0, 31.25, 0);
-    rocket.initialPosition = rocket.position.clone();
-    rocket.rotation.set(0, Math.PI, 0);
-    this.add(rocket);
-    this.rocket = rocket;
-
-    rocket.aux = new Box3();
-    rocket.bounds = new Box3(new Vector3(-0.75, 0, -0.75), new Vector3(0.75, 4, 0.75));
-    const isOnRocket = (point) => {
-      rocket.aux.copy(rocket.bounds).applyMatrix4(rocket.matrixWorld);
-      return rocket.aux.containsPoint(point);
-    };
-
-    this.fireworks = {
-      aux: new Vector3(),
-      enabled: false,
-      tick: 0,
-      timer: 0,
-      trigger: () => {
-        if (this.fireworks.enabled) {
-          return;
-        }
-        this.fireworks.enabled = true;
-        this.fireworks.isOnRocket = isOnRocket(player.head.position);
-        this.fireworks.rocketSpeed = 0;
-        this.fireworks.tick = 0;
-        this.fireworks.timer = 10;
-
-        this.physics.removeConstraint(button.constraint);
-        this.physics.removeMesh(button);
-        rocket.worldToLocal(button.position.copy(button.initialPosition));
-        button.rotation.set(0, 0, 0);
-        rocket.add(button);
-      },
-      stop: () => {
-        this.fireworks.enabled = false;
-        rocket.position.copy(rocket.initialPosition);
-        rocket.updateMatrixWorld();
-        button.position.copy(button.initialPosition);
-        this.add(button);
-        this.physics.addMesh(button, 1);
-        button.constraint = this.physics.addConstraint(button, button.slider);
-        const origin = new Vector3(0, 2, -7);
-        this.elevator.localToWorld(origin);
-        player.teleport(origin);
-        player.rotate(this.elevator.rotation.y - Math.PI - player.head.rotation.y);
-        for (let i = 0; i < this.spheres.count; i += 1) {
-          this.physics.setMeshPosition(
-            this.spheres,
-            new Vector3(0, 0.2, -1000 - i),
-            i,
-            false
-          );
-        }
-      },
-    };
-
     const button = new Button({ position: new Vector3(0, 33.25, 0.625) });
     button.trigger.onContact = ({ mesh }) => {
-      if (this.fireworks.enabled || mesh !== button) {
+      if (rocket.enabled || mesh !== button) {
         return;
       }
-      this.fireworks.trigger();
+      rocket.trigger();
       this.peers.broadcast(new Uint8Array([0x01]));
     };
     this.add(button);
 
-    this.explosions = [...Array(50)].map(() => {
+    const explosions = [...Array(50)].map(() => {
       const explosion = new Explosion({ sfx });
       this.add(explosion);
       return explosion;
     });
-
-    const boatModelOffset = new Vector3(-4, -3, 0);
-    models.load('models/boat.glb')
-      .then((model) => {
-        model.position.copy(boatModelOffset);
-        model.scale.setScalar(0.5);
-        boats.forEach((boat) => {
-          boat.add(model.clone());
-          this.add(boat);
-        });
-      });
-
-    models.load('models/rocket.glb')
-      .then((model) => {
-        model.scale.setScalar(0.25);
-        rocket.add(model);
-      });
-
-    models.load('models/tower.glb')
-      .then((model) => {
-        model.scale.setScalar(0.5);
-        model.traverse((child) => {
-          if (child.isMesh && child.material.transparent) {
-            child.material.alphaTest = 1;
-            child.material.depthWrite = true;
-            child.material.transparent = false;
-          }
-        });
-        this.add(model);
-
-        this.elevator.isOpen = true;
-      });
+    this.explosions = explosions;
 
     const color = new Color();
     const vector = new Vector3();
+
+    const rocket = new Group();
+    rocket.position.set(0, 31.25, 0);
+    rocket.initialPosition = rocket.position.clone();
+    rocket.rotation.set(0, Math.PI, 0);
+    rocket.updateMatrixWorld();
+    rocket.bounds = (
+      new Box3(new Vector3(-0.75, 0, -0.75), new Vector3(0.75, 4, 0.75))
+    ).applyMatrix4(rocket.matrixWorld);
+    this.add(rocket);
+    this.rocket = rocket;
+
+    rocket.animate = ({ delta }) => {
+      if (!rocket.enabled) {
+        return;
+      }
+      const step = rocket.speed * delta;
+      rocket.speed += delta * 5;
+      rocket.position.y += step;
+      if (rocket.movePlayer) {
+        player.move(vector.set(0, step, 0));
+      }
+      rocket.tick -= delta;
+      if (rocket.tick <= 0) {
+        rocket.tick = 0.05 + Math.random() * 0.05;
+        const explosion = explosions.find(({ sound, visible }) => (
+          !visible && (!sound || !sound.isPlaying)
+        ));
+        if (explosion) {
+          vector
+            .set((Math.random() - 0.5) * 2, (Math.random() - 0.5), (Math.random() - 0.5) * 2)
+            .normalize()
+            .multiplyScalar(24);
+          vector.y += 30;
+          explosion.detonate({
+            color: color.setRGB(Math.random(), Math.random(), Math.random()),
+            filter: 'highpass',
+            position: vector,
+            scale: 0.5 + Math.random(),
+          });
+        }
+      }
+      rocket.timer -= delta;
+      if (rocket.timer <= 0) {
+        rocket.reset();
+      }
+    };
+
+    rocket.trigger = () => {
+      if (rocket.enabled) {
+        return;
+      }
+      rocket.enabled = true;
+      rocket.movePlayer = rocket.bounds.containsPoint(player.head.position);
+      rocket.speed = 0;
+      rocket.tick = 0;
+      rocket.timer = 10;
+
+      this.physics.removeConstraint(button.constraint);
+      this.physics.removeMesh(button);
+      rocket.worldToLocal(button.position.copy(button.initialPosition));
+      button.rotation.set(0, 0, 0);
+      rocket.add(button);
+    };
+    rocket.reset = () => {
+      rocket.enabled = false;
+      rocket.position.copy(rocket.initialPosition);
+      rocket.updateMatrixWorld();
+      button.position.copy(button.initialPosition);
+      this.add(button);
+      this.physics.addMesh(button, 1);
+      button.constraint = this.physics.addConstraint(button, button.slider);
+      const origin = new Vector3(0, 2, -7);
+      this.elevator.localToWorld(origin);
+      player.teleport(origin);
+      player.rotate(this.elevator.rotation.y - Math.PI - player.head.rotation.y);
+      for (let i = 0; i < this.spheres.count; i += 1) {
+        this.physics.setMeshPosition(
+          this.spheres,
+          new Vector3(0, 0.2, -1000 - i),
+          i,
+          false
+        );
+      }
+    };
+
     const onContact = ({ mesh, index, point }) => {
       if (mesh !== this.spheres) {
         return;
       }
-      const explosion = this.explosions.find(({ sound, visible }) => (
+      const explosion = explosions.find(({ sound, visible }) => (
         !visible && (!sound || !sound.isPlaying)
       ));
       if (explosion) {
@@ -198,6 +196,39 @@ class Tower extends ElevatorWorld {
     };
 
     Promise.all([
+      models.load('models/boat.glb')
+        .then((model) => {
+          model.position.copy(boatModelOffset);
+          model.scale.setScalar(0.5);
+          boats.forEach((boat) => {
+            boat.add(model.clone());
+            this.add(boat);
+          });
+        }),
+      models.load('models/tower.glb')
+        .then((model) => {
+          model.scale.setScalar(0.5);
+          model.traverse((child) => {
+            if (child.isMesh && child.material.transparent) {
+              child.material.alphaTest = 1;
+              child.material.depthWrite = true;
+              child.material.transparent = false;
+            }
+          });
+          this.add(model);
+        }),
+    ])
+      .then(() => {
+        this.elevator.isOpen = true;
+      });
+
+    models.load('models/rocket.glb')
+      .then((model) => {
+        model.scale.setScalar(0.25);
+        rocket.add(model);
+      });
+
+    Promise.all([
       scene.getPhysics()
         .then((physics) => {
           this.physics = physics;
@@ -214,7 +245,7 @@ class Tower extends ElevatorWorld {
                 return;
               }
               if (buffer.byteLength === 1) {
-                this.fireworks.trigger();
+                rocket.trigger();
               } else if (buffer.byteLength === 24) {
                 const [x, y, z, ix, iy, iz] = new Float32Array(buffer);
                 this.spawnSphere({ x, y, z }, { x: ix, y: iy, z: iz });
@@ -307,7 +338,6 @@ class Tower extends ElevatorWorld {
       clouds,
       explosions,
       isOnElevator,
-      fireworks,
       peers,
       physics,
       player,
@@ -320,38 +350,7 @@ class Tower extends ElevatorWorld {
     if (peers) {
       peers.animate(animation);
     }
-    if (fireworks.enabled) {
-      const step = fireworks.rocketSpeed * animation.delta;
-      fireworks.rocketSpeed += animation.delta * 5;
-      rocket.position.y += step;
-      if (fireworks.isOnRocket) {
-        player.move(new Vector3(0, step, 0));
-      }
-      fireworks.tick -= animation.delta;
-      if (fireworks.tick <= 0) {
-        fireworks.tick = 0.05 + Math.random() * 0.05;
-        const explosion = explosions.find(({ sound, visible }) => (
-          !visible && (!sound || !sound.isPlaying)
-        ));
-        if (explosion) {
-          fireworks.aux
-            .set((Math.random() - 0.5) * 2, (Math.random() - 0.5), (Math.random() - 0.5) * 2)
-            .normalize()
-            .multiplyScalar(24);
-          fireworks.aux.y += 30;
-          explosion.detonate({
-            color: { r: Math.random(), g: Math.random(), b: Math.random() },
-            filter: 'highpass',
-            position: fireworks.aux,
-            scale: 0.5 + Math.random(),
-          });
-        }
-      }
-      fireworks.timer -= animation.delta;
-      if (fireworks.timer <= 0) {
-        fireworks.stop();
-      }
-    }
+    rocket.animate(animation);
     if (!physics || isOnElevator) {
       return;
     }
