@@ -12,31 +12,20 @@ class Metro extends Group {
   constructor(scene, { destination, offset }) {
     super();
 
-    if (!Metro.stations) {
-      const stations = Object.keys(scene.worlds)
-        .filter((id) => id !== 'Metro' && !scene.worlds[id].isWIP)
-        .map((id) => ({
-          id,
-          isMultiplayer: scene.worlds[id].isMultiplayer,
-          name: scene.worlds[id].display || scene.worlds[id].name,
-        }));
-      const values = window.crypto.getRandomValues(new Uint32Array(stations.length));
-      for (let i = stations.length - 1; i >= 0; i -= 1) {
-        const rand = values[i] % (i + 1);
-        const temp = stations[i];
-        stations[i] = stations[rand];
-        stations[rand] = temp;
-      }
-      Metro.stations = stations;
-    }
-    const { stations } = Metro;
-
     const { ambient, models, player, pointables, sfx, translocables } = scene;
     if (!destination) {
       ambient.set('sounds/train.ogg');
     }
     scene.fog = new FogExp2(0, 0.015);
     this.player = player;
+
+    const stations = Object.keys(scene.worlds)
+      .filter((id) => id !== 'Metro' && !scene.worlds[id].isWIP)
+      .map((id) => ({
+        id,
+        isMultiplayer: scene.worlds[id].isMultiplayer,
+        name: scene.worlds[id].display || scene.worlds[id].name,
+      }));
 
     const track = new Group();
     track.position.set(0, -2.75, 0);
