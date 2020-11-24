@@ -59,16 +59,6 @@ class Tower extends ElevatorWorld {
     ocean.position.y = 1.675;
     this.add(ocean);
 
-    const button = new Button({ position: new Vector3(0, 33.25, 0.625) });
-    button.trigger.onContact = ({ mesh }) => {
-      if (rocket.enabled || mesh !== button) {
-        return;
-      }
-      rocket.trigger();
-      this.peers.broadcast(new Uint8Array([0x01]));
-    };
-    this.add(button);
-
     const explosions = [...Array(50)].map(() => {
       const explosion = new Explosion({ sfx });
       this.add(explosion);
@@ -125,6 +115,16 @@ class Tower extends ElevatorWorld {
         rocket.reset();
       }
     };
+
+    const button = new Button({ position: new Vector3(0, 33.25, 0.625) });
+    button.trigger.onContact = ({ mesh }) => {
+      if (rocket.enabled || mesh !== button) {
+        return;
+      }
+      rocket.trigger();
+      this.peers.broadcast(new Uint8Array([0x01]));
+    };
+    this.add(button);
 
     rocket.trigger = () => {
       if (rocket.enabled) {
