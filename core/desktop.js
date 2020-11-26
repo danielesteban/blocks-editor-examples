@@ -14,8 +14,9 @@ import {
 // a standarized input model for multiple arbitrary control devices.
 
 class DesktopControls {
-  constructor({ renderer, xr }) {
+  constructor({ enabled = true, renderer, xr }) {
     this.isDesktop = true;
+    this.isEnabled = enabled;
     this.aux = {
       center: new Vector2(),
       direction: new Vector3(),
@@ -71,12 +72,13 @@ class DesktopControls {
       buttons,
       buttonState,
       keyboard,
+      isEnabled,
       isLocked,
       pointer,
       raycaster,
       xr,
     } = this;
-    if (!isLocked) {
+    if (!isEnabled || !isLocked) {
       return;
     }
     if (xr.isPresenting) {
@@ -175,8 +177,8 @@ class DesktopControls {
   }
 
   onMouseDown({ button }) {
-    const { buttonState, isLocked } = this;
-    if (!isLocked) {
+    const { buttonState, isEnabled, isLocked } = this;
+    if (!isEnabled || !isLocked) {
       return;
     }
     switch (button) {
@@ -192,16 +194,16 @@ class DesktopControls {
   }
 
   onMouseMove({ movementX, movementY }) {
-    const { isLocked, pointer } = this;
-    if (!isLocked) {
+    const { isEnabled, isLocked, pointer } = this;
+    if (!isEnabled || !isLocked) {
       return;
     }
     pointer.set(movementX, movementY);
   }
 
   onMouseUp({ button }) {
-    const { buttonState, isLocked } = this;
-    if (!isLocked) {
+    const { buttonState, isEnabled, isLocked } = this;
+    if (!isEnabled || !isLocked) {
       return;
     }
     switch (button) {
@@ -224,8 +226,8 @@ class DesktopControls {
   }
 
   requestPointerLock() {
-    const { isLocked, xr } = this;
-    if (isLocked || xr.isPresenting) {
+    const { isEnabled, isLocked, xr } = this;
+    if (!isEnabled || isLocked || xr.isPresenting) {
       return;
     }
     document.body.requestPointerLock();
