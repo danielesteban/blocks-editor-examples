@@ -1,4 +1,5 @@
 import { Box3, Group } from '../core/three.js';
+import Lightmap from '../core/lightmap.js';
 import Display from './display.js';
 import Map from './map.js';
 
@@ -13,37 +14,17 @@ class Train extends Group {
     Map.setStations(stations);
     models.lightmap('models/tunnelLightmap.json')
       .then((lightmap) => {
-        lightmap.material.uniforms.lightmapBlending.value = 0.7;
-        lightmap.material.uniforms.lightmapIntensity.value = 3;
-        lightmap.material.uniforms.lightmapSize.value.copy(lightmap.size).multiplyScalar(0.25);
-        lightmap.material.vertexColors = true;
+        const lightmapMaterial = new Lightmap({
+          blending: 0.7,
+          channels: lightmap.channels,
+          intensity: 3,
+          origin: lightmap.origin.clone().multiplyScalar(0.25),
+          size: lightmap.size.clone().multiplyScalar(0.25),
+          textures: [lightmap.texture],
+        });
         this.lightmap = {
           origin: lightmap.origin,
           materials: [],
-        };
-
-        const swapMaterials = (child, materials) => {
-          const { material: { map, transparent } } = child;
-          let material;
-          if (transparent) {
-            material = materials.transparent;
-            if (!material) {
-              material = lightmap.material.clone();
-              material.transparent = true;
-              material.uniforms.map.value = map;
-              material.map = map;
-              materials.transparent = material;
-            }
-          } else {
-            material = materials.opaque;
-            if (!material) {
-              material = lightmap.material.clone();
-              material.uniforms.map.value = map;
-              material.map = map;
-              materials.opaque = material;
-            }
-          }
-          child.material = material;
         };
 
         models.load('models/train.glb')
@@ -53,24 +34,26 @@ class Train extends Group {
             model.traverse((child) => {
               if (child.isMesh) {
                 this.bounds.expandByObject(child);
-                swapMaterials(child, materials);
+                Lightmap.swapMaterials(child, lightmapMaterial, materials);
                 this.translocables.push(child);
               }
             });
-            this.lightmap.materials.push(materials.opaque, materials.transparent);
+            this.lightmap.materials.push(materials.opaque, materials.blending);
             for (let i = 0; i < 2; i += 1) {
               const display = new Display({
-                material: lightmap.material.clone(),
+                material: lightmapMaterial.clone(),
                 materials: this.lightmap.materials,
                 models,
-                swapMaterials,
+                swapMaterials: (child, materials) => (
+                  Lightmap.swapMaterials(child, lightmapMaterial, materials)
+                ),
               });
               display.position.set(0, 12, i === 0 ? -21.65 : 25.65);
               if (i === 1) display.rotation.y = Math.PI;
               model.add(display);
             }
             const map = new Map({
-              material: lightmap.material.clone(),
+              material: lightmapMaterial.clone(),
               materials: this.lightmap.materials,
             });
             map.position.set(7.99, 8, 6);
@@ -86,10 +69,10 @@ class Train extends Group {
             const materials = {};
             model.traverse((child) => {
               if (child.isMesh) {
-                swapMaterials(child, materials);
+                Lightmap.swapMaterials(child, lightmapMaterial, materials);
               }
             });
-            this.lightmap.materials.push(materials.opaque, materials.transparent);
+            this.lightmap.materials.push(materials.opaque, materials.blending);
             this.doors = [
               { open: -3.75, closed: -1.5 },
               { open: 3.75, closed: 1.5 },

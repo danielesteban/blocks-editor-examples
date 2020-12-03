@@ -5,6 +5,7 @@ import {
   Vector3,
 } from '../core/three.js';
 import ElevatorWorld from '../core/elevatorWorld.js';
+import Lightmap from '../core/lightmap.js';
 import Spheres from '../renderables/spheres.js';
 
 class Temple extends ElevatorWorld {
@@ -53,11 +54,13 @@ class Temple extends ElevatorWorld {
         }),
     ])
       .then(([lightmap]) => {
-        lightmap.material.uniforms.lightmapSize.value.copy(lightmap.size).multiplyScalar(0.5);
-        lightmap.material.uniforms.lightmapOrigin.value.copy(lightmap.origin).multiplyScalar(0.5);
-        lightmap.material.vertexColors = true;
-
-        this.spheres = new Spheres({ count: 100, material: lightmap.material });
+        const material = new Lightmap({
+          channels: lightmap.channels,
+          origin: lightmap.origin.clone().multiplyScalar(0.5),
+          size: lightmap.size.clone().multiplyScalar(0.5),
+          textures: [lightmap.texture],
+        });
+        this.spheres = new Spheres({ count: 100, material });
         const matrix = new Matrix4();
         for (let i = 0; i < this.spheres.count; i += 1) {
           matrix.setPosition(

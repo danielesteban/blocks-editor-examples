@@ -1,10 +1,13 @@
 import {
   BoxBufferGeometry,
+  ClampToEdgeWrapping,
+  DataTexture3D,
   GLTFLoader,
   Mesh,
   MeshBasicMaterial,
+  LinearFilter,
+  Vector3,
 } from './three.js';
-import Lightmap from './lightmap.js';
 
 class Models {
   constructor() {
@@ -12,6 +15,7 @@ class Models {
     this.bodies = new Map();
     this.models = new Map();
     this.lightmaps = new Map();
+    this.occlusionmaps = new Map();
   }
 
   load(model) {
@@ -38,7 +42,7 @@ class Models {
     });
   }
 
-  lightmap(lightmap, baseShader = 'basic') {
+  lightmap(lightmap) {
     const { lightmaps } = this;
     return new Promise((resolve) => {
       let cache = lightmaps.get(lightmap);
@@ -52,13 +56,18 @@ class Models {
           .then((res) => res.json())
           .then((lightmap) => {
             cache.loading = false;
+            const texture = new DataTexture3D(
+              new Uint8ClampedArray(atob(lightmap.data).split('').map((c) => c.charCodeAt(0))),
+              lightmap.size.x, lightmap.size.y, lightmap.size.z
+            );
+            texture.minFilter = LinearFilter;
+            texture.magFilter = LinearFilter;
+            texture.unpackAlignment = 1;
             cache.lightmap = {
-              material: new Lightmap({
-                baseShader,
-                lightmap,
-              }),
-              origin: lightmap.origin,
-              size: lightmap.size,
+              channels: lightmap.channels,
+              origin: new Vector3(lightmap.origin.x, lightmap.origin.y, lightmap.origin.z),
+              size: new Vector3(lightmap.size.x, lightmap.size.y, lightmap.size.z),
+              texture,
             };
             cache.promises.forEach((resolve) => resolve(cache.lightmap));
             delete cache.promises;
@@ -67,6 +76,36 @@ class Models {
         cache.promises.push(resolve);
       } else {
         resolve(cache.lightmap);
+      }
+    });
+  }
+
+  occlusion(occlusion) {
+    const { occlusionmaps } = this;
+    return new Promise((resolve) => {
+      let cache = occlusionmaps.get(occlusion);
+      if (!cache) {
+        cache = {
+          loading: true,
+          promises: [resolve],
+        };
+        occlusionmaps.set(occlusion, cache);
+        fetch(occlusion)
+          .then((res) => res.json())
+          .then((occlusion) => {
+            cache.loading = false;
+            cache.occlusion = {
+              data: new Uint8ClampedArray(atob(occlusion.data).split('').map((c) => c.charCodeAt(0))),
+              origin: occlusion.origin,
+              size: occlusion.size,
+            };
+            cache.promises.forEach((resolve) => resolve(cache.occlusion));
+            delete cache.promises;
+          });
+      } else if (cache.loading) {
+        cache.promises.push(resolve);
+      } else {
+        resolve(cache.occlusion);
       }
     });
   }

@@ -1,25 +1,25 @@
 import {
   BufferAttribute,
-  BoxGeometry,
   BufferGeometry,
   BufferGeometryUtils,
+  IcosahedronGeometry,
   Mesh,
   ShaderLib,
   ShaderMaterial,
   UniformsUtils,
 } from '../core/three.js';
 
-class Paddle extends Mesh {
+class Orb extends Mesh {
   static setupGeometry() {
-    const box = new BoxGeometry(0.15, 1.25, 0.15, 3, 25, 3);
-    box.faces.forEach((face, i) => {
+    const sphere = new IcosahedronGeometry(0.15, 3);
+    sphere.faces.forEach((face, i) => {
       if (i % 2 === 0) {
-        face.color.setHSL(Math.random(), 0.4 + Math.random() * 0.2, 0.2 + Math.random() * 0.2);
+        face.color.setHSL(0, 0, 0.5 + Math.random() * 0.25);
       } else {
-        face.color.copy(box.faces[i - 1].color);
+        face.color.copy(sphere.faces[i - 1].color);
       }
     });
-    let geometry = (new BufferGeometry()).fromGeometry(box);
+    let geometry = (new BufferGeometry()).fromGeometry(sphere);
     const offset = new Float32Array(geometry.getAttribute('color').count);
     for (let i = 0; i < offset.length; i += 4) {
       const o = Math.random();
@@ -30,17 +30,15 @@ class Paddle extends Mesh {
     geometry.deleteAttribute('uv');
     geometry = BufferGeometryUtils.mergeVertices(geometry);
     geometry.physics = {
-      shape: 'box',
-      width: box.parameters.width,
-      height: box.parameters.height,
-      depth: box.parameters.depth,
+      shape: 'sphere',
+      radius: sphere.parameters.radius,
     };
-    Paddle.geometry = geometry;
+    Orb.geometry = geometry;
   }
 
   static setupMaterial() {
     const { uniforms, vertexShader, fragmentShader } = ShaderLib.basic;
-    Paddle.material = new ShaderMaterial({
+    Orb.material = new ShaderMaterial({
       uniforms: {
         ...UniformsUtils.clone(uniforms),
         step: { value: 0 },
@@ -59,7 +57,7 @@ class Paddle extends Mesh {
           [
             '#include <color_vertex>',
             'float s = mod(step + offset, 1.0);',
-            'vColor.xyz *= 0.5 + (s > 0.5 ? 1.0 - s : s);',
+            'vColor.xyz *= 0.75 + (s > 0.5 ? 1.0 - s : s) * 0.5;',
           ].join('\n')
         ),
       fragmentShader,
@@ -68,23 +66,26 @@ class Paddle extends Mesh {
     });
   }
 
-  constructor() {
-    if (!Paddle.geometry) {
-      Paddle.setupGeometry();
+  constructor(color) {
+    if (!Orb.geometry) {
+      Orb.setupGeometry();
     }
-    if (!Paddle.material) {
-      Paddle.setupMaterial();
+    if (!Orb.material) {
+      Orb.setupMaterial();
     }
+    const material = Orb.material.clone();
+    material.uniforms.diffuse.value.copy(color);
     super(
-      Paddle.geometry,
-      Paddle.material
+      Orb.geometry,
+      material
     );
   }
 
-  static animate({ delta }) {
-    const { material: { uniforms: { step } } } = Paddle;
+  onBeforeRender({ animation: { delta } }) {
+    const { material: { uniforms: { step } }, rotation } = this;
+    rotation.y += delta;
     step.value = (step.value + delta * 0.5) % 1;
   }
 }
 
-export default Paddle;
+export default Orb;
