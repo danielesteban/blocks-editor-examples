@@ -61,6 +61,16 @@ class Player extends Group {
       controller.physics = controllerPhysics.clone();
       controller.pointer = new Pointer();
       controller.add(controller.pointer);
+      controller.pulse = (intensity, duration) => {
+        if (
+          !controller.gamepad
+          || !controller.gamepad.hapticActuators
+          || !controller.gamepad.hapticActuators.length
+        ) {
+          return;
+        }
+        controller.gamepad.hapticActuators[0].pulse(intensity, duration);
+      };
       controller.raycaster = new Raycaster();
       controller.raycaster.far = 32;
       controller.worldspace = {
@@ -105,7 +115,6 @@ class Player extends Group {
       return controller;
     });
     this.desktopControls = new DesktopControls({ renderer: dom.renderer, xr });
-    this.xr = xr;
     {
       const key = 'blocks-editor-examples:skin';
       let skin = localStorage.getItem(key);

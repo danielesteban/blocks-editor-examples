@@ -1,4 +1,9 @@
-import { Box3, Scene as ThreeScene, Vector3 } from './three.js';
+import {
+  Box3,
+  Matrix4,
+  Scene as ThreeScene,
+  Vector3,
+} from './three.js';
 import Ambient from './ambient.js';
 import { AmmoPhysics } from './ammo.js';
 import CurveCast from './curvecast.js';
@@ -17,7 +22,6 @@ class Scene extends ThreeScene {
       aux: new Box3(),
       hands: [false, false],
       movement: new Vector3(),
-      points: [new Vector3(), new Vector3()],
     };
 
     this.locomotion = Scene.locomotions.teleport;
@@ -139,7 +143,8 @@ class Scene extends ThreeScene {
         return;
       }
       if (
-        !player.destination
+        !climbing.isFalling
+        && !player.destination
         && hand.handedness === 'left'
         && (leftwardsDown || rightwardsDown)
       ) {
@@ -149,6 +154,7 @@ class Scene extends ThreeScene {
       }
       if (
         locomotion === locomotions.teleport
+        && !climbing.isFalling
         && !player.destination
         && hand.handedness === 'right'
         && (forwards || forwardsUp)
@@ -190,20 +196,50 @@ class Scene extends ThreeScene {
         });
       }
       if (climbables.length) {
-        if (!climbing.hands[index] && (gripDown || triggerDown)) {
+        if (
+          !climbing.grip[index]
+          && (gripDown || triggerDown)
+          && !(
+            climbing.isFalling && climbing.fallSpeed < -5
+          )
+        ) {
+          let grip;
           climbing.aux.setFromObject(physics);
-          if (climbables.flat().find((mesh) => {
-            if (!mesh.collision) {
-              mesh.collision = (new Box3()).setFromObject(mesh);
+          climbables.flat().find((mesh) => {
+            if (mesh.isInstancedMesh) {
+              if (!mesh.collision) {
+                mesh.collision = (new Box3()).setFromObject(mesh);
+                mesh.collision.aux = { box: new Box3(), matrix: new Matrix4() };
+              }
+              for (let i = 0, l = mesh.count; i < l; i += 1) {
+                mesh.getMatrixAt(i, mesh.collision.aux.matrix);
+                mesh.collision.aux.box
+                  .copy(mesh.collision)
+                  .applyMatrix4(mesh.collision.aux.matrix);
+                if (mesh.collision.aux.box.intersectsBox(climbing.aux)) {
+                  grip = { mesh, index: i };
+                  return true;
+                }
+              }
+              return false;
             }
-            return mesh.collision.intersectsBox(climbing.aux);
-          })) {
-            climbing.hands[index] = true;
+            if (!mesh.collision || mesh.collisionAutoUpdate) {
+              mesh.collision = (mesh.collision || new Box3()).setFromObject(mesh);
+            }
+            if (mesh.collision.intersectsBox(climbing.aux)) {
+              grip = { mesh };
+              return true;
+            }
+            return false;
+          });
+          if (grip) {
+            climbing.grip[index] = grip;
+            controller.pulse(0.3, 25);
           }
         }
-        if (climbing.hands[index]) {
+        if (climbing.grip[index]) {
           if (gripUp || triggerUp || player.destination) {
-            climbing.hands[index] = false;
+            climbing.grip[index] = false;
             if (!climbing.activeHands) {
               climbing.isFalling = true;
               climbing.fallSpeed = 0;
@@ -234,20 +270,19 @@ class Scene extends ThreeScene {
         climbing.movement.divideScalar(climbing.activeHands).negate()
       );
     } else if (climbing.isFalling && !player.destination) {
-      climbing.points[0].set(
+      climbing.aux.min.set(
         player.head.position.x - 0.2,
         player.position.y,
         player.head.position.z - 0.2
       );
-      climbing.points[1].set(
+      climbing.aux.max.set(
         player.head.position.x + 0.2,
         Math.max(player.position.y + 0.25, player.head.position.y - 0.25),
         player.head.position.z + 0.2
       );
-      climbing.aux.setFromPoints(climbing.points);
       if (!translocables.flat().find((mesh) => {
-        if (!mesh.collision) {
-          mesh.collision = (new Box3()).setFromObject(mesh);
+        if (!mesh.collision || mesh.collisionAutoUpdate) {
+          mesh.collision = (mesh.collision || new Box3()).setFromObject(mesh);
         }
         return mesh.collision.intersectsBox(climbing.aux);
       })) {
