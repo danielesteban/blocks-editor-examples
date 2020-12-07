@@ -54,7 +54,7 @@ class Room {
       client.isAlive = true;
     });
     if (!pingInterval) {
-      this.pingInterval = setInterval(this.ping.bind(this), 60000);
+      this.pingInterval = setInterval(this.ping.bind(this), 30000);
     }
   }
 
