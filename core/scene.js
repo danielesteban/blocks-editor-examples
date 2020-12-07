@@ -20,7 +20,7 @@ class Scene extends ThreeScene {
     this.climbing = {
       activeHands: 0,
       aux: new Box3(),
-      hands: [false, false],
+      grip: [false, false],
       movement: new Vector3(),
     };
 
@@ -197,48 +197,48 @@ class Scene extends ThreeScene {
       }
       if (climbables.length) {
         if (
-          !climbing.grip[index]
-          && (gripDown || triggerDown)
+          gripDown
+          && !climbing.grip[index]
           && !(
             climbing.isFalling && climbing.fallSpeed < -5
           )
         ) {
           let grip;
+          const meshes = climbables.flat();
           climbing.aux.setFromObject(physics);
-          climbables.flat().find((mesh) => {
+          for (let i = 0, l = meshes.length; !grip && i < l; i += 1) {
+            const mesh = meshes[i];
             if (mesh.isInstancedMesh) {
               if (!mesh.collision) {
                 mesh.collision = (new Box3()).setFromObject(mesh);
                 mesh.collision.aux = { box: new Box3(), matrix: new Matrix4() };
               }
-              for (let i = 0, l = mesh.count; i < l; i += 1) {
-                mesh.getMatrixAt(i, mesh.collision.aux.matrix);
+              for (let j = 0, c = mesh.count; j < c; j += 1) {
+                mesh.getMatrixAt(j, mesh.collision.aux.matrix);
                 mesh.collision.aux.box
                   .copy(mesh.collision)
                   .applyMatrix4(mesh.collision.aux.matrix);
                 if (mesh.collision.aux.box.intersectsBox(climbing.aux)) {
-                  grip = { mesh, index: i };
-                  return true;
+                  grip = { mesh, index: j, time: animation.time };
+                  break;
                 }
               }
-              return false;
+            } else {
+              if (!mesh.collision || mesh.collisionAutoUpdate) {
+                mesh.collision = (mesh.collision || new Box3()).setFromObject(mesh);
+              }
+              if (mesh.collision.intersectsBox(climbing.aux)) {
+                grip = { mesh, time: animation.time };
+              }
             }
-            if (!mesh.collision || mesh.collisionAutoUpdate) {
-              mesh.collision = (mesh.collision || new Box3()).setFromObject(mesh);
-            }
-            if (mesh.collision.intersectsBox(climbing.aux)) {
-              grip = { mesh };
-              return true;
-            }
-            return false;
-          });
+          }
           if (grip) {
             climbing.grip[index] = grip;
-            controller.pulse(0.3, 25);
+            controller.pulse(0.3, 30);
           }
         }
         if (climbing.grip[index]) {
-          if (gripUp || triggerUp || player.destination) {
+          if (gripUp || player.destination) {
             climbing.grip[index] = false;
             if (!climbing.activeHands) {
               climbing.isFalling = true;
