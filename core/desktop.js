@@ -81,7 +81,7 @@ class DesktopControls {
     if (!isEnabled || !isLocked) {
       return;
     }
-    if (xr.isPresenting) {
+    if (xr.enabled && xr.isPresenting) {
       document.exitPointerLock();
       return;
     }
@@ -104,13 +104,15 @@ class DesktopControls {
       } = this.aux;
       camera.getWorldDirection(forward);
       right.crossVectors(forward, worldUp);
-      direction
-        .set(0, 0, 0)
-        .addScaledVector(right, keyboard.x)
-        .addScaledVector(worldUp, keyboard.y)
-        .addScaledVector(forward, keyboard.z)
-        .normalize();
-      player.position.addScaledVector(direction, delta * 6);
+      player.move(
+        direction
+          .set(0, 0, 0)
+          .addScaledVector(right, keyboard.x)
+          .addScaledVector(worldUp, keyboard.y)
+          .addScaledVector(forward, keyboard.z)
+          .normalize()
+          .multiplyScalar(delta * 6)
+      );
     }
     ['primary', 'secondary'].forEach((button) => {
       const state = buttonState[button];
@@ -227,7 +229,7 @@ class DesktopControls {
 
   requestPointerLock() {
     const { isEnabled, isLocked, xr } = this;
-    if (!isEnabled || isLocked || xr.isPresenting) {
+    if (!isEnabled || isLocked || (xr.enabled && xr.isPresenting)) {
       return;
     }
     document.body.requestPointerLock();

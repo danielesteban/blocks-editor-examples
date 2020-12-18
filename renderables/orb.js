@@ -81,10 +81,13 @@ class Orb extends Mesh {
     );
   }
 
-  onBeforeRender({ animation: { delta } }) {
-    const { material: { uniforms: { step } }, rotation } = this;
-    rotation.y += delta;
-    step.value = (step.value + delta * 0.5) % 1;
+  animate(animation) {
+    const { material: { uniforms: { step } }, rotation, onAnimate } = this;
+    rotation.y += animation.delta;
+    step.value = (step.value + animation.delta * 0.5) % 1;
+    if (onAnimate) {
+      onAnimate(animation);
+    }
   }
 }
 

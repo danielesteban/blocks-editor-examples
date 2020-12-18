@@ -20,7 +20,7 @@ class Lights extends ElevatorWorld {
       rotation: new Euler(0, Math.PI, 0),
     });
 
-    const { ambient, models, translocables } = scene;
+    const { ambient, models, player, translocables } = scene;
 
     ambient.set('sounds/cave.ogg');
 
@@ -91,7 +91,7 @@ class Lights extends ElevatorWorld {
           upDownAnimation,
         ].map((animation, channel) => {
           const orb = new Orb(lightmap.channels[channel]);
-          orb.animate = animation(orb);
+          orb.onAnimate = animation(orb);
           this.add(orb);
           return orb;
         });
@@ -100,6 +100,33 @@ class Lights extends ElevatorWorld {
           lighting.update([[lights[0].position], [lights[1].position], [lights[2].position]]);
         };
         this.lighting = lighting;
+
+        this.isPicking = [false, false];
+        const pivots = { left: new Vector3(0.05, 0, 0), right: new Vector3(-0.05, 0, 0) };
+        player.controllers.forEach((controller, i) => {
+          const matrix = new Matrix4();
+          const inverse = new Matrix4();
+          const vector = new Vector3();
+          controller.physics.onContact = ({ mesh, index, point }) => {
+            if (
+              !this.isPicking[i]
+              && (mesh === this.boxes || mesh === this.spheres)
+              && controller.hand
+              && controller.buttons.grip
+            ) {
+              mesh.getMatrixAt(index, matrix);
+              inverse.getInverse(matrix);
+              this.isPicking[i] = this.physics.addConstraint(controller.physics, {
+                type: 'p2p',
+                mesh,
+                index,
+                pivotInA: pivots[controller.hand.handedness],
+                pivotInB: vector.copy(point).applyMatrix4(inverse),
+              });
+            }
+          };
+          this.physics.addMesh(controller.physics, 0, { isKinematic: true, isTrigger: true });
+        });
 
         const material = new Lightmap({
           channels: lightmap.channels,
@@ -140,6 +167,7 @@ class Lights extends ElevatorWorld {
     const {
       boxes,
       isOnElevator,
+      isPicking,
       lighting,
       physics,
       player,
@@ -148,7 +176,16 @@ class Lights extends ElevatorWorld {
     if (lighting) {
       lighting.animate(animation);
     }
-    if (isOnElevator || !boxes || !spheres) {
+    if (!boxes || !spheres) {
+      return;
+    }
+    player.controllers.forEach(({ hand, buttons }, i) => {
+      if (isPicking[i] && hand && buttons.gripUp) {
+        physics.removeConstraint(isPicking[i]);
+        isPicking[i] = false;
+      }
+    });
+    if (isOnElevator) {
       return;
     }
     [

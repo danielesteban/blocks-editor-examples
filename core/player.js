@@ -214,14 +214,21 @@ class Player extends Group {
     });
     desktopControls.onAnimationTick({ camera, delta, player: this });
     if (destination) {
-      const step = speed * delta;
+      let step = speed * delta;
       const distance = destination.distanceTo(position);
       if (distance <= step) {
-        position.copy(destination);
         delete this.destination;
-        return;
+        step = distance;
       }
-      position.addScaledVector(direction, step);
+      vector.copy(direction).multiplyScalar(step);
+      position.add(vector);
+      head.position.add(vector);
+      controllers.forEach(({ hand, raycaster, worldspace }) => {
+        if (hand) {
+          raycaster.ray.origin.add(vector);
+          worldspace.position.add(vector);
+        }
+      });
     }
   }
 
@@ -247,8 +254,9 @@ class Player extends Group {
     const { controllers, head, position } = this;
     position.add(offset);
     head.position.add(offset);
-    controllers.forEach(({ hand, worldspace }) => {
+    controllers.forEach(({ hand, raycaster, worldspace }) => {
       if (hand) {
+        raycaster.ray.origin.add(offset);
         worldspace.position.add(offset);
       }
     });
@@ -276,8 +284,9 @@ class Player extends Group {
     );
     this.applyMatrix4(transform);
     head.applyMatrix4(transform);
-    controllers.forEach(({ hand, worldspace }) => {
+    controllers.forEach(({ hand, raycaster, worldspace }) => {
       if (hand) {
+        raycaster.ray.origin.applyMatrix4(transform);
         worldspace.position.applyMatrix4(transform);
       }
     });

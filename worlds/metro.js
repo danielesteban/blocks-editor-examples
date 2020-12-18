@@ -176,7 +176,6 @@ class Metro extends Group {
           }
           track.progress = Math.min(Math.max((track.gap + track.position.z / 8) / (track.segments * 2), 0), 1);
           track.progress += track.progress < 0.5 ? 0.5 : -0.5;
-          track.updateMatrixWorld();
         };
         track.goTo = (station) => {
           if (!track.isRunning) {

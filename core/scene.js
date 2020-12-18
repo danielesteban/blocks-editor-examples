@@ -100,7 +100,7 @@ class Scene extends ThreeScene {
     }
   }
 
-  onBeforeRender({ animation, xr }, scene, camera) {
+  onAnimationTick({ animation, camera, xr }) {
     const { locomotions } = Scene;
     const {
       ambient,
@@ -129,8 +129,6 @@ class Scene extends ThreeScene {
           rightwards,
           rightwardsDown,
           secondaryDown,
-          triggerDown,
-          triggerUp,
         },
         hand,
         marker,
@@ -261,7 +259,7 @@ class Scene extends ThreeScene {
           });
         }
       }
-      if (secondaryDown) {
+      if (xr.enabled && xr.isPresenting && secondaryDown) {
         xr.getSession().end();
       }
     });
