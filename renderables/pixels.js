@@ -27,7 +27,7 @@ class Pixels extends InstancedMesh {
       if (i % 6 === 0) {
         light = i >= 24 ? 1 : 0.5;
       }
-      color.setXYZ(i, 0, light, light);
+      color.setXYZ(i, light, light, light);
     }
     geometry.setAttribute('color', color);
     Pixels.geometry = BufferGeometryUtils.mergeVertices(geometry);
