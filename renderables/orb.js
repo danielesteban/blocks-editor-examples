@@ -1,8 +1,7 @@
 import {
   BufferAttribute,
-  BufferGeometry,
   BufferGeometryUtils,
-  IcosahedronGeometry,
+  IcosahedronBufferGeometry,
   Mesh,
   ShaderLib,
   ShaderMaterial,
@@ -11,29 +10,29 @@ import {
 
 class Orb extends Mesh {
   static setupGeometry() {
-    const sphere = new IcosahedronGeometry(0.15, 3);
-    sphere.faces.forEach((face, i) => {
-      if (i % 2 === 0) {
-        face.color.setHSL(0, 0, 0.5 + Math.random() * 0.25);
-      } else {
-        face.color.copy(sphere.faces[i - 1].color);
+    const sphere = new IcosahedronBufferGeometry(0.15, 3);
+    sphere.deleteAttribute('normal');
+    sphere.deleteAttribute('uv');
+    const { count } = sphere.getAttribute('position');
+    const color = new BufferAttribute(new Float32Array(count * 3), 3);
+    const offset = new BufferAttribute(new Float32Array(count), 1);
+    let l;
+    let o;
+    for (let i = 0; i < count; i += 1) {
+      if (i % 3 === 0) {
+        l = 0.5 + Math.random() * 0.25;
+        o = Math.random();
       }
-    });
-    let geometry = (new BufferGeometry()).fromGeometry(sphere);
-    const offset = new Float32Array(geometry.getAttribute('color').count);
-    for (let i = 0; i < offset.length; i += 4) {
-      const o = Math.random();
-      offset.set([o, o, o, o], i);
+      color.setXYZ(i, l, l, l);
+      offset.setX(i, o);
     }
-    geometry.setAttribute('offset', new BufferAttribute(offset, 1));
-    geometry.deleteAttribute('normal');
-    geometry.deleteAttribute('uv');
-    geometry = BufferGeometryUtils.mergeVertices(geometry);
-    geometry.physics = {
+    sphere.setAttribute('color', color);
+    sphere.setAttribute('offset', offset);
+    Orb.geometry = BufferGeometryUtils.mergeVertices(sphere);
+    Orb.geometry.physics = {
       shape: 'sphere',
       radius: sphere.parameters.radius,
     };
-    Orb.geometry = geometry;
   }
 
   static setupMaterial() {

@@ -1,6 +1,7 @@
 import {
-  BoxGeometry,
-  BufferGeometry,
+  BufferAttribute,
+  BoxBufferGeometry,
+  BufferGeometryUtils,
   DynamicDrawUsage,
   InstancedBufferAttribute,
   InstancedMesh,
@@ -14,17 +15,22 @@ import {
 
 class Pixels extends InstancedMesh {
   static setupGeometry() {
-    const pixel = new BoxGeometry(1, 1, 1, 1, 1, 1);
-    pixel.faces.splice(10, 2);
-    pixel.faces.forEach((face, i) => {
-      if (i % 2 === 1) {
-        face.color.setHSL(0, 0, i > 8 ? 1 : 0.5);
-        pixel.faces[i - 1].color.copy(face.color);
+    const pixel = new BoxBufferGeometry(1, 1, 1, 1, 1, 1);
+    pixel.deleteAttribute('normal');
+    pixel.deleteAttribute('uv');
+    const geometry = pixel.toNonIndexed();
+    geometry.setAttribute('position', new BufferAttribute(geometry.getAttribute('position').array.slice(0, 90), 3));
+    const { count } = geometry.getAttribute('position');
+    const color = new BufferAttribute(new Float32Array(count * 3), 3);
+    let light;
+    for (let i = 0; i < count; i += 1) {
+      if (i % 6 === 0) {
+        light = i >= 24 ? 1 : 0.5;
       }
-    });
-    Pixels.geometry = (new BufferGeometry()).fromGeometry(pixel);
-    Pixels.geometry.deleteAttribute('normal');
-    Pixels.geometry.deleteAttribute('uv');
+      color.setXYZ(i, 0, light, light);
+    }
+    geometry.setAttribute('color', color);
+    Pixels.geometry = BufferGeometryUtils.mergeVertices(geometry);
   }
 
   static setupMaterial() {
