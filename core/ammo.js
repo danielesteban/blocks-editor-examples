@@ -107,7 +107,7 @@ async function AmmoPhysics() {
 
     }
 
-    if ( geometry && geometry.type === 'BoxBufferGeometry' ) {
+    if ( geometry && geometry.type === 'BoxGeometry' ) {
 
       const { parameters } = geometry;
       const sx = parameters.width !== undefined ? parameters.width / 2 : 0.5;
@@ -121,7 +121,7 @@ async function AmmoPhysics() {
 
     }
     
-    if ( geometry && ( geometry.type === 'SphereBufferGeometry' || geometry.type === 'IcosahedronBufferGeometry' ) ) {
+    if ( geometry && ( geometry.type === 'SphereGeometry' || geometry.type === 'IcosahedronGeometry' ) ) {
 
       const { parameters } = geometry;
       const radius = parameters.radius !== undefined ? parameters.radius : 1;
